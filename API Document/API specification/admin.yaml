@@ -1,0 +1,30 @@
+openapi: 3.0.3
+info:
+  title: CAB API - Admin
+  version: 1.0.0
+  description: API dành cho actor Quản trị viên, tương ứng UC14 trong SRS.
+servers:
+  - url: http://localhost:8000/api/v1
+security:
+  - bearerAuth: []
+tags:
+  - name: UC14 - Quản trị và kiểm tra hệ thống
+paths:
+  /admin/audit-logs:
+    get:
+      tags: [UC14 - Quản trị và kiểm tra hệ thống]
+      summary: Kiểm tra nhật ký thao tác quan trọng
+      description: Chỉ quản trị viên có quyền mới được tra cứu audit log.
+      parameters:
+        - { name: target_type, in: query, schema: { type: string } }
+        - { name: target_id, in: query, schema: { type: integer } }
+      responses:
+        '200': { description: Danh sách nhật ký thao tác }
+        '401': { $ref: '#/components/responses/Unauthorized' }
+        '403': { $ref: '#/components/responses/Forbidden' }
+components:
+  securitySchemes:
+    bearerAuth: { type: http, scheme: bearer, bearerFormat: JWT }
+  responses:
+    Unauthorized: { description: Chưa xác thực }
+    Forbidden: { description: Không có quyền quản trị }

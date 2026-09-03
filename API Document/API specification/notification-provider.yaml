@@ -1,0 +1,38 @@
+openapi: 3.0.3
+info:
+  title: CAB Integration API - Notification Provider
+  version: 1.0.0
+  description: Contract tích hợp giữa CAB và Nhà cung cấp dịch vụ thông báo.
+servers:
+  - url: https://notification-provider.example.com
+paths:
+  /notifications:
+    post:
+      summary: Gửi thông báo đến khách hàng hoặc tài xế
+      description: Lỗi gửi thông báo phải được ghi nhận nhưng không làm dừng luồng đặt chuyến.
+      security: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required: [recipient, notification_type, message]
+              properties:
+                recipient: { type: string }
+                notification_type: { type: string }
+                message: { type: string }
+                trip_id: { type: integer, nullable: true }
+      responses:
+        '202':
+          description: Nhà cung cấp đã tiếp nhận thông báo
+          content:
+            application/json:
+              schema:
+                type: object
+                required: [provider_reference, status]
+                properties:
+                  provider_reference: { type: string }
+                  status: { type: string, enum: [QUEUED, SENT, FAILED] }
+        '400': { description: Dữ liệu thông báo không hợp lệ }
+        '502': { description: Nhà cung cấp không gửi được thông báo }

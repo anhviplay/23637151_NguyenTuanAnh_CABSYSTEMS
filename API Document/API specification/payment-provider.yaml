@@ -1,0 +1,37 @@
+openapi: 3.0.3
+info:
+  title: CAB Integration API - Payment Provider
+  version: 1.0.0
+  description: Contract tích hợp giữa CAB và Nhà cung cấp thanh toán. CAB chỉ lưu mã tham chiếu, không lưu dữ liệu thanh toán nhạy cảm.
+servers:
+  - url: https://payment-provider.example.com
+paths:
+  /payments:
+    post:
+      summary: Gửi yêu cầu thanh toán điện tử
+      description: Nhà cung cấp xử lý giao dịch và trả kết quả về CAB theo cơ chế tích hợp được thống nhất.
+      security: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required: [amount, merchant_reference, callback_url]
+              properties:
+                amount: { type: number, minimum: 0 }
+                merchant_reference: { type: string }
+                callback_url: { type: string, format: uri }
+      responses:
+        '202':
+          description: Nhà cung cấp đã tiếp nhận giao dịch
+          content:
+            application/json:
+              schema:
+                type: object
+                required: [provider_reference, status]
+                properties:
+                  provider_reference: { type: string }
+                  status: { type: string, enum: [PENDING, SUCCESS, FAILED] }
+        '400': { description: Dữ liệu giao dịch không hợp lệ }
+        '502': { description: Nhà cung cấp không xử lý được giao dịch }

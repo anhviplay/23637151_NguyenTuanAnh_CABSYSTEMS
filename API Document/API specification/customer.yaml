@@ -1,0 +1,377 @@
+openapi: 3.0.3
+info:
+  title: CAB API - Customer
+  version: 1.0.0
+  description: API dành cho actor Khách hàng, tương ứng UC01, UC04, UC07, UC10 và UC12 trong SRS.
+servers:
+  - url: http://localhost:8000/api/v1
+security:
+  - bearerAuth: []
+tags:
+  - name: UC01 - Quản lý tài khoản khách hàng
+  - name: UC04 - Đặt chuyến
+  - name: UC07 - Theo dõi và cập nhật chuyến
+  - name: UC10 - Thanh toán chuyến đi
+  - name: UC12 - Xem lịch sử và đánh giá
+paths:
+  /auth/register:
+    post:
+      tags: [UC01 - Quản lý tài khoản khách hàng]
+      summary: Đăng ký tài khoản khách hàng
+      security: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/RegisterRequest'
+      responses:
+        '201':
+          description: Tạo tài khoản thành công
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/AuthResponse'
+        '422':
+          $ref: '#/components/responses/ValidationError'
+  /auth/login:
+    post:
+      tags: [UC01 - Quản lý tài khoản khách hàng]
+      summary: Đăng nhập khách hàng
+      security: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/LoginRequest'
+      responses:
+        '200':
+          description: Đăng nhập thành công
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/AuthResponse'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+  /me:
+    get:
+      tags: [UC01 - Quản lý tài khoản khách hàng]
+      summary: Xem thông tin cá nhân
+      responses:
+        '200':
+          description: Thông tin khách hàng
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Customer'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+    patch:
+      tags: [UC01 - Quản lý tài khoản khách hàng]
+      summary: Cập nhật thông tin cá nhân
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/CustomerUpdateRequest'
+      responses:
+        '200':
+          description: Cập nhật thành công
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Customer'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '422':
+          $ref: '#/components/responses/ValidationError'
+  /trips:
+    post:
+      tags: [UC04 - Đặt chuyến]
+      summary: Tạo yêu cầu đặt chuyến
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/CreateTripRequest'
+      responses:
+        '201':
+          description: Đã tiếp nhận yêu cầu và bắt đầu tìm tài xế
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Trip'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '422':
+          $ref: '#/components/responses/ValidationError'
+    get:
+      tags: [UC12 - Xem lịch sử và đánh giá]
+      summary: Xem lịch sử chuyến đi
+      parameters:
+        - $ref: '#/components/parameters/Page'
+        - $ref: '#/components/parameters/PerPage'
+        - name: status
+          in: query
+          schema:
+            $ref: '#/components/schemas/TripStatus'
+      responses:
+        '200':
+          description: Danh sách chuyến
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/TripPage'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+  /trips/{tripId}:
+    get:
+      tags: [UC07 - Theo dõi và cập nhật chuyến]
+      summary: Theo dõi trạng thái chuyến
+      parameters:
+        - $ref: '#/components/parameters/TripId'
+      responses:
+        '200':
+          description: Chi tiết chuyến và trạng thái hiện tại
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Trip'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '404':
+          $ref: '#/components/responses/NotFound'
+  /trips/{tripId}/cancel:
+    post:
+      tags: [UC04 - Đặt chuyến]
+      summary: Hủy yêu cầu khi đang tìm tài xế
+      description: Chỉ hủy trong trạng thái đang tìm tài xế; chính sách phí hủy chưa được xác nhận.
+      parameters:
+        - $ref: '#/components/parameters/TripId'
+      responses:
+        '200':
+          description: Đã hủy chuyến
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Trip'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '409':
+          $ref: '#/components/responses/Conflict'
+  /trips/{tripId}/payment:
+    post:
+      tags: [UC10 - Thanh toán chuyến đi]
+      summary: Thanh toán chuyến đi
+      description: Hỗ trợ tiền mặt hoặc thanh toán điện tử; không gửi thông tin thẻ nhạy cảm đến CAB.
+      parameters:
+        - $ref: '#/components/parameters/TripId'
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/CreatePaymentRequest'
+      responses:
+        '201':
+          description: Đã ghi nhận hoặc khởi tạo thanh toán
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Payment'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '409':
+          $ref: '#/components/responses/Conflict'
+  /trips/{tripId}/payment/retry:
+    post:
+      tags: [UC10 - Thanh toán chuyến đi]
+      summary: Thực hiện lại thanh toán điện tử thất bại
+      parameters:
+        - $ref: '#/components/parameters/TripId'
+      responses:
+        '200':
+          description: Đã khởi tạo lần thanh toán lại
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Payment'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '409':
+          $ref: '#/components/responses/Conflict'
+  /trips/{tripId}/rating:
+    post:
+      tags: [UC12 - Xem lịch sử và đánh giá]
+      summary: Đánh giá tài xế sau chuyến đi
+      parameters:
+        - $ref: '#/components/parameters/TripId'
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/CreateRatingRequest'
+      responses:
+        '201':
+          description: Đã lưu đánh giá
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Rating'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '409':
+          $ref: '#/components/responses/Conflict'
+        '422':
+          $ref: '#/components/responses/ValidationError'
+components:
+  securitySchemes:
+    bearerAuth:
+      type: http
+      scheme: bearer
+      bearerFormat: JWT
+  parameters:
+    TripId:
+      name: tripId
+      in: path
+      required: true
+      schema: { type: integer, minimum: 1 }
+    Page:
+      name: page
+      in: query
+      schema: { type: integer, minimum: 1, default: 1 }
+    PerPage:
+      name: per_page
+      in: query
+      schema: { type: integer, minimum: 1, maximum: 100, default: 20 }
+  responses:
+    Unauthorized:
+      description: Chưa xác thực hoặc token không hợp lệ
+      content:
+        application/json:
+          schema: { $ref: '#/components/schemas/ErrorResponse' }
+    NotFound:
+      description: Không tìm thấy chuyến
+      content:
+        application/json:
+          schema: { $ref: '#/components/schemas/ErrorResponse' }
+    Conflict:
+      description: Trạng thái nghiệp vụ không cho phép thực hiện
+      content:
+        application/json:
+          schema: { $ref: '#/components/schemas/ErrorResponse' }
+    ValidationError:
+      description: Dữ liệu không hợp lệ
+      content:
+        application/json:
+          schema: { $ref: '#/components/schemas/ErrorResponse' }
+  schemas:
+    RegisterRequest:
+      type: object
+      required: [full_name, phone, email, password]
+      properties:
+        full_name: { type: string }
+        phone: { type: string }
+        email: { type: string, format: email }
+        password: { type: string, format: password, minLength: 8 }
+    LoginRequest:
+      type: object
+      required: [email, password]
+      properties:
+        email: { type: string, format: email }
+        password: { type: string, format: password }
+    AuthResponse:
+      type: object
+      required: [token, user]
+      properties:
+        token: { type: string }
+        user: { $ref: '#/components/schemas/Customer' }
+    Customer:
+      type: object
+      properties:
+        customer_id: { type: integer }
+        full_name: { type: string }
+        phone: { type: string }
+        email: { type: string, format: email }
+        account_status: { type: string, enum: [ACTIVE, INACTIVE, SUSPENDED] }
+        created_at: { type: string, format: date-time }
+    CustomerUpdateRequest:
+      type: object
+      minProperties: 1
+      properties:
+        full_name: { type: string }
+        phone: { type: string }
+        email: { type: string, format: email }
+    CreateTripRequest:
+      type: object
+      required: [pickup_address, pickup_latitude, pickup_longitude, destination_address, destination_latitude, destination_longitude, requested_vehicle_type]
+      properties:
+        pickup_address: { type: string }
+        pickup_latitude: { type: number, minimum: -90, maximum: 90 }
+        pickup_longitude: { type: number, minimum: -180, maximum: 180 }
+        destination_address: { type: string }
+        destination_latitude: { type: number, minimum: -90, maximum: 90 }
+        destination_longitude: { type: number, minimum: -180, maximum: 180 }
+        requested_vehicle_type: { type: string }
+    Trip:
+      type: object
+      properties:
+        trip_id: { type: integer }
+        customer_id: { type: integer }
+        driver_id: { type: integer, nullable: true }
+        pickup_address: { type: string }
+        destination_address: { type: string }
+        requested_vehicle_type: { type: string }
+        trip_status: { $ref: '#/components/schemas/TripStatus' }
+        fare_amount: { type: number, nullable: true }
+        requested_at: { type: string, format: date-time }
+        completed_at: { type: string, format: date-time, nullable: true }
+    TripStatus:
+      type: string
+      enum: [ACCEPTED, SEARCHING_DRIVER, DRIVER_ASSIGNED, DRIVER_ARRIVED, PASSENGER_PICKED_UP, IN_PROGRESS, COMPLETED, CANCELLED, NO_DRIVER_FOUND]
+    TripPage:
+      type: object
+      properties:
+        data: { type: array, items: { $ref: '#/components/schemas/Trip' } }
+        meta: { type: object }
+    CreatePaymentRequest:
+      type: object
+      required: [payment_method]
+      properties:
+        payment_method: { type: string, enum: [CASH, ELECTRONIC] }
+    Payment:
+      type: object
+      properties:
+        payment_id: { type: integer }
+        trip_id: { type: integer }
+        payment_method: { type: string, enum: [CASH, ELECTRONIC] }
+        amount: { type: number }
+        payment_status: { type: string, enum: [PENDING, SUCCESS, FAILED] }
+        provider_reference: { type: string, nullable: true }
+        retry_count: { type: integer }
+        paid_at: { type: string, format: date-time, nullable: true }
+    CreateRatingRequest:
+      type: object
+      required: [score]
+      properties:
+        score: { type: integer, minimum: 1, maximum: 5 }
+        comment: { type: string }
+    Rating:
+      type: object
+      properties:
+        rating_id: { type: integer }
+        trip_id: { type: integer }
+        driver_id: { type: integer }
+        score: { type: integer, minimum: 1, maximum: 5 }
+        comment: { type: string, nullable: true }
+        created_at: { type: string, format: date-time }
+    ErrorResponse:
+      type: object
+      required: [message]
+      properties:
+        message: { type: string }
+        code: { type: string }

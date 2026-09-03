@@ -1,0 +1,30 @@
+openapi: 3.0.3
+info:
+  title: CAB API - Leadership
+  version: 1.0.0
+  description: API dành cho actor Ban lãnh đạo, tương ứng UC15 và FR43 trong SRS.
+servers:
+  - url: http://localhost:8000/api/v1
+security:
+  - bearerAuth: []
+tags:
+  - name: UC15 - Xem báo cáo hoạt động
+paths:
+  /reports/operations:
+    get:
+      tags: [UC15 - Xem báo cáo hoạt động]
+      summary: Xem báo cáo hoạt động kinh doanh
+      description: Báo cáo gồm số chuyến, doanh thu, tỷ lệ hoàn thành, tỷ lệ hủy và hiệu quả tài xế.
+      parameters:
+        - { name: from, in: query, required: true, schema: { type: string, format: date } }
+        - { name: to, in: query, required: true, schema: { type: string, format: date } }
+      responses:
+        '200': { description: Báo cáo hoạt động }
+        '401': { $ref: '#/components/responses/Unauthorized' }
+        '403': { $ref: '#/components/responses/Forbidden' }
+components:
+  securitySchemes:
+    bearerAuth: { type: http, scheme: bearer, bearerFormat: JWT }
+  responses:
+    Unauthorized: { description: Chưa xác thực }
+    Forbidden: { description: Không có quyền xem báo cáo }

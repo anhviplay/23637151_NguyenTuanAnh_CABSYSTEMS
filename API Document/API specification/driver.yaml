@@ -1,0 +1,160 @@
+openapi: 3.0.3
+info:
+  title: CAB API - Driver
+  version: 1.0.0
+  description: API dành cho actor Tài xế, tương ứng UC02, UC03, UC06, UC07 và UC08 trong SRS.
+servers:
+  - url: http://localhost:8000/api/v1
+security:
+  - bearerAuth: []
+tags:
+  - name: UC02 - Quản lý tài khoản tài xế
+  - name: UC03 - Cập nhật trạng thái sẵn sàng
+  - name: UC06 - Phản hồi yêu cầu chuyến
+  - name: UC07 - Theo dõi và cập nhật chuyến
+  - name: UC08 - Cập nhật vị trí tài xế
+paths:
+  /drivers:
+    post:
+      tags: [UC02 - Quản lý tài khoản tài xế]
+      summary: Đăng ký tài khoản tài xế
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema: { $ref: '#/components/schemas/CreateDriverRequest' }
+      responses:
+        '201': { description: Tạo tài khoản tài xế thành công }
+        '422': { $ref: '#/components/responses/ValidationError' }
+  /drivers/me:
+    patch:
+      tags: [UC02 - Quản lý tài khoản tài xế]
+      summary: Cập nhật hồ sơ và phương tiện
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema: { $ref: '#/components/schemas/DriverUpdateRequest' }
+      responses:
+        '200': { description: Cập nhật thành công, content: { application/json: { schema: { $ref: '#/components/schemas/Driver' } } } }
+        '401': { $ref: '#/components/responses/Unauthorized' }
+        '422': { $ref: '#/components/responses/ValidationError' }
+  /drivers/me/availability:
+    patch:
+      tags: [UC03 - Cập nhật trạng thái sẵn sàng]
+      summary: Cập nhật trạng thái hoạt động và sẵn sàng nhận chuyến
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema: { $ref: '#/components/schemas/AvailabilityRequest' }
+      responses:
+        '200': { description: Cập nhật thành công }
+        '401': { $ref: '#/components/responses/Unauthorized' }
+        '422': { $ref: '#/components/responses/ValidationError' }
+  /drivers/me/location:
+    post:
+      tags: [UC08 - Cập nhật vị trí tài xế]
+      summary: Cập nhật vị trí tài xế
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema: { $ref: '#/components/schemas/LocationRequest' }
+      responses:
+        '201': { description: Đã lưu vị trí }
+        '401': { $ref: '#/components/responses/Unauthorized' }
+        '422': { $ref: '#/components/responses/ValidationError' }
+  /trips/{tripId}/assignment-response:
+    post:
+      tags: [UC06 - Phản hồi yêu cầu chuyến]
+      summary: Chấp nhận hoặc từ chối yêu cầu chuyến
+      parameters: [{ $ref: '#/components/parameters/TripId' }]
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema: { $ref: '#/components/schemas/AssignmentResponseRequest' }
+      responses:
+        '200': { description: Đã ghi nhận phản hồi }
+        '401': { $ref: '#/components/responses/Unauthorized' }
+        '409': { $ref: '#/components/responses/Conflict' }
+  /trips/{tripId}/status:
+    patch:
+      tags: [UC07 - Theo dõi và cập nhật chuyến]
+      summary: Cập nhật trạng thái chuyến theo đúng trình tự
+      parameters: [{ $ref: '#/components/parameters/TripId' }]
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema: { $ref: '#/components/schemas/TripStatusRequest' }
+      responses:
+        '200': { description: Đã cập nhật trạng thái }
+        '401': { $ref: '#/components/responses/Unauthorized' }
+        '409': { $ref: '#/components/responses/Conflict' }
+components:
+  securitySchemes:
+    bearerAuth: { type: http, scheme: bearer, bearerFormat: JWT }
+  parameters:
+    TripId: { name: tripId, in: path, required: true, schema: { type: integer, minimum: 1 } }
+  responses:
+    Unauthorized: { description: Chưa xác thực }
+    Conflict: { description: Phản hồi hết hạn hoặc chuyển trạng thái không hợp lệ }
+    ValidationError: { description: Dữ liệu không hợp lệ }
+  schemas:
+    CreateDriverRequest:
+      type: object
+      required: [full_name, phone, password, vehicle]
+      properties:
+        full_name: { type: string }
+        phone: { type: string }
+        password: { type: string, format: password }
+        vehicle: { $ref: '#/components/schemas/VehicleInput' }
+    DriverUpdateRequest:
+      type: object
+      properties:
+        full_name: { type: string }
+        phone: { type: string }
+        vehicle: { $ref: '#/components/schemas/VehicleInput' }
+    VehicleInput:
+      type: object
+      required: [vehicle_type, license_plate]
+      properties:
+        vehicle_type: { type: string }
+        license_plate: { type: string }
+    AvailabilityRequest:
+      type: object
+      required: [account_status, availability_status]
+      properties:
+        account_status: { type: string, enum: [ACTIVE, INACTIVE, SUSPENDED] }
+        availability_status: { type: string, enum: [AVAILABLE, UNAVAILABLE] }
+    LocationRequest:
+      type: object
+      required: [latitude, longitude]
+      properties:
+        latitude: { type: number, minimum: -90, maximum: 90 }
+        longitude: { type: number, minimum: -180, maximum: 180 }
+    AssignmentResponseRequest:
+      type: object
+      required: [response_status]
+      properties:
+        response_status: { type: string, enum: [ACCEPTED, REJECTED] }
+    TripStatusRequest:
+      type: object
+      required: [trip_status]
+      properties:
+        trip_status: { type: string, enum: [DRIVER_ARRIVED, PASSENGER_PICKED_UP, IN_PROGRESS, COMPLETED] }
+    Driver:
+      type: object
+      properties:
+        driver_id: { type: integer }
+        full_name: { type: string }
+        phone: { type: string }
+        account_status: { type: string }
+        availability_status: { type: string }
+    ErrorResponse:
+      type: object
+      properties:
+        message: { type: string }
+        code: { type: string }

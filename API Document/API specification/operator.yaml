@@ -1,0 +1,94 @@
+openapi: 3.0.3
+info:
+  title: CAB API - Operator
+  version: 1.0.0
+  description: API dành cho actor Nhân viên vận hành, tương ứng UC02, UC13 và các quyền vận hành trong SRS.
+servers:
+  - url: http://localhost:8000/api/v1
+security:
+  - bearerAuth: []
+tags:
+  - name: UC02 - Quản lý tài khoản tài xế
+  - name: UC13 - Quản lý và hỗ trợ vận hành
+paths:
+  /drivers:
+    post:
+      tags: [UC02 - Quản lý tài khoản tài xế]
+      summary: Tạo tài khoản tài xế
+      description: Nhân viên vận hành có thể tạo tài khoản và phương tiện cho tài xế.
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema: { $ref: '#/components/schemas/CreateDriverRequest' }
+      responses:
+        '201': { description: Đã tạo tài khoản tài xế }
+        '401': { $ref: '#/components/responses/Unauthorized' }
+        '403': { $ref: '#/components/responses/Forbidden' }
+        '422': { $ref: '#/components/responses/ValidationError' }
+    get:
+      tags: [UC13 - Quản lý và hỗ trợ vận hành]
+      summary: Tra cứu tài xế
+      parameters:
+        - { name: availability_status, in: query, schema: { type: string, enum: [AVAILABLE, UNAVAILABLE] } }
+        - { name: account_status, in: query, schema: { type: string, enum: [ACTIVE, INACTIVE, SUSPENDED] } }
+      responses:
+        '200': { description: Danh sách tài xế }
+        '401': { $ref: '#/components/responses/Unauthorized' }
+        '403': { $ref: '#/components/responses/Forbidden' }
+  /operations/trips/active:
+    get:
+      tags: [UC13 - Quản lý và hỗ trợ vận hành]
+      summary: Theo dõi các chuyến đang diễn ra
+      responses:
+        '200': { description: Danh sách chuyến đang diễn ra }
+        '401': { $ref: '#/components/responses/Unauthorized' }
+        '403': { $ref: '#/components/responses/Forbidden' }
+  /operations/trips/{tripId}/support:
+    post:
+      tags: [UC13 - Quản lý và hỗ trợ vận hành]
+      summary: Hỗ trợ xử lý chuyến bị lỗi
+      parameters: [{ $ref: '#/components/parameters/TripId' }]
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema: { $ref: '#/components/schemas/SupportActionRequest' }
+      responses:
+        '200': { description: Đã ghi nhận hỗ trợ }
+        '401': { $ref: '#/components/responses/Unauthorized' }
+        '403': { $ref: '#/components/responses/Forbidden' }
+  /payments:
+    get:
+      tags: [UC13 - Quản lý và hỗ trợ vận hành]
+      summary: Tra cứu lịch sử giao dịch
+      parameters:
+        - { name: status, in: query, schema: { type: string, enum: [PENDING, SUCCESS, FAILED] } }
+        - { name: payment_method, in: query, schema: { type: string, enum: [CASH, ELECTRONIC] } }
+      responses:
+        '200': { description: Danh sách giao dịch }
+        '401': { $ref: '#/components/responses/Unauthorized' }
+        '403': { $ref: '#/components/responses/Forbidden' }
+components:
+  securitySchemes:
+    bearerAuth: { type: http, scheme: bearer, bearerFormat: JWT }
+  parameters:
+    TripId: { name: tripId, in: path, required: true, schema: { type: integer, minimum: 1 } }
+  responses:
+    Unauthorized: { description: Chưa xác thực }
+    Forbidden: { description: Không đủ quyền vận hành }
+    ValidationError: { description: Dữ liệu không hợp lệ }
+  schemas:
+    CreateDriverRequest:
+      type: object
+      required: [full_name, phone, password, vehicle]
+      properties:
+        full_name: { type: string }
+        phone: { type: string }
+        password: { type: string, format: password }
+        vehicle: { type: object, required: [vehicle_type, license_plate], properties: { vehicle_type: { type: string }, license_plate: { type: string } } }
+    SupportActionRequest:
+      type: object
+      required: [action_detail]
+      properties:
+        action_detail: { type: string }
