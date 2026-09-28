@@ -153,7 +153,7 @@ Ma trận này mở rộng RTM của SRS v1.4, không thay thế RTM hoặc tạ
 
 ## 4. Chất lượng, giao tiếp và release
 
-NFR-01–NFR-08 được thiết kế tại Micro-service.md §2, §5–§6 và kiểm chứng bởi AC-59–AC-66/TS16. NFR-09/NFR-10 gắn kiểm soát dữ liệu tại common.md §2/§5, Micro-service.md §6 và TS14. EIR-01–EIR-03 áp dụng các API Customer/Driver/Operations cùng giao diện OI-21; EIR-04 áp dụng payment-provider.md; EIR-05 áp dụng vị trí Driver; EIR-06 áp dụng notification-provider.md. TS17 đối chiếu AC-69–AC-75, gồm CON-01.
+NFR-01–NFR-08 được thiết kế tại Micro-service.docx §2, §5–§6 và kiểm chứng bởi AC-59–AC-66/TS16. NFR-09/NFR-10 gắn kiểm soát dữ liệu tại common.md §2/§5, Micro-service.md §6 và TS14. EIR-01–EIR-03 áp dụng các API Customer/Driver/Operations cùng giao diện OI-21; EIR-04 áp dụng payment-provider.md; EIR-05 áp dụng vị trí Driver; EIR-06 áp dụng notification-provider.md. TS17 đối chiếu AC-69–AC-75, gồm CON-01.
 
 ## 5. Quản lý thay đổi
 
