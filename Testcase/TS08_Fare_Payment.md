@@ -1,272 +1,42 @@
-# TS08 — Fare Payment
-
-Baseline: [SRS v1.4](../srs.md). Quy ước và trạng thái: [CAB_Test_Cases.md](CAB_Test_Cases.md).
-
-## TC-28 — Kiểm chứng AC-28 — FR-28
-
-- Yêu cầu: FR-28.
-- Tiêu chí: AC-28.
-- Cơ sở: Source-derived qua SRS.
-- Ưu tiên: Theo ưu tiên release — OI-11.
-- Điều kiện quyết định: OI-01, OI-15
-- Trạng thái: Chờ quyết định áp dụng / Not Run.
-
-**Tiền điều kiện và dữ liệu thử:** Trip hoàn thành, thông tin dịch vụ/chuyến đầy đủ; số tiền chuẩn tính độc lập theo OI-01/OI-15.
-
-**Các bước:**
-
-1. Kích hoạt tính cước.
-2. Đọc Fare.
-3. Đối chiếu số tiền, tiền tệ và quy tắc làm tròn với kết quả chuẩn.
-
-**Kết quả mong đợi:** Với Trip hoàn thành và bộ dữ liệu tính cước, số tiền hệ thống xác định khớp kết quả tính độc lập theo chính sách cước.
-
-**Bằng chứng cần ghi:** dữ liệu đầu vào đã che thông tin nhạy cảm, định danh nghiệp vụ, phản hồi/hiển thị, dữ liệu sau xử lý và sự kiện liên quan. Ghi phiên bản quyết định OI và thiết kế áp dụng cùng kết quả thực thi.
-
-## TC-29 — Kiểm chứng AC-29 — FR-29
-
-- Yêu cầu: FR-29.
-- Tiêu chí: AC-29.
-- Cơ sở: Source-derived qua SRS.
-- Ưu tiên: Theo ưu tiên release — OI-11.
-- Điều kiện quyết định: Không có OI riêng; cần dữ liệu và môi trường thử phù hợp.
-- Trạng thái: Not Run.
-
-**Tiền điều kiện và dữ liệu thử:** Trip có Fare đã xác định.
-
-**Các bước:**
-
-1. Customer xem cước trực tiếp và trong lịch sử nếu áp dụng.
-2. Đối chiếu số tiền phải trả.
-
-**Kết quả mong đợi:** Với Trip đã xác định được cước, số tiền Customer nhìn thấy trùng với số tiền phải trả của Trip.
-
-**Bằng chứng cần ghi:** dữ liệu đầu vào đã che thông tin nhạy cảm, định danh nghiệp vụ, phản hồi/hiển thị, dữ liệu sau xử lý và sự kiện liên quan. Ghi phiên bản quyết định OI và thiết kế áp dụng cùng kết quả thực thi.
-
-## TC-30 — Kiểm chứng AC-30 — FR-30
-
-- Yêu cầu: FR-30.
-- Tiêu chí: AC-30.
-- Cơ sở: Source-derived qua SRS.
-- Ưu tiên: Theo ưu tiên release — OI-11.
-- Điều kiện quyết định: OI-17
-- Trạng thái: Chờ quyết định áp dụng / Not Run.
-
-**Tiền điều kiện và dữ liệu thử:** Trip có cước; quy trình và chủ thể xác nhận tiền mặt theo OI-17.
-
-**Các bước:**
-
-1. Chọn cash.
-2. Thực hiện đúng các bước xác nhận nhận tiền.
-3. Đối chiếu kết quả, không coi chọn phương thức là đã thu tiền.
-
-**Kết quả mong đợi:** Customer sử dụng phương thức tiền mặt; việc ghi nhận kết quả thanh toán tuân theo quy trình xác nhận tiền mặt.
-
-**Bằng chứng cần ghi:** dữ liệu đầu vào đã che thông tin nhạy cảm, định danh nghiệp vụ, phản hồi/hiển thị, dữ liệu sau xử lý và sự kiện liên quan. Ghi phiên bản quyết định OI và thiết kế áp dụng cùng kết quả thực thi.
-
-## TC-31 — Kiểm chứng AC-31 — FR-31
-
-- Yêu cầu: FR-31.
-- Tiêu chí: AC-31.
-- Cơ sở: Source-derived qua SRS.
-- Ưu tiên: Theo ưu tiên release — OI-11.
-- Điều kiện quyết định: OI-17
-- Trạng thái: Chờ quyết định áp dụng / Not Run.
-
-**Tiền điều kiện và dữ liệu thử:** Trip có cước; provider sandbox/adapter và credential hợp lệ theo OI-17.
-
-**Các bước:**
-
-1. Gửi yêu cầu electronic.
-2. Quan sát request tại adapter.
-3. Đối chiếu merchantReference, số tiền và kết quả trả về.
-
-**Kết quả mong đợi:** Yêu cầu thanh toán điện tử được xử lý qua External Payment Provider; CAB System nhận được kết quả giao dịch.
-
-**Bằng chứng cần ghi:** dữ liệu đầu vào đã che thông tin nhạy cảm, định danh nghiệp vụ, phản hồi/hiển thị, dữ liệu sau xử lý và sự kiện liên quan. Ghi phiên bản quyết định OI và thiết kế áp dụng cùng kết quả thực thi.
-
-## TC-32 — Kiểm chứng AC-32 — FR-32
-
-- Yêu cầu: FR-32.
-- Tiêu chí: AC-32.
-- Cơ sở: Source-derived qua SRS.
-- Ưu tiên: Theo ưu tiên release — OI-11.
-- Điều kiện quyết định: OI-17
-- Trạng thái: Chờ quyết định áp dụng / Not Run.
-
-**Tiền điều kiện và dữ liệu thử:** Hai giao dịch thử độc lập; provider trả lần lượt thành công và thất bại.
-
-**Các bước:**
-
-1. Gửi kết quả provider.
-2. Truy vấn payment tương ứng.
-3. Đối chiếu mã giao dịch, kết quả và thông tin Customer nhận.
-
-**Kết quả mong đợi:** Với kết quả thành công hoặc thất bại do nhà cung cấp trả về, kết quả CAB System cung cấp tương ứng giao dịch đó.
-
-**Bằng chứng cần ghi:** dữ liệu đầu vào đã che thông tin nhạy cảm, định danh nghiệp vụ, phản hồi/hiển thị, dữ liệu sau xử lý và sự kiện liên quan. Ghi phiên bản quyết định OI và thiết kế áp dụng cùng kết quả thực thi.
-
-## TC-33 — Kiểm chứng AC-33 — FR-33
-
-- Yêu cầu: FR-33.
-- Tiêu chí: AC-33.
-- Cơ sở: Source-derived qua SRS.
-- Ưu tiên: Theo ưu tiên release — OI-11.
-- Điều kiện quyết định: OI-12
-- Trạng thái: Chờ quyết định áp dụng / Not Run.
-
-**Tiền điều kiện và dữ liệu thử:** Một giao dịch điện tử nhận kết quả thất bại đã xác minh.
-
-**Các bước:**
-
-1. Ghi nhận failure.
-2. Quan sát thông báo tới đúng Customer.
-3. Đối chiếu paymentId.
-
-**Kết quả mong đợi:** Khi External Payment Provider trả kết quả thất bại, Customer nhận được thông báo thanh toán thất bại.
-
-**Bằng chứng cần ghi:** dữ liệu đầu vào đã che thông tin nhạy cảm, định danh nghiệp vụ, phản hồi/hiển thị, dữ liệu sau xử lý và sự kiện liên quan. Ghi phiên bản quyết định OI và thiết kế áp dụng cùng kết quả thực thi.
-
-## TC-34 — Kiểm chứng AC-34 — FR-34
-
-- Yêu cầu: FR-34.
-- Tiêu chí: AC-34.
-- Cơ sở: Source-derived qua SRS.
-- Ưu tiên: Theo ưu tiên release — OI-11.
-- Điều kiện quyết định: OI-07, OI-17
-- Trạng thái: Chờ quyết định áp dụng / Not Run.
-
-**Tiền điều kiện và dữ liệu thử:** Giao dịch thất bại đủ điều kiện xử lý lại theo OI-07/OI-17.
-
-**Các bước:**
-
-1. Yêu cầu xử lý lại.
-2. Quan sát luồng được duyệt, định danh lần thử và kết quả.
-3. Đối chiếu với chính sách.
-
-**Kết quả mong đợi:** Với giao dịch thất bại đủ điều kiện theo chính sách, Customer có thể thực hiện luồng xử lý lại được cho phép.
-
-**Bằng chứng cần ghi:** dữ liệu đầu vào đã che thông tin nhạy cảm, định danh nghiệp vụ, phản hồi/hiển thị, dữ liệu sau xử lý và sự kiện liên quan. Ghi phiên bản quyết định OI và thiết kế áp dụng cùng kết quả thực thi.
-
-## TC-87 — Kết quả provider chưa xác định
-
-- Yêu cầu: FR-32.
-- Tiêu chí: AC-32.
-- Cơ sở: Proposal kiểm thử thiết kế.
-- Ưu tiên: Theo ưu tiên release — OI-11.
-- Điều kiện quyết định: OI-17
-- Trạng thái: Chờ quyết định áp dụng / Not Run.
-
-**Tiền điều kiện và dữ liệu thử:** Provider tiếp nhận nhưng chưa có kết quả nghiệp vụ.
-
-**Các bước:**
-
-1. Khởi tạo payment.
-2. Giữ trạng thái provider chưa biết.
-3. Đọc kết quả CAB.
-
-**Kết quả mong đợi:** Biểu diễn chưa xác định theo OI-17; không tự thành FAILED hoặc SUCCESS từ HTTP ACK.
-
-**Bằng chứng cần ghi:** dữ liệu đầu vào đã che thông tin nhạy cảm, định danh nghiệp vụ, phản hồi/hiển thị, dữ liệu sau xử lý và sự kiện liên quan. Ghi phiên bản quyết định OI và thiết kế áp dụng cùng kết quả thực thi.
-
-## TC-88 — Callback không được chứng thực
-
-- Yêu cầu: FR-32, NFR-09.
-- Tiêu chí: AC-32, AC-67.
-- Cơ sở: Proposal kiểm thử thiết kế.
-- Ưu tiên: Theo ưu tiên release — OI-11.
-- Điều kiện quyết định: OI-06, OI-16, OI-17
-- Trạng thái: Chờ quyết định áp dụng / Not Run.
-
-**Tiền điều kiện và dữ liệu thử:** Cơ chế chứng thực provider được duyệt; callback giả hợp lệ về cấu trúc.
-
-**Các bước:**
-
-1. Gửi callback sai chứng thực.
-2. Đọc payment.
-
-**Kết quả mong đợi:** Không áp dụng kết quả không được xác minh; dữ liệu đã cam kết không đổi.
-
-**Bằng chứng cần ghi:** dữ liệu đầu vào đã che thông tin nhạy cảm, định danh nghiệp vụ, phản hồi/hiển thị, dữ liệu sau xử lý và sự kiện liên quan. Ghi phiên bản quyết định OI và thiết kế áp dụng cùng kết quả thực thi.
-
-## TC-89 — Callback trùng
-
-- Yêu cầu: FR-32.
-- Tiêu chí: AC-32.
-- Cơ sở: Proposal kiểm thử thiết kế.
-- Ưu tiên: Theo ưu tiên release — OI-11.
-- Điều kiện quyết định: OI-06, OI-12, OI-17
-- Trạng thái: Chờ quyết định áp dụng / Not Run.
-
-**Tiền điều kiện và dữ liệu thử:** Hợp đồng dedup đã duyệt; một kết quả provider hợp lệ.
-
-**Các bước:**
-
-1. Gửi cùng eventId nhiều lần.
-2. Kiểm tra payment và sự kiện downstream.
-
-**Kết quả mong đợi:** Kết quả được ghi một lần về mặt tác dụng nghiệp vụ; bản trùng không tạo ghi nhận giao dịch/thông báo nghiệp vụ mới ngoài chính sách.
-
-**Bằng chứng cần ghi:** dữ liệu đầu vào đã che thông tin nhạy cảm, định danh nghiệp vụ, phản hồi/hiển thị, dữ liệu sau xử lý và sự kiện liên quan. Ghi phiên bản quyết định OI và thiết kế áp dụng cùng kết quả thực thi.
-
-## TC-90 — Callback cũ sau khi retry
-
-- Yêu cầu: FR-32, FR-34.
-- Tiêu chí: AC-32, AC-34.
-- Cơ sở: Proposal kiểm thử thiết kế.
-- Ưu tiên: Theo ưu tiên release — OI-11.
-- Điều kiện quyết định: OI-07, OI-17
-- Trạng thái: Chờ quyết định áp dụng / Not Run.
-
-**Tiền điều kiện và dữ liệu thử:** Hai attempt được phép theo OI-07/OI-17; kết quả lần đầu đến muộn.
-
-**Các bước:**
-
-1. Bắt đầu attempt sau.
-2. Đưa kết quả attempt trước.
-3. Đối chiếu lịch sử và kết quả tổng hợp.
-
-**Kết quả mong đợi:** Đối chiếu đúng attempt, không ghi đè tùy ý; xử lý nghiệp vụ theo quyết định OI-17.
-
-**Bằng chứng cần ghi:** dữ liệu đầu vào đã che thông tin nhạy cảm, định danh nghiệp vụ, phản hồi/hiển thị, dữ liệu sau xử lý và sự kiện liên quan. Ghi phiên bản quyết định OI và thiết kế áp dụng cùng kết quả thực thi.
-
-## TC-91 — Yêu cầu retry đồng thời
-
-- Yêu cầu: FR-34.
-- Tiêu chí: AC-34.
-- Cơ sở: Proposal kiểm thử thiết kế.
-- Ưu tiên: Theo ưu tiên release — OI-11.
-- Điều kiện quyết định: OI-06, OI-07, OI-17
-- Trạng thái: Chờ quyết định áp dụng / Not Run.
-
-**Tiền điều kiện và dữ liệu thử:** Retry đủ điều kiện và cơ chế key đã duyệt.
-
-**Các bước:**
-
-1. Gửi đồng thời cùng key.
-2. Kiểm tra số attempt và request provider.
-
-**Kết quả mong đợi:** Không nhân đôi attempt vì gửi lặp cùng thao tác kỹ thuật; số lần retry nghiệp vụ vẫn theo chính sách.
-
-**Bằng chứng cần ghi:** dữ liệu đầu vào đã che thông tin nhạy cảm, định danh nghiệp vụ, phản hồi/hiển thị, dữ liệu sau xử lý và sự kiện liên quan. Ghi phiên bản quyết định OI và thiết kế áp dụng cùng kết quả thực thi.
-
-## TC-92 — Chọn tiền mặt chưa phải nhận tiền
-
-- Yêu cầu: FR-30.
-- Tiêu chí: AC-30.
-- Cơ sở: Derived từ yêu cầu SRS.
-- Ưu tiên: Theo ưu tiên release — OI-11.
-- Điều kiện quyết định: OI-17
-- Trạng thái: Chờ quyết định áp dụng / Not Run.
-
-**Tiền điều kiện và dữ liệu thử:** Chủ thể/bằng chứng xác nhận tiền mặt đã duyệt.
-
-**Các bước:**
-
-1. Customer chọn cash nhưng chưa có bằng chứng nhận tiền.
-2. Đọc kết quả.
-3. Hoàn tất xác nhận theo quy trình.
-
-**Kết quả mong đợi:** Kết quả phản ánh từng giai đoạn của quy trình đã duyệt, không đánh SUCCESS chỉ do chọn phương thức.
-
-**Bằng chứng cần ghi:** dữ liệu đầu vào đã che thông tin nhạy cảm, định danh nghiệp vụ, phản hồi/hiển thị, dữ liệu sau xử lý và sự kiện liên quan. Ghi phiên bản quyết định OI và thiết kế áp dụng cùng kết quả thực thi.
+# TS08 – Fare and Payment
+
+**Phiên bản:** 2.0  
+**Baseline:** `srs.md` v2.2  
+**Trạng thái:** Sẵn sàng thực thi  
+**Mục tiêu:** Tính cước theo đơn giá/km và xử lý Payment tiền mặt/điện tử.
+
+## Điều kiện chung
+
+- Môi trường kiểm thử đã triển khai đúng build được phê duyệt.
+- Dữ liệu và tài khoản kiểm thử được cô lập; thời gian, ngưỡng và chính sách có thể cấu hình phải lấy từ cấu hình của môi trường.
+- Mỗi lần chạy phải ghi kết quả `Pass`, `Fail`, `Blocked` hoặc `Not Run`, kèm bằng chứng và mã lỗi nếu có.
+
+## Test cases
+
+| ID | Test case | Loại / Ưu tiên | Truy xuất | Tiền điều kiện | Bước kiểm thử | Kết quả mong đợi |
+| --- | --- | --- | --- | --- | --- | --- |
+| TC-08-01 | Tính Fare Bike | Positive / P0 | FR-33–FR-35; UC-15; AC-19 | Trip Bike Completed; quãng đường tính cước D km. | Kích hoạt tính Fare. | Fare = D × 5.000 VNĐ; lưu loại dịch vụ, D, đơn giá 5.000 và tổng tiền cho đúng Trip. |
+| TC-08-02 | Tính Fare Car 4-seat | Positive / P0 | FR-33–FR-35; UC-15; AC-19 | Trip Car 4-seat Completed; quãng đường D km. | Kích hoạt tính Fare. | Fare = D × 10.000 VNĐ và lưu đầy đủ dữ liệu đầu vào tính cước. |
+| TC-08-03 | Tính Fare Car 7-seat | Positive / P0 | FR-33–FR-35; UC-15; AC-19 | Trip Car 7-seat Completed; quãng đường D km. | Kích hoạt tính Fare. | Fare = D × 13.000 VNĐ và lưu đầy đủ dữ liệu đầu vào tính cước. |
+| TC-08-04 | Không tạo Fare trùng | Reliability / P0 | FR-35; NFR-12; UC-15; AC-19, AC-45 | Trip đã có Fare. | Gửi lặp sự kiện/yêu cầu Completed. | Vẫn chỉ có một Fare cho Trip; số tiền không bị cộng hoặc tính lại ngoài quy tắc. |
+| TC-08-05 | Chọn phương thức tiền mặt | Positive / P0 | FR-36; UC-15; AC-20 | Fare ở Payment Pending. | Customer chọn Cash. | Một Payment gắn đúng Fare được lưu với phương thức Cash; không tạo Fare mới. |
+| TC-08-06 | Thanh toán điện tử thành công | Positive / P0 | FR-37–FR-39; UC-15; AC-21, AC-22 | Fare ở Payment Pending; Provider khả dụng. | Chọn Electronic; gửi giao dịch; nhận callback thành công hợp lệ. | Payment thành công đúng một lần theo mã tham chiếu; Customer được thông báo; CAB không lưu dữ liệu thẻ/tài khoản nhạy cảm. |
+| TC-08-07 | Callback thanh toán trùng | Reliability / P0 | FR-38; NFR-12; UC-15; AC-21, AC-45 | Payment đã xử lý callback thành công. | Gửi lại cùng callback và mã tham chiếu. | Callback được nhận diện là lặp; trạng thái và số tiền không bị xử lý lần hai. |
+| TC-08-08 | Thực hiện lại Payment điện tử thất bại | Exception / P0 | FR-39, FR-40; UC-15; AC-22 | Payment điện tử ở Failed. | Customer yêu cầu thực hiện lại. | Payment được đưa vào luồng điện tử mới theo cùng Fare; Fare không được tạo lại; kết quả mới được thông báo. |
+| TC-08-09 | Chuyển Payment thất bại sang tiền mặt | Exception / P0 | FR-39, FR-41; UC-15; AC-22 | Payment điện tử ở Failed. | Customer đổi phương thức sang Cash. | Phương thức và trạng thái Payment được cập nhật hợp lệ; Fare giữ nguyên; Customer thấy phương thức mới. |
+| TC-08-10 | Xác nhận thu tiền mặt và hỗ trợ ngoại lệ | Positive + Authorization / P0 | FR-42, FR-60; UC-15; AC-23 | Payment Cash; Driver thuộc Trip hoặc Staff có quyền hỗ trợ. | Driver xác nhận đã thu; kiểm tra thêm thao tác xử lý ngoại lệ của Staff kèm lý do. | Payment chuyển đúng trạng thái; thao tác Staff có audit; người không có quyền bị từ chối. |
+
+## Ghi nhận thực thi
+
+| ID | Build | Môi trường | Kết quả | Bằng chứng / Defect | Người chạy | Ngày chạy |
+| --- | --- | --- | --- | --- | --- | --- |
+| TC-08-01 |  |  | Not Run |  |  |  |
+| TC-08-02 |  |  | Not Run |  |  |  |
+| TC-08-03 |  |  | Not Run |  |  |  |
+| TC-08-04 |  |  | Not Run |  |  |  |
+| TC-08-05 |  |  | Not Run |  |  |  |
+| TC-08-06 |  |  | Not Run |  |  |  |
+| TC-08-07 |  |  | Not Run |  |  |  |
+| TC-08-08 |  |  | Not Run |  |  |  |
+| TC-08-09 |  |  | Not Run |  |  |  |
+| TC-08-10 |  |  | Not Run |  |  |  |

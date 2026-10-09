@@ -1,85 +1,30 @@
-# TS03 — Create Booking
+# TS03 – Create Booking
 
-Baseline: [SRS v1.4](../srs.md). Quy ước và trạng thái: [CAB_Test_Cases.md](CAB_Test_Cases.md).
+**Phiên bản:** 2.0  
+**Baseline:** `srs.md` v2.2  
+**Trạng thái:** Sẵn sàng thực thi  
+**Mục tiêu:** Tạo Booking và kiểm tra dữ liệu đầu vào.
 
-## TC-11 — Kiểm chứng AC-11 — FR-11
+## Điều kiện chung
 
-- Yêu cầu: FR-11.
-- Tiêu chí: AC-11.
-- Cơ sở: Source-derived qua SRS.
-- Ưu tiên: Theo ưu tiên release — OI-11.
-- Điều kiện quyết định: OI-15, OI-18
-- Trạng thái: Chờ quyết định áp dụng / Not Run.
+- Môi trường kiểm thử đã triển khai đúng build được phê duyệt.
+- Dữ liệu và tài khoản kiểm thử được cô lập; thời gian, ngưỡng và chính sách có thể cấu hình phải lấy từ cấu hình của môi trường.
+- Mỗi lần chạy phải ghi kết quả `Pass`, `Fail`, `Blocked` hoặc `Not Run`, kèm bằng chứng và mã lỗi nếu có.
 
-**Tiền điều kiện và dữ liệu thử:** Customer đã xác thực; hai địa điểm hợp lệ và loại xe có trong danh mục.
+## Test cases
 
-**Các bước:**
+| ID | Test case | Loại / Ưu tiên | Truy xuất | Tiền điều kiện | Bước kiểm thử | Kết quả mong đợi |
+| --- | --- | --- | --- | --- | --- | --- |
+| TC-03-01 | Tạo Booking Bike | Positive / P0 | FR-10, FR-11; UC-10; AC-06 | Customer đã đăng nhập; điểm đón và điểm đến hợp lệ. | Chọn Bike và xác nhận Booking. | Một Booking có mã duy nhất được tạo ở Searching; loại dịch vụ và địa điểm được lưu; Customer nhận xác nhận tiếp nhận. |
+| TC-03-02 | Tạo Booking Car 4-seat và Car 7-seat | Positive / P0 | FR-10, FR-11; UC-10; AC-06 | Customer đã đăng nhập. | Tạo lần lượt Booking với hai loại dịch vụ ô tô. | Mỗi Booking được tạo duy nhất ở Searching và giữ đúng loại dịch vụ đã chọn. |
+| TC-03-03 | Từ chối dữ liệu Booking thiếu hoặc sai | Negative / P0 | FR-10, FR-11; UC-10; AC-06 | Customer đã đăng nhập. | Bỏ trống điểm đón, điểm đến hoặc gửi loại dịch vụ không hỗ trợ. | Yêu cầu bị từ chối với lỗi trường dữ liệu; không tạo Booking dở dang. |
+| TC-03-04 | Gửi lặp yêu cầu tạo Booking | Reliability / P0 | FR-11; NFR-12; AC-06, AC-45 | Customer đã đăng nhập; dùng cùng Idempotency-Key. | Gửi lại cùng yêu cầu tạo Booking do mất phản hồi. | Chỉ một Booking được tạo; các phản hồi trỏ tới cùng bookingId. |
 
-1. Nhập điểm đón, điểm đến và loại xe.
-2. Gửi Booking.
-3. Kiểm tra dữ liệu gắn đúng bookingId.
+## Ghi nhận thực thi
 
-**Kết quả mong đợi:** Customer nhập hai địa điểm và chọn một loại xe trong danh mục; thông tin lựa chọn gắn với Booking gửi đi.
-
-**Bằng chứng cần ghi:** dữ liệu đầu vào đã che thông tin nhạy cảm, định danh nghiệp vụ, phản hồi/hiển thị, dữ liệu sau xử lý và sự kiện liên quan. Ghi phiên bản quyết định OI và thiết kế áp dụng cùng kết quả thực thi.
-
-## TC-12 — Kiểm chứng AC-12 — FR-12
-
-- Yêu cầu: FR-12.
-- Tiêu chí: AC-12.
-- Cơ sở: Source-derived qua SRS.
-- Ưu tiên: Theo ưu tiên release — OI-11.
-- Điều kiện quyết định: OI-14, OI-18
-- Trạng thái: Chờ quyết định áp dụng / Not Run.
-
-**Tiền điều kiện và dữ liệu thử:** Customer đã xác thực; Booking hợp lệ.
-
-**Các bước:**
-
-1. Gửi Booking.
-2. Ghi nhận bookingId.
-3. Quan sát việc chuyển yêu cầu tới tiến trình tìm Driver.
-
-**Kết quả mong đợi:** Khi Customer gửi thông tin Booking đáp ứng quy tắc, hệ thống tiếp nhận Booking để tìm Driver.
-
-**Bằng chứng cần ghi:** dữ liệu đầu vào đã che thông tin nhạy cảm, định danh nghiệp vụ, phản hồi/hiển thị, dữ liệu sau xử lý và sự kiện liên quan. Ghi phiên bản quyết định OI và thiết kế áp dụng cùng kết quả thực thi.
-
-## TC-81 — Thiếu thông tin Booking bắt buộc
-
-- Yêu cầu: FR-11, FR-12.
-- Tiêu chí: AC-11, AC-12.
-- Cơ sở: Derived từ yêu cầu SRS.
-- Ưu tiên: Theo ưu tiên release — OI-11.
-- Điều kiện quyết định: OI-14, OI-15, OI-18
-- Trạng thái: Chờ quyết định áp dụng / Not Run.
-
-**Tiền điều kiện và dữ liệu thử:** Ba request lần lượt thiếu điểm đón, điểm đến, loại xe.
-
-**Các bước:**
-
-1. Gửi từng request.
-2. Kiểm tra kết quả tiếp nhận và Booking được lưu.
-
-**Kết quả mong đợi:** Không coi request thiếu thông tin là Booking hợp lệ; thông báo/validation theo OI-18.
-
-**Bằng chứng cần ghi:** dữ liệu đầu vào đã che thông tin nhạy cảm, định danh nghiệp vụ, phản hồi/hiển thị, dữ liệu sau xử lý và sự kiện liên quan. Ghi phiên bản quyết định OI và thiết kế áp dụng cùng kết quả thực thi.
-
-## TC-82 — Gửi lại cùng request Booking
-
-- Yêu cầu: FR-12.
-- Tiêu chí: AC-12.
-- Cơ sở: Proposal kiểm thử thiết kế.
-- Ưu tiên: Theo ưu tiên release — OI-11.
-- Điều kiện quyết định: OI-06, OI-14, OI-18
-- Trạng thái: Chờ quyết định áp dụng / Not Run.
-
-**Tiền điều kiện và dữ liệu thử:** Cơ chế idempotency trong common.md đã duyệt.
-
-**Các bước:**
-
-1. Gửi cùng key và payload hai lần.
-2. Đối chiếu bookingId và sự kiện.
-
-**Kết quả mong đợi:** Không tạo hai Booking do gửi lặp kỹ thuật; phản hồi liên kết cùng kết quả.
-
-**Bằng chứng cần ghi:** dữ liệu đầu vào đã che thông tin nhạy cảm, định danh nghiệp vụ, phản hồi/hiển thị, dữ liệu sau xử lý và sự kiện liên quan. Ghi phiên bản quyết định OI và thiết kế áp dụng cùng kết quả thực thi.
+| ID | Build | Môi trường | Kết quả | Bằng chứng / Defect | Người chạy | Ngày chạy |
+| --- | --- | --- | --- | --- | --- | --- |
+| TC-03-01 |  |  | Not Run |  |  |  |
+| TC-03-02 |  |  | Not Run |  |  |  |
+| TC-03-03 |  |  | Not Run |  |  |  |
+| TC-03-04 |  |  | Not Run |  |  |  |

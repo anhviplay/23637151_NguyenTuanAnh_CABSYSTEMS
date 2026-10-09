@@ -1,84 +1,32 @@
-# TS10 — Trip History Rating
+# TS10 – Trip History and Rating
 
-Baseline: [SRS v1.4](../srs.md). Quy ước và trạng thái: [CAB_Test_Cases.md](CAB_Test_Cases.md).
+**Phiên bản:** 2.0  
+**Baseline:** `srs.md` v2.2  
+**Trạng thái:** Sẵn sàng thực thi  
+**Mục tiêu:** Lịch sử Trip và đánh giá Driver sau chuyến.
 
-## TC-41 — Kiểm chứng AC-41 — FR-41
+## Điều kiện chung
 
-- Yêu cầu: FR-41.
-- Tiêu chí: AC-41.
-- Cơ sở: Source-derived qua SRS.
-- Ưu tiên: Theo ưu tiên release — OI-11.
-- Điều kiện quyết định: OI-06
-- Trạng thái: Chờ quyết định áp dụng / Not Run.
+- Môi trường kiểm thử đã triển khai đúng build được phê duyệt.
+- Dữ liệu và tài khoản kiểm thử được cô lập; thời gian, ngưỡng và chính sách có thể cấu hình phải lấy từ cấu hình của môi trường.
+- Mỗi lần chạy phải ghi kết quả `Pass`, `Fail`, `Blocked` hoặc `Not Run`, kèm bằng chứng và mã lỗi nếu có.
 
-**Tiền điều kiện và dữ liệu thử:** Customer có Trip còn trong thời hạn lưu; bộ lịch sử chuẩn.
+## Test cases
 
-**Các bước:**
+| ID | Test case | Loại / Ưu tiên | Truy xuất | Tiền điều kiện | Bước kiểm thử | Kết quả mong đợi |
+| --- | --- | --- | --- | --- | --- | --- |
+| TC-10-01 | Xem lịch sử Trip của Customer | Positive / P0 | FR-46; UC-16; AC-26 | Customer có nhiều Trip ở các trạng thái. | Mở danh sách và chi tiết Trip. | Chỉ Trip của Customer được hiển thị; chi tiết khớp Booking, Fare và Payment đã ghi nhận. |
+| TC-10-02 | Chặn xem Trip của Customer khác | Authorization / P0 | FR-46; UC-16; AC-26 | Customer A biết tripId của Customer B. | A yêu cầu chi tiết Trip của B. | Server từ chối và không trả dữ liệu được bảo vệ. |
+| TC-10-03 | Gửi Rating hợp lệ | Positive / P1 | FR-47, FR-48; UC-16; AC-27 | Trip của Customer đã Completed và chưa có Rating. | Gửi lần lượt giá trị nguyên trong miền 1–5 trên bộ dữ liệu kiểm thử. | Rating hợp lệ được lưu cho đúng Trip/Driver; điểm tổng hợp Driver được cập nhật từ các Rating hợp lệ. |
+| TC-10-04 | Từ chối Rating ngoài miền | Negative / P1 | FR-47; UC-16; AC-27 | Trip Completed chưa có Rating. | Gửi 0, 6 và giá trị không phải số nguyên. | Mỗi yêu cầu bị từ chối; không tạo Rating và không đổi điểm tổng hợp. |
+| TC-10-05 | Từ chối Rating trùng hoặc sai Trip | Negative / P0 | FR-47; UC-16; AC-27 | Trip đã có Rating hoặc chưa Completed hoặc không thuộc Customer. | Gửi Rating. | Server từ chối; mỗi Trip chỉ có tối đa một Rating của Customer sở hữu. |
 
-1. Đọc lịch sử.
-2. Đối chiếu các Trip, danh tính Customer và dữ liệu liên quan.
+## Ghi nhận thực thi
 
-**Kết quả mong đợi:** Customer xem được lịch sử Trip tương ứng còn trong thời hạn lưu trữ.
-
-**Bằng chứng cần ghi:** dữ liệu đầu vào đã che thông tin nhạy cảm, định danh nghiệp vụ, phản hồi/hiển thị, dữ liệu sau xử lý và sự kiện liên quan. Ghi phiên bản quyết định OI và thiết kế áp dụng cùng kết quả thực thi.
-
-## TC-42 — Kiểm chứng AC-42 — FR-42
-
-- Yêu cầu: FR-42.
-- Tiêu chí: AC-42.
-- Cơ sở: Source-derived qua SRS.
-- Ưu tiên: Theo ưu tiên release — OI-11.
-- Điều kiện quyết định: OI-10
-- Trạng thái: Chờ quyết định áp dụng / Not Run.
-
-**Tiền điều kiện và dữ liệu thử:** Hai Trip của Customer: một hoàn thành, một chưa hoàn thành; dữ liệu rating hợp lệ OI-10.
-
-**Các bước:**
-
-1. Đánh giá Trip hoàn thành và kiểm tra lưu.
-2. Thử đánh giá Trip chưa hoàn thành.
-3. Kiểm tra không được ghi nhận trái điều kiện.
-
-**Kết quả mong đợi:** Customer thực hiện đánh giá đối với Trip hoàn thành và đánh giá được ghi nhận; đánh giá trước khi hoàn thành không đáp ứng điều kiện nghiệp vụ.
-
-**Bằng chứng cần ghi:** dữ liệu đầu vào đã che thông tin nhạy cảm, định danh nghiệp vụ, phản hồi/hiển thị, dữ liệu sau xử lý và sự kiện liên quan. Ghi phiên bản quyết định OI và thiết kế áp dụng cùng kết quả thực thi.
-
-## TC-94 — Rating khi Trip hoàn thành nhưng thanh toán lỗi
-
-- Yêu cầu: FR-42.
-- Tiêu chí: AC-42.
-- Cơ sở: Derived từ yêu cầu SRS.
-- Ưu tiên: Theo ưu tiên release — OI-11.
-- Điều kiện quyết định: OI-10
-- Trạng thái: Chờ quyết định áp dụng / Not Run.
-
-**Tiền điều kiện và dữ liệu thử:** Trip hoàn thành; giao dịch thất bại; dữ liệu rating hợp lệ.
-
-**Các bước:**
-
-1. Customer gửi rating.
-2. Kiểm tra kết quả và tiền điều kiện áp dụng.
-
-**Kết quả mong đợi:** Không tự áp thanh toán thành công làm điều kiện đánh giá; các quy tắc rating khác theo OI-10.
-
-**Bằng chứng cần ghi:** dữ liệu đầu vào đã che thông tin nhạy cảm, định danh nghiệp vụ, phản hồi/hiển thị, dữ liệu sau xử lý và sự kiện liên quan. Ghi phiên bản quyết định OI và thiết kế áp dụng cùng kết quả thực thi.
-
-## TC-95 — Đánh giá lặp hoặc chỉnh sửa
-
-- Yêu cầu: FR-42.
-- Tiêu chí: AC-42.
-- Cơ sở: Derived từ yêu cầu SRS.
-- Ưu tiên: Theo ưu tiên release — OI-11.
-- Điều kiện quyết định: OI-10
-- Trạng thái: Chờ quyết định áp dụng / Not Run.
-
-**Tiền điều kiện và dữ liệu thử:** Quy tắc số lần/chỉnh sửa theo OI-10.
-
-**Các bước:**
-
-1. Gửi đánh giá tiếp theo hoặc yêu cầu sửa theo giao diện đã duyệt.
-2. Đối chiếu dữ liệu.
-
-**Kết quả mong đợi:** Kết quả theo chính sách được duyệt; không mặc định cấm đánh giá lần hai.
-
-**Bằng chứng cần ghi:** dữ liệu đầu vào đã che thông tin nhạy cảm, định danh nghiệp vụ, phản hồi/hiển thị, dữ liệu sau xử lý và sự kiện liên quan. Ghi phiên bản quyết định OI và thiết kế áp dụng cùng kết quả thực thi.
+| ID | Build | Môi trường | Kết quả | Bằng chứng / Defect | Người chạy | Ngày chạy |
+| --- | --- | --- | --- | --- | --- | --- |
+| TC-10-01 |  |  | Not Run |  |  |  |
+| TC-10-02 |  |  | Not Run |  |  |  |
+| TC-10-03 |  |  | Not Run |  |  |  |
+| TC-10-04 |  |  | Not Run |  |  |  |
+| TC-10-05 |  |  | Not Run |  |  |  |

@@ -1,143 +1,36 @@
-# TS17 — External Interfaces Release
+# TS17 – External Interfaces
 
-Baseline: [SRS v1.4](../srs.md). Quy ước và trạng thái: [CAB_Test_Cases.md](CAB_Test_Cases.md).
+**Phiên bản:** 2.0  
+**Baseline:** `srs.md` v2.2  
+**Trạng thái:** Sẵn sàng thực thi  
+**Mục tiêu:** Kiểm thử EIR-01–EIR-06 trên luồng thành công, lỗi và bảo vệ dữ liệu.
 
-## TC-69 — Kiểm chứng AC-69 — EIR-01
+## Điều kiện chung
 
-- Yêu cầu: EIR-01.
-- Tiêu chí: AC-69.
-- Cơ sở: Source-derived qua SRS.
-- Ưu tiên: Theo ưu tiên release — OI-11.
-- Điều kiện quyết định: OI-21
-- Trạng thái: Chờ quyết định áp dụng / Not Run.
+- Môi trường kiểm thử đã triển khai đúng build được phê duyệt.
+- Dữ liệu và tài khoản kiểm thử được cô lập; thời gian, ngưỡng và chính sách có thể cấu hình phải lấy từ cấu hình của môi trường.
+- Mỗi lần chạy phải ghi kết quả `Pass`, `Fail`, `Blocked` hoặc `Not Run`, kèm bằng chứng và mã lỗi nếu có.
 
-**Tiền điều kiện và dữ liệu thử:** Nền tảng Customer được duyệt OI-21; dữ liệu luồng tài khoản/Booking/Trip/thanh toán/đánh giá.
+## Test cases
 
-**Các bước:**
+| ID | Test case | Loại / Ưu tiên | Truy xuất | Tiền điều kiện | Bước kiểm thử | Kết quả mong đợi |
+| --- | --- | --- | --- | --- | --- | --- |
+| TC-17-01 | Customer Interface | Interface / P0 | EIR-01; AC-46 | Bản build Customer trên thiết bị di động được hỗ trợ. | Chạy smoke và negative cho tài khoản, Booking, theo dõi, Payment, lịch sử, Rating. | Các luồng FR được liên kết hoạt động; lỗi rõ ràng; dữ liệu Customer khác không bị lộ. |
+| TC-17-02 | Driver Interface | Interface / P0 | EIR-02; AC-47 | Bản build Driver trên thiết bị di động được hỗ trợ. | Chạy tài khoản, hồ sơ, trạng thái làm việc, vị trí, Assignment, Trip và Cash confirmation. | Các luồng FR được liên kết hoạt động; cập nhật sai quyền/trạng thái bị từ chối. |
+| TC-17-03 | Operations Interface | Interface / P0 | EIR-03; AC-48 | Giao diện web và các tài khoản Staff có quyền khác nhau. | Chạy tạo/duyệt Driver, hỗ trợ, báo cáo, giá, audit và kiểm tra trái quyền. | Chức năng hiển thị và thực thi theo quyền; server vẫn chặn khi gọi trực tiếp trái quyền. |
+| TC-17-04 | External Payment Provider | Integration / P0 | EIR-04; AC-49 | Sandbox Provider và secret kiểm thử sẵn sàng. | Kiểm thử gửi yêu cầu, callback thành công/thất bại/trùng, chữ ký sai và timeout. | Trao đổi qua kết nối bảo mật; mã tham chiếu duy nhất; callback hợp lệ idempotent; callback giả bị từ chối; không lộ dữ liệu nhạy cảm. |
+| TC-17-05 | Location and Routing | Integration / P0 | EIR-05; AC-50 | Dịch vụ bản đồ/định tuyến kiểm thử sẵn sàng. | Gửi vị trí; tìm Driver; tính ETA, khoảng cách và quãng đường Trip; giả lập lỗi dịch vụ. | Dữ liệu hợp lệ được dùng đúng; vị trí cũ bị loại; lỗi được xử lý rõ mà không tạo kết quả giả. |
+| TC-17-06 | Notification Channel | Integration / P1 | EIR-06; AC-51 | In-app và push provider kiểm thử sẵn sàng. | Gửi các mốc thông báo; kiểm thử thành công, lỗi tạm thời và callback trùng. | Đúng người nhận/nội dung; kết quả được ghi; xử lý lại theo cấu hình; giao dịch nguồn không bị đảo. |
+| TC-17-07 | Hợp đồng giao tiếp và phiên bản | Contract / P1 | NFR-06, NFR-07; AC-39, AC-40 | Có schema/hợp đồng API và event của bản phát hành. | Chạy contract test producer/consumer và regression khi thay implementation tương thích. | Hợp đồng hiện hành tương thích; thay thành phần tương thích không làm hỏng luồng nghiệp vụ liên quan. |
 
-1. Chạy các luồng Customer đã chọn trên từng nền tảng.
-2. Đối chiếu input/output với FR và AC tương ứng.
+## Ghi nhận thực thi
 
-**Kết quả mong đợi:** Kiểm tra các luồng Customer trên nền tảng mục tiêu; dữ liệu vào/ra đáp ứng các FR tương ứng.
-
-**Bằng chứng cần ghi:** dữ liệu đầu vào đã che thông tin nhạy cảm, định danh nghiệp vụ, phản hồi/hiển thị, dữ liệu sau xử lý và sự kiện liên quan. Ghi phiên bản quyết định OI và thiết kế áp dụng cùng kết quả thực thi.
-
-## TC-70 — Kiểm chứng AC-70 — EIR-02
-
-- Yêu cầu: EIR-02.
-- Tiêu chí: AC-70.
-- Cơ sở: Source-derived qua SRS.
-- Ưu tiên: Theo ưu tiên release — OI-11.
-- Điều kiện quyết định: OI-18, OI-21
-- Trạng thái: Chờ quyết định áp dụng / Not Run.
-
-**Tiền điều kiện và dữ liệu thử:** Nền tảng Driver OI-21; tài khoản, phương tiện và dữ liệu OI-18.
-
-**Các bước:**
-
-1. Chạy đăng ký/xác thực/hồ sơ/phương tiện/readiness/assignment/mốc/vị trí.
-2. Đối chiếu các FR tương ứng.
-
-**Kết quả mong đợi:** Kiểm tra các luồng Driver trên nền tảng mục tiêu; các thao tác và thông tin hiển thị đáp ứng các FR tương ứng.
-
-**Bằng chứng cần ghi:** dữ liệu đầu vào đã che thông tin nhạy cảm, định danh nghiệp vụ, phản hồi/hiển thị, dữ liệu sau xử lý và sự kiện liên quan. Ghi phiên bản quyết định OI và thiết kế áp dụng cùng kết quả thực thi.
-
-## TC-71 — Kiểm chứng AC-71 — EIR-03
-
-- Yêu cầu: EIR-03.
-- Tiêu chí: AC-71.
-- Cơ sở: Source-derived qua SRS.
-- Ưu tiên: Theo ưu tiên release — OI-11.
-- Điều kiện quyết định: OI-08, OI-20, OI-21
-- Trạng thái: Chờ quyết định áp dụng / Not Run.
-
-**Tiền điều kiện và dữ liệu thử:** Giao diện Operations theo OI-21; danh mục thao tác và ma trận quyền OI-20/OI-08.
-
-**Các bước:**
-
-1. Thực hiện từng thao tác trên giao diện với người có/thiếu quyền.
-2. Đối chiếu dữ liệu và kiểm soát truy cập.
-
-**Kết quả mong đợi:** Trên giao diện quản trị, đối chiếu các thao tác với ma trận quyền; không cung cấp khả năng thực hiện thao tác trái quyền.
-
-**Bằng chứng cần ghi:** dữ liệu đầu vào đã che thông tin nhạy cảm, định danh nghiệp vụ, phản hồi/hiển thị, dữ liệu sau xử lý và sự kiện liên quan. Ghi phiên bản quyết định OI và thiết kế áp dụng cùng kết quả thực thi.
-
-## TC-72 — Kiểm chứng AC-72 — EIR-04
-
-- Yêu cầu: EIR-04.
-- Tiêu chí: AC-72.
-- Cơ sở: Source-derived qua SRS.
-- Ưu tiên: Theo ưu tiên release — OI-11.
-- Điều kiện quyết định: OI-07, OI-17
-- Trạng thái: Chờ quyết định áp dụng / Not Run.
-
-**Tiền điều kiện và dữ liệu thử:** Provider sandbox; mapping và chính sách OI-07/OI-17.
-
-**Các bước:**
-
-1. Chạy thành công, thất bại và xử lý lại hợp lệ.
-2. Quan sát cả chiều gửi yêu cầu, nhận kết quả và kết quả cho Customer.
-
-**Kết quả mong đợi:** Kiểm thử tích hợp với môi trường thử của nhà cung cấp đã chọn, bao gồm thành công, thất bại và xử lý lại theo chính sách.
-
-**Bằng chứng cần ghi:** dữ liệu đầu vào đã che thông tin nhạy cảm, định danh nghiệp vụ, phản hồi/hiển thị, dữ liệu sau xử lý và sự kiện liên quan. Ghi phiên bản quyết định OI và thiết kế áp dụng cùng kết quả thực thi.
-
-## TC-73 — Kiểm chứng AC-73 — EIR-05
-
-- Yêu cầu: EIR-05.
-- Tiêu chí: AC-73.
-- Cơ sở: Source-derived qua SRS.
-- Ưu tiên: Theo ưu tiên release — OI-11.
-- Điều kiện quyết định: OI-05, OI-19
-- Trạng thái: Chờ quyết định áp dụng / Not Run.
-
-**Tiền điều kiện và dữ liệu thử:** Nguồn vị trí, cơ chế tiếp nhận/ETA OI-19; tình huống mạng OI-05.
-
-**Các bước:**
-
-1. Cấp dữ liệu vị trí hợp lệ.
-2. Xác minh dữ liệu được tiếp nhận và sử dụng trong tìm Driver/ETA theo chính sách mạng.
-
-**Kết quả mong đợi:** Cấp dữ liệu vị trí hợp lệ qua cơ chế tiếp nhận; xác minh dữ liệu được sử dụng cho tìm Driver và ước tính thời gian đến.
-
-**Bằng chứng cần ghi:** dữ liệu đầu vào đã che thông tin nhạy cảm, định danh nghiệp vụ, phản hồi/hiển thị, dữ liệu sau xử lý và sự kiện liên quan. Ghi phiên bản quyết định OI và thiết kế áp dụng cùng kết quả thực thi.
-
-## TC-74 — Kiểm chứng AC-74 — EIR-06
-
-- Yêu cầu: EIR-06.
-- Tiêu chí: AC-74.
-- Cơ sở: Source-derived qua SRS.
-- Ưu tiên: Theo ưu tiên release — OI-11.
-- Điều kiện quyết định: OI-12
-- Trạng thái: Chờ quyết định áp dụng / Not Run.
-
-**Tiền điều kiện và dữ liệu thử:** Danh mục sự kiện, người nhận, nội dung và kênh theo OI-12.
-
-**Các bước:**
-
-1. Phát lần lượt các mốc FR-15, FR-33, FR-35–FR-40.
-2. Đối chiếu từng thông báo với bộ kỳ vọng.
-
-**Kết quả mong đợi:** Phát sinh từng mốc thông báo và kiểm tra đúng người nhận, nội dung nghiệp vụ và kênh.
-
-**Bằng chứng cần ghi:** dữ liệu đầu vào đã che thông tin nhạy cảm, định danh nghiệp vụ, phản hồi/hiển thị, dữ liệu sau xử lý và sự kiện liên quan. Ghi phiên bản quyết định OI và thiết kế áp dụng cùng kết quả thực thi.
-
-## TC-75 — Kiểm chứng AC-75 — CON-01
-
-- Yêu cầu: CON-01.
-- Tiêu chí: AC-75.
-- Cơ sở: Source-derived qua SRS.
-- Ưu tiên: Theo ưu tiên release — OI-11.
-- Điều kiện quyết định: OI-11
-- Trạng thái: Chờ quyết định áp dụng / Not Run.
-
-**Tiền điều kiện và dữ liệu thử:** Phạm vi release, mốc bắt đầu và thủ tục chấp nhận đã duyệt OI-11.
-
-**Các bước:**
-
-1. Đối chiếu bằng chứng hoàn tất xây dựng/triển khai với mốc bắt đầu.
-2. Kiểm tra thời gian không vượt 7 tuần và đúng phạm vi release.
-
-**Kết quả mong đợi:** Ngày hoàn tất xây dựng và triển khai phạm vi release không vượt quá 7 tuần tính từ mốc bắt đầu.
-
-**Bằng chứng cần ghi:** dữ liệu đầu vào đã che thông tin nhạy cảm, định danh nghiệp vụ, phản hồi/hiển thị, dữ liệu sau xử lý và sự kiện liên quan. Ghi phiên bản quyết định OI và thiết kế áp dụng cùng kết quả thực thi.
+| ID | Build | Môi trường | Kết quả | Bằng chứng / Defect | Người chạy | Ngày chạy |
+| --- | --- | --- | --- | --- | --- | --- |
+| TC-17-01 |  |  | Not Run |  |  |  |
+| TC-17-02 |  |  | Not Run |  |  |  |
+| TC-17-03 |  |  | Not Run |  |  |  |
+| TC-17-04 |  |  | Not Run |  |  |  |
+| TC-17-05 |  |  | Not Run |  |  |  |
+| TC-17-06 |  |  | Not Run |  |  |  |
+| TC-17-07 |  |  | Not Run |  |  |  |

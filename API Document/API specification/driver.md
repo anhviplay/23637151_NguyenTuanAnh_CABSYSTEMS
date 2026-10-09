@@ -1,171 +1,84 @@
 # API Driver
 
-Phiên bản: 1.0 — 27/09/2026. Baseline: [SRS v1.4](../../srs.md). Trạng thái: Dự thảo để review, chưa phê duyệt.
+Trừ đăng ký, đăng nhập và khôi phục mật khẩu, actor phải có vai trò `DRIVER`. Driver chỉ được thao tác hồ sơ, phương tiện, Assignment và Trip thuộc mình.
 
-Yêu cầu nghiệp vụ lấy từ SRS; endpoint, schema, service, cơ chế kỹ thuật và mã trạng thái trong tài liệu này là **Proposal**. Chúng không thay thế quyết định của các Open Issue. Initial Release Scope: TBD — OI-11.
+## DRV-01 Đăng ký Driver
 
-Quy ước/schema/lỗi dùng chung: [common.md](common.md). Bảng truy vết đầy đủ: [traceability.md](../../traceability.md).
+- **Operation:** `POST /api/v1/auth/driver/registrations`
+- **Truy xuất:** FR-05; UC-05; AC-03
+- **Body:** thông tin tài khoản, hồ sơ Driver, giấy phép và thông tin phương tiện bắt buộc
+- **Kết quả:** `201` với `driverId`, trạng thái `PENDING_VERIFICATION`
 
-## API-13 — Driver tự đăng ký
+## DRV-02 Đăng nhập và khôi phục mật khẩu
 
-**Operation đề xuất:** `POST /drivers/registrations`.
+- **Operations:** `POST /api/v1/auth/sessions`, `POST /api/v1/auth/password-recovery/otp`, `POST /api/v1/auth/password-recovery/confirm`
+- **Truy xuất:** FR-02, FR-03; UC-02, UC-03; AC-01
+- **Quy tắc:** `actorType=DRIVER`; response và lỗi theo [common.md](common.md)
 
-**Truy vết:** FR-04; UC-03; AC-04.
+## DRV-03 Cập nhật hồ sơ Driver
 
-**Điều kiện quyết định:** OI-18
+- **Operation:** `PATCH /api/v1/drivers/me/profile`
+- **Truy xuất:** FR-08; UC-07; AC-05
+- **Body:** các trường hồ sơ được phép cập nhật và `version`
+- **Kết quả:** `200`; trường cần xác minh có thể đưa hồ sơ về `PENDING_VERIFICATION`
 
-**Đầu vào:** RegistrationInput theo OI-18.
+## DRV-04 Cập nhật phương tiện
 
-**Kết quả:** 201; AccountReceipt.
+- **Operation:** `PUT /api/v1/drivers/me/vehicles/{vehicleId}`
+- **Truy xuất:** FR-08; UC-08; AC-05
+- **Body:** biển số, loại phương tiện, service type và dữ liệu xác minh cần thiết
+- **Kết quả:** `200` với Vehicle và version mới
 
-**Hành vi:** Không yêu cầu session có sẵn; tách khỏi endpoint tạo tài khoản của Operations Staff. Không buộc tạo phương tiện trong cùng giao dịch nếu chưa chốt.
+## DRV-05 Cập nhật trạng thái làm việc
 
-**Quyền:** Không yêu cầu session có sẵn; dữ liệu đăng ký/xác thực theo OI-18.
+- **Operation:** `PATCH /api/v1/drivers/me/availability`
+- **Truy xuất:** FR-09; UC-09; AC-05
+- **Body:** `availability` nhận `OFFLINE` hoặc `AVAILABLE`, `expectedVersion`
+- **Lỗi chính:** `ACTIVE_TRIP_EXISTS`, `DRIVER_NOT_ACTIVE`, `VERSION_CONFLICT`
 
-**Lỗi:** Theo common.md §4. Dữ liệu lỗi không ghi một phần; xung đột không tự ghi đè trạng thái.
+## DRV-06 Gửi vị trí
 
-**Kiểm chứng:** Đối chiếu AC nêu trên, kiểm tra body theo type tương ứng trong common.md và dữ liệu sau xử lý. Các quyết định còn mở phải có bản phê duyệt trước khi dùng hành vi phụ thuộc chúng làm kết quả nghiệm thu.
+- **Operation:** `POST /api/v1/drivers/me/locations`
+- **Truy xuất:** FR-23, FR-24; UC-13; AC-14
+- **Header:** `Idempotency-Key`
+- **Body:** `latitude`, `longitude`, `observedAt`, `sequence`
+- **Kết quả:** `201` với `locationId`, `receivedAt`, `acceptedForDispatch`
+- **Quy tắc:** CAB System lưu vị trí; việc dùng cho Nearby/ETA phụ thuộc ngưỡng độ mới trong cấu hình
 
-## API-14 — Xác thực Driver
+## DRV-07 Xem Assignment hiện hành
 
-**Operation đề xuất:** `POST /sessions/driver`.
+- **Operation:** `GET /api/v1/drivers/me/assignments/current`
+- **Truy xuất:** FR-14, FR-44; UC-11; AC-09, AC-24
+- **Kết quả:** Assignment đang `OFFERED`, thông tin điểm đón, loại dịch vụ và hạn phản hồi theo cấu hình
 
-**Truy vết:** FR-56; UC-02; AC-56.
+## DRV-08 Phản hồi Assignment
 
-**Điều kiện quyết định:** OI-08, OI-18
+- **Operation:** `POST /api/v1/assignments/{assignmentId}/responses`
+- **Truy xuất:** FR-15, FR-16, FR-17; UC-11; AC-09, AC-10
+- **Header:** `Idempotency-Key`
+- **Body:** `decision` nhận `ACCEPTED` hoặc `REJECTED`, `reasonCode` khi từ chối
+- **Kết quả:** `200` với kết quả được công nhận; chỉ phản hồi chấp nhận hợp lệ đầu tiên tạo Trip
 
-**Đầu vào:** AuthenticationInput theo OI-18.
+## DRV-09 Cập nhật trạng thái Trip
 
-**Kết quả:** 200; SessionReceipt.
+- **Operation:** `POST /api/v1/trips/{tripId}/status-transitions`
+- **Truy xuất:** FR-25, FR-26, FR-27, FR-28; UC-13; AC-15
+- **Header:** `Idempotency-Key`
+- **Body:** `targetStatus`, `occurredAt`, `expectedVersion`
+- **Trạng thái cho phép:** `DRIVER_ARRIVED`, `PICKED_UP`, `IN_PROGRESS`, `COMPLETED`
+- **Lỗi chính:** `TRIP_INVALID_TRANSITION`, `TRIP_NOT_ASSIGNED_TO_DRIVER`, `VERSION_CONFLICT`
 
-**Hành vi:** Cung cấp đường xác thực riêng cho Driver. Không mặc định đăng nhập email/password khi nguồn chưa chốt cơ chế.
+## DRV-10 Yêu cầu hủy trước Picked Up
 
-**Quyền:** Không yêu cầu session có sẵn; dữ liệu đăng ký/xác thực theo OI-18.
+- **Operation:** `POST /api/v1/trips/{tripId}/driver-cancellation`
+- **Truy xuất:** FR-30; UC-14; AC-16
+- **Body:** `reasonCode`, `reasonText`, `expectedVersion`
+- **Kết quả:** `200` với trạng thái Booking/Trip và khả năng nhận Booking tiếp theo
 
-**Lỗi:** Theo common.md §4. Dữ liệu lỗi không ghi một phần; xung đột không tự ghi đè trạng thái.
+## DRV-11 Xác nhận đã thu tiền mặt
 
-**Kiểm chứng:** Đối chiếu AC nêu trên, kiểm tra body theo type tương ứng trong common.md và dữ liệu sau xử lý. Các quyết định còn mở phải có bản phê duyệt trước khi dùng hành vi phụ thuộc chúng làm kết quả nghiệm thu.
-
-## API-15 — Cập nhật hồ sơ Driver
-
-**Operation đề xuất:** `PATCH /drivers/me/profile`.
-
-**Truy vết:** FR-06; UC-04; AC-06.
-
-**Điều kiện quyết định:** OI-18
-
-**Đầu vào:** ProfilePatch theo OI-18.
-
-**Kết quả:** 200; ProfileView.
-
-**Hành vi:** Chỉ cập nhật trường hồ sơ được phép; không nhận quyền hoặc trạng thái đình chỉ tài khoản trong payload.
-
-**Quyền:** Driver đã xác thực; kiểm tra quyền trên đối tượng được yêu cầu.
-
-**Lỗi:** Theo common.md §4. Dữ liệu lỗi không ghi một phần; xung đột không tự ghi đè trạng thái.
-
-**Kiểm chứng:** Đối chiếu AC nêu trên, kiểm tra body theo type tương ứng trong common.md và dữ liệu sau xử lý. Các quyết định còn mở phải có bản phê duyệt trước khi dùng hành vi phụ thuộc chúng làm kết quả nghiệm thu.
-
-## API-16 — Cập nhật phương tiện
-
-**Operation đề xuất:** `PATCH /drivers/me/vehicles/{vehicleId}`.
-
-**Truy vết:** FR-07; UC-16; AC-07.
-
-**Điều kiện quyết định:** OI-18
-
-**Đầu vào:** vehicleId: ID và VehiclePatch theo OI-18.
-
-**Kết quả:** 200; VehicleView.
-
-**Hành vi:** Kiểm tra quan hệ Driver–phương tiện được phép sửa; cardinality và trường chi tiết chờ OI-18. Không tạo/xóa phương tiện ngầm qua thao tác cập nhật.
-
-**Quyền:** Driver đã xác thực; kiểm tra quyền trên đối tượng được yêu cầu.
-
-**Lỗi:** Theo common.md §4. Dữ liệu lỗi không ghi một phần; xung đột không tự ghi đè trạng thái.
-
-**Kiểm chứng:** Đối chiếu AC nêu trên, kiểm tra body theo type tương ứng trong common.md và dữ liệu sau xử lý. Các quyết định còn mở phải có bản phê duyệt trước khi dùng hành vi phụ thuộc chúng làm kết quả nghiệm thu.
-
-## API-17 — Cập nhật hoạt động và sẵn sàng
-
-**Operation đề xuất:** `PATCH /drivers/me/work-status`.
-
-**Truy vết:** FR-08, FR-09; UC-17; AC-08, AC-09.
-
-**Điều kiện quyết định:** OI-14
-
-**Đầu vào:** WorkStatusInput gồm trạng thái hoạt động và readiness theo OI-14.
-
-**Kết quả:** 200; WorkStatusView.
-
-**Hành vi:** Tách trạng thái làm việc khỏi trạng thái tài khoản do quản trị kiểm soát. Không cho Driver tự sửa vai trò hoặc trạng thái đình chỉ qua endpoint này.
-
-**Quyền:** Driver đã xác thực; kiểm tra quyền trên đối tượng được yêu cầu.
-
-**Lỗi:** Theo common.md §4. Dữ liệu lỗi không ghi một phần; xung đột không tự ghi đè trạng thái.
-
-**Kiểm chứng:** Đối chiếu AC nêu trên, kiểm tra body theo type tương ứng trong common.md và dữ liệu sau xử lý. Các quyết định còn mở phải có bản phê duyệt trước khi dùng hành vi phụ thuộc chúng làm kết quả nghiệm thu.
-
-## API-18 — Gửi vị trí Driver
-
-**Operation đề xuất:** `POST /drivers/me/locations`.
-
-**Truy vết:** FR-10; UC-18; AC-10.
-
-**Điều kiện quyết định:** OI-05, OI-06, OI-19
-
-**Đầu vào:** LocationInput: tọa độ, observedAt nếu nguồn hỗ trợ; quy tắc độ mới OI-19.
-
-**Kết quả:** 201; LocationReceipt gồm locationId, driverId và receivedAt.
-
-**Hành vi:** Gắn vị trí với danh tính Driver, lưu trước khi xác nhận tiếp nhận thành công. Thời gian lưu chờ OI-06; xử lý vị trí đến muộn/mất mạng chờ OI-05/OI-19.
-
-**Quyền:** Driver đã xác thực; kiểm tra quyền trên đối tượng được yêu cầu.
-
-**Lỗi:** Theo common.md §4. Dữ liệu lỗi không ghi một phần; xung đột không tự ghi đè trạng thái.
-
-**Kiểm chứng:** Đối chiếu AC nêu trên, kiểm tra body theo type tương ứng trong common.md và dữ liệu sau xử lý. Các quyết định còn mở phải có bản phê duyệt trước khi dùng hành vi phụ thuộc chúng làm kết quả nghiệm thu.
-
-## API-19 — Phản hồi đề nghị chuyến
-
-**Operation đề xuất:** `POST /assignments/{assignmentId}/responses`.
-
-**Truy vết:** FR-15, FR-16, FR-17; UC-05, UC-06; AC-15, AC-16, AC-17.
-
-**Điều kiện quyết định:** OI-03, OI-12, OI-14
-
-**Đầu vào:** assignmentId: ID; decision = accept hoặc reject.
-
-**Kết quả:** 200; AssignmentResponseReceipt.
-
-**Hành vi:** Kiểm tra đề nghị gửi đúng Driver. Reject tiếp tục tìm trên cùng Booking. Accept đồng thời hoặc muộn áp dụng OI-14; không tự chọn first-wins.
-
-**Quyền:** Driver đã xác thực; kiểm tra quyền trên đối tượng được yêu cầu.
-
-**Lỗi:** Theo common.md §4. Dữ liệu lỗi không ghi một phần; xung đột không tự ghi đè trạng thái.
-
-**Kiểm chứng:** Đối chiếu AC nêu trên, kiểm tra body theo type tương ứng trong common.md và dữ liệu sau xử lý. Các quyết định còn mở phải có bản phê duyệt trước khi dùng hành vi phụ thuộc chúng làm kết quả nghiệm thu.
-
-## API-20 — Ghi nhận mốc Trip
-
-**Operation đề xuất:** `POST /trips/{tripId}/milestones`.
-
-**Truy vết:** FR-24, FR-25, FR-26, FR-27; UC-08; AC-24, AC-25, AC-26, AC-27.
-
-**Điều kiện quyết định:** OI-14
-
-**Đầu vào:** TripMilestoneInput: arrived, pickedUp, moving hoặc completed; expectedVersion kỹ thuật.
-
-**Kết quả:** 200; TripView.
-
-**Hành vi:** Driver được phép ghi nhận mốc. Kiểm tra chuyển tiếp theo mô hình được duyệt OI-14; optimistic concurrency phát hiện xung đột nhưng không tự quyết người thắng.
-
-**Quyền:** Driver đã xác thực; kiểm tra quyền trên đối tượng được yêu cầu.
-
-**Lỗi:** Theo common.md §4. Dữ liệu lỗi không ghi một phần; xung đột không tự ghi đè trạng thái.
-
-**Kiểm chứng:** Đối chiếu AC nêu trên, kiểm tra body theo type tương ứng trong common.md và dữ liệu sau xử lý. Các quyết định còn mở phải có bản phê duyệt trước khi dùng hành vi phụ thuộc chúng làm kết quả nghiệm thu.
-
-## Các thao tác còn phụ thuộc quyết định
-
-Cách Driver nhận/đọc nội dung đề nghị và thay đổi Trip được xác định cùng kênh OI-12. Assignment cần mang assignmentId để phản hồi đúng đề nghị; đường hiển thị kênh cụ thể chưa chốt. API không mở endpoint Driver tự quản lý quyền hoặc trạng thái đình chỉ tài khoản.
+- **Operation:** `POST /api/v1/payments/{paymentId}/cash-confirmation`
+- **Truy xuất:** FR-42; UC-15; AC-23
+- **Header:** `Idempotency-Key`
+- **Điều kiện:** Payment dùng `CASH` và Trip thuộc Driver
+- **Kết quả:** `200` với Payment `PAID`

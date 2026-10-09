@@ -1,85 +1,32 @@
-# TS01 — Customer Account Management
+# TS01 – Customer Account Management
 
-Baseline: [SRS v1.4](../srs.md). Quy ước và trạng thái: [CAB_Test_Cases.md](CAB_Test_Cases.md).
+**Phiên bản:** 2.0  
+**Baseline:** `srs.md` v2.2  
+**Trạng thái:** Sẵn sàng thực thi  
+**Mục tiêu:** Đăng ký, đăng nhập, khôi phục mật khẩu và cập nhật hồ sơ Customer.
 
-## TC-01 — Kiểm chứng AC-01 — FR-01
+## Điều kiện chung
 
-- Yêu cầu: FR-01.
-- Tiêu chí: AC-01.
-- Cơ sở: Source-derived qua SRS.
-- Ưu tiên: Theo ưu tiên release — OI-11.
-- Điều kiện quyết định: OI-18
-- Trạng thái: Chờ quyết định áp dụng / Not Run.
+- Môi trường kiểm thử đã triển khai đúng build được phê duyệt.
+- Dữ liệu và tài khoản kiểm thử được cô lập; thời gian, ngưỡng và chính sách có thể cấu hình phải lấy từ cấu hình của môi trường.
+- Mỗi lần chạy phải ghi kết quả `Pass`, `Fail`, `Blocked` hoặc `Not Run`, kèm bằng chứng và mã lỗi nếu có.
 
-**Tiền điều kiện và dữ liệu thử:** Customer chưa có tài khoản; bộ dữ liệu đăng ký hợp lệ theo OI-18.
+## Test cases
 
-**Các bước:**
+| ID | Test case | Loại / Ưu tiên | Truy xuất | Tiền điều kiện | Bước kiểm thử | Kết quả mong đợi |
+| --- | --- | --- | --- | --- | --- | --- |
+| TC-01-01 | Đăng ký Customer hợp lệ | Positive / P0 | FR-01; UC-01; AC-01 | Số điện thoại chưa tồn tại; dịch vụ OTP hoạt động. | Gửi thông tin đăng ký; nhập OTP hợp lệ. | Tài khoản Customer được tạo duy nhất; OTP được đánh dấu đã dùng; người dùng nhận kết quả thành công. |
+| TC-01-02 | Từ chối OTP không hợp lệ | Negative / P0 | FR-01, FR-03; UC-01, UC-03; AC-01 | Có yêu cầu OTP còn hiệu lực. | Lần lượt gửi OTP sai, hết hạn và đã sử dụng. | Mỗi yêu cầu bị từ chối an toàn; không tạo tài khoản hoặc đổi mật khẩu; lỗi không làm lộ dữ liệu xác thực. |
+| TC-01-03 | Đăng nhập Customer và Driver | Positive / P0 | FR-02; UC-02; AC-01 | Có tài khoản Customer và Driver hợp lệ. | Đăng nhập từng tài khoản bằng số điện thoại và mật khẩu đúng. | Mỗi người dùng nhận phiên hợp lệ với đúng danh tính và quyền; không trả mật khẩu trong phản hồi. |
+| TC-01-04 | Khôi phục mật khẩu | Positive / P0 | FR-03; UC-03; AC-01 | Tài khoản đã tồn tại; OTP khôi phục hợp lệ. | Yêu cầu OTP; xác nhận mật khẩu mới; đăng nhập bằng mật khẩu mới rồi thử mật khẩu cũ. | Mật khẩu mới hoạt động; mật khẩu cũ bị từ chối; OTP không thể dùng lại. |
+| TC-01-05 | Cập nhật hồ sơ Customer | Positive + Negative / P1 | FR-04; UC-04; AC-02 | Customer đã đăng nhập. | Cập nhật dữ liệu hợp lệ và đọc lại; sau đó gửi dữ liệu sai định dạng. | Dữ liệu hợp lệ được lưu và đọc đúng; lần gửi sai bị từ chối và không làm thay đổi hồ sơ hiện có. |
 
-1. Gửi đăng ký Customer.
-2. Ghi nhận accountId.
-3. Truy xuất bằng chứng tạo tài khoản bằng quyền kiểm thử.
+## Ghi nhận thực thi
 
-**Kết quả mong đợi:** Với thông tin đăng ký đáp ứng quy tắc, Customer hoàn tất đăng ký và có tài khoản để sử dụng.
-
-**Bằng chứng cần ghi:** dữ liệu đầu vào đã che thông tin nhạy cảm, định danh nghiệp vụ, phản hồi/hiển thị, dữ liệu sau xử lý và sự kiện liên quan. Ghi phiên bản quyết định OI và thiết kế áp dụng cùng kết quả thực thi.
-
-## TC-02 — Kiểm chứng AC-02 — FR-02
-
-- Yêu cầu: FR-02.
-- Tiêu chí: AC-02.
-- Cơ sở: Source-derived qua SRS.
-- Ưu tiên: Theo ưu tiên release — OI-11.
-- Điều kiện quyết định: OI-18
-- Trạng thái: Chờ quyết định áp dụng / Not Run.
-
-**Tiền điều kiện và dữ liệu thử:** Tài khoản Customer hợp lệ; dữ liệu xác thực đúng theo OI-18.
-
-**Các bước:**
-
-1. Thực hiện xác thực Customer.
-2. Dùng kết quả xác thực truy cập một chức năng yêu cầu tài khoản theo danh mục.
-
-**Kết quả mong đợi:** Customer có tài khoản hợp lệ đăng nhập thành công; truy cập chức năng yêu cầu tài khoản chịu kiểm soát theo FR-56.
-
-**Bằng chứng cần ghi:** dữ liệu đầu vào đã che thông tin nhạy cảm, định danh nghiệp vụ, phản hồi/hiển thị, dữ liệu sau xử lý và sự kiện liên quan. Ghi phiên bản quyết định OI và thiết kế áp dụng cùng kết quả thực thi.
-
-## TC-03 — Kiểm chứng AC-03 — FR-03
-
-- Yêu cầu: FR-03.
-- Tiêu chí: AC-03.
-- Cơ sở: Source-derived qua SRS.
-- Ưu tiên: Theo ưu tiên release — OI-11.
-- Điều kiện quyết định: OI-18
-- Trạng thái: Chờ quyết định áp dụng / Not Run.
-
-**Tiền điều kiện và dữ liệu thử:** Customer đã xác thực; hồ sơ có giá trị ban đầu và giá trị thay thế hợp lệ.
-
-**Các bước:**
-
-1. Đọc hồ sơ.
-2. Cập nhật một trường được phép.
-3. Đọc lại và đối chiếu cả trường thay đổi lẫn trường không thay đổi.
-
-**Kết quả mong đợi:** Customer đã được xác thực thay đổi thông tin được phép cập nhật; thông tin sau cập nhật phản ánh thay đổi.
-
-**Bằng chứng cần ghi:** dữ liệu đầu vào đã che thông tin nhạy cảm, định danh nghiệp vụ, phản hồi/hiển thị, dữ liệu sau xử lý và sự kiện liên quan. Ghi phiên bản quyết định OI và thiết kế áp dụng cùng kết quả thực thi.
-
-## TC-76 — Dữ liệu đăng ký không hợp lệ
-
-- Yêu cầu: FR-01, FR-04.
-- Tiêu chí: AC-01, AC-04.
-- Cơ sở: Derived từ yêu cầu SRS.
-- Ưu tiên: Theo ưu tiên release — OI-11.
-- Điều kiện quyết định: OI-18
-- Trạng thái: Chờ quyết định áp dụng / Not Run.
-
-**Tiền điều kiện và dữ liệu thử:** Bộ trường thiếu/sai/trùng theo OI-18.
-
-**Các bước:**
-
-1. Gửi từng bộ dữ liệu.
-2. Kiểm tra phản hồi và kho tài khoản.
-
-**Kết quả mong đợi:** Kết quả theo quy tắc đầu vào đã duyệt; không tạo tài khoản từ yêu cầu bị từ chối.
-
-**Bằng chứng cần ghi:** dữ liệu đầu vào đã che thông tin nhạy cảm, định danh nghiệp vụ, phản hồi/hiển thị, dữ liệu sau xử lý và sự kiện liên quan. Ghi phiên bản quyết định OI và thiết kế áp dụng cùng kết quả thực thi.
+| ID | Build | Môi trường | Kết quả | Bằng chứng / Defect | Người chạy | Ngày chạy |
+| --- | --- | --- | --- | --- | --- | --- |
+| TC-01-01 |  |  | Not Run |  |  |  |
+| TC-01-02 |  |  | Not Run |  |  |  |
+| TC-01-03 |  |  | Not Run |  |  |  |
+| TC-01-04 |  |  | Not Run |  |  |  |
+| TC-01-05 |  |  | Not Run |  |  |  |

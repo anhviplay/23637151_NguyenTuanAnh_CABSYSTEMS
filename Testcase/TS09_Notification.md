@@ -1,144 +1,30 @@
-# TS09 — Notification
+# TS09 – Notification
 
-Baseline: [SRS v1.4](../srs.md). Quy ước và trạng thái: [CAB_Test_Cases.md](CAB_Test_Cases.md).
+**Phiên bản:** 2.0  
+**Baseline:** `srs.md` v2.2  
+**Trạng thái:** Sẵn sàng thực thi  
+**Mục tiêu:** Thông báo theo mốc nghiệp vụ và xử lý lỗi nhà cung cấp.
 
-## TC-35 — Kiểm chứng AC-35 — FR-35
+## Điều kiện chung
 
-- Yêu cầu: FR-35.
-- Tiêu chí: AC-35.
-- Cơ sở: Source-derived qua SRS.
-- Ưu tiên: Theo ưu tiên release — OI-11.
-- Điều kiện quyết định: OI-12
-- Trạng thái: Chờ quyết định áp dụng / Not Run.
+- Môi trường kiểm thử đã triển khai đúng build được phê duyệt.
+- Dữ liệu và tài khoản kiểm thử được cô lập; thời gian, ngưỡng và chính sách có thể cấu hình phải lấy từ cấu hình của môi trường.
+- Mỗi lần chạy phải ghi kết quả `Pass`, `Fail`, `Blocked` hoặc `Not Run`, kèm bằng chứng và mã lỗi nếu có.
 
-**Tiền điều kiện và dữ liệu thử:** Booking hợp lệ; kênh thông báo thử.
+## Test cases
 
-**Các bước:**
+| ID | Test case | Loại / Ưu tiên | Truy xuất | Tiền điều kiện | Bước kiểm thử | Kết quả mong đợi |
+| --- | --- | --- | --- | --- | --- | --- |
+| TC-09-01 | Thông báo Customer theo mốc nghiệp vụ | Positive / P1 | FR-43; AC-24 | Có các sự kiện Booking tiếp nhận, Driver nhận, Driver đến, Trip hoàn thành và Payment có kết quả. | Phát từng sự kiện. | Đúng Customer nhận nội dung tương ứng qua in-app và push; thông báo gắn đúng đối tượng nghiệp vụ. |
+| TC-09-02 | Thông báo Driver | Positive / P0 | FR-44; AC-24 | Có Assignment mới hoặc thay đổi Trip được gán. | Phát từng sự kiện. | Đúng Driver nhận thông báo; Driver khác không nhận dữ liệu của Trip. |
+| TC-09-03 | Nhà cung cấp lỗi tạm thời | Recovery / P0 | FR-45; AC-25 | Chính sách xử lý lại đã cấu hình; Provider trả lỗi tạm thời. | Gửi thông báo và thực thi xử lý lại theo cấu hình. | Mỗi kết quả gửi được ghi nhận; xử lý lại đúng cấu hình; giao dịch Booking/Trip/Payment nguồn không bị đảo. |
+| TC-09-04 | Callback trạng thái gửi trùng | Reliability / P1 | FR-45; NFR-12; AC-25, AC-45 | Đã ghi nhận một kết quả gửi. | Provider gửi lại cùng callback. | Không tạo kết quả giao trùng hoặc chuyển sai trạng thái; callback được xử lý idempotent. |
 
-1. Tiếp nhận Booking.
-2. Kiểm tra thông báo tới Customer đúng bookingId.
+## Ghi nhận thực thi
 
-**Kết quả mong đợi:** Booking được tiếp nhận; Customer nhận thông báo tiếp nhận Booking tương ứng.
-
-**Bằng chứng cần ghi:** dữ liệu đầu vào đã che thông tin nhạy cảm, định danh nghiệp vụ, phản hồi/hiển thị, dữ liệu sau xử lý và sự kiện liên quan. Ghi phiên bản quyết định OI và thiết kế áp dụng cùng kết quả thực thi.
-
-## TC-36 — Kiểm chứng AC-36 — FR-36
-
-- Yêu cầu: FR-36.
-- Tiêu chí: AC-36.
-- Cơ sở: Source-derived qua SRS.
-- Ưu tiên: Theo ưu tiên release — OI-11.
-- Điều kiện quyết định: OI-12
-- Trạng thái: Chờ quyết định áp dụng / Not Run.
-
-**Tiền điều kiện và dữ liệu thử:** Driver đã chấp nhận và được ghi nhận cho chuyến.
-
-**Các bước:**
-
-1. Quan sát thông báo nhận chuyến.
-2. Đối chiếu Customer, Driver và Booking/Trip.
-
-**Kết quả mong đợi:** Driver nhận chuyến; Customer nhận thông báo Driver đã nhận chuyến tương ứng.
-
-**Bằng chứng cần ghi:** dữ liệu đầu vào đã che thông tin nhạy cảm, định danh nghiệp vụ, phản hồi/hiển thị, dữ liệu sau xử lý và sự kiện liên quan. Ghi phiên bản quyết định OI và thiết kế áp dụng cùng kết quả thực thi.
-
-## TC-37 — Kiểm chứng AC-37 — FR-37
-
-- Yêu cầu: FR-37.
-- Tiêu chí: AC-37.
-- Cơ sở: Source-derived qua SRS.
-- Ưu tiên: Theo ưu tiên release — OI-11.
-- Điều kiện quyết định: OI-12
-- Trạng thái: Chờ quyết định áp dụng / Not Run.
-
-**Tiền điều kiện và dữ liệu thử:** Trip được ghi mốc đến điểm đón.
-
-**Các bước:**
-
-1. Quan sát thông báo.
-2. Đối chiếu Customer và Trip tương ứng.
-
-**Kết quả mong đợi:** Driver cập nhật đã đến điểm đón; Customer nhận thông báo đến điểm đón của Trip tương ứng.
-
-**Bằng chứng cần ghi:** dữ liệu đầu vào đã che thông tin nhạy cảm, định danh nghiệp vụ, phản hồi/hiển thị, dữ liệu sau xử lý và sự kiện liên quan. Ghi phiên bản quyết định OI và thiết kế áp dụng cùng kết quả thực thi.
-
-## TC-38 — Kiểm chứng AC-38 — FR-38
-
-- Yêu cầu: FR-38.
-- Tiêu chí: AC-38.
-- Cơ sở: Source-derived qua SRS.
-- Ưu tiên: Theo ưu tiên release — OI-11.
-- Điều kiện quyết định: OI-12
-- Trạng thái: Chờ quyết định áp dụng / Not Run.
-
-**Tiền điều kiện và dữ liệu thử:** Trip vừa hoàn thành.
-
-**Các bước:**
-
-1. Quan sát thông báo hoàn thành.
-2. Đối chiếu Customer và Trip.
-
-**Kết quả mong đợi:** Trip hoàn thành; Customer nhận thông báo hoàn thành Trip tương ứng.
-
-**Bằng chứng cần ghi:** dữ liệu đầu vào đã che thông tin nhạy cảm, định danh nghiệp vụ, phản hồi/hiển thị, dữ liệu sau xử lý và sự kiện liên quan. Ghi phiên bản quyết định OI và thiết kế áp dụng cùng kết quả thực thi.
-
-## TC-39 — Kiểm chứng AC-39 — FR-39
-
-- Yêu cầu: FR-39.
-- Tiêu chí: AC-39.
-- Cơ sở: Source-derived qua SRS.
-- Ưu tiên: Theo ưu tiên release — OI-11.
-- Điều kiện quyết định: OI-12, OI-17
-- Trạng thái: Chờ quyết định áp dụng / Not Run.
-
-**Tiền điều kiện và dữ liệu thử:** Giao dịch có kết quả đã xác định.
-
-**Các bước:**
-
-1. Quan sát thông báo thanh toán.
-2. Đối chiếu paymentId và kết quả với bản ghi giao dịch.
-
-**Kết quả mong đợi:** Khi có kết quả thanh toán, Customer nhận thông báo phản ánh đúng kết quả của giao dịch tương ứng.
-
-**Bằng chứng cần ghi:** dữ liệu đầu vào đã che thông tin nhạy cảm, định danh nghiệp vụ, phản hồi/hiển thị, dữ liệu sau xử lý và sự kiện liên quan. Ghi phiên bản quyết định OI và thiết kế áp dụng cùng kết quả thực thi.
-
-## TC-40 — Kiểm chứng AC-40 — FR-40
-
-- Yêu cầu: FR-40.
-- Tiêu chí: AC-40.
-- Cơ sở: Source-derived qua SRS.
-- Ưu tiên: Theo ưu tiên release — OI-11.
-- Điều kiện quyết định: OI-12
-- Trạng thái: Chờ quyết định áp dụng / Not Run.
-
-**Tiền điều kiện và dữ liệu thử:** Thay đổi Trip thuộc danh mục cần báo Driver theo OI-12.
-
-**Các bước:**
-
-1. Thực hiện thay đổi được duyệt.
-2. Kiểm tra thông báo tới Driver liên quan.
-
-**Kết quả mong đợi:** Khi phát sinh thay đổi thuộc danh mục, Driver nhận thông báo về thay đổi của Trip đang thực hiện.
-
-**Bằng chứng cần ghi:** dữ liệu đầu vào đã che thông tin nhạy cảm, định danh nghiệp vụ, phản hồi/hiển thị, dữ liệu sau xử lý và sự kiện liên quan. Ghi phiên bản quyết định OI và thiết kế áp dụng cùng kết quả thực thi.
-
-## TC-93 — Provider ACK không có nghĩa Customer đã nhận
-
-- Yêu cầu: EIR-06.
-- Tiêu chí: AC-74.
-- Cơ sở: Proposal kiểm thử thiết kế.
-- Ưu tiên: Theo ưu tiên release — OI-11.
-- Điều kiện quyết định: OI-12
-- Trạng thái: Chờ quyết định áp dụng / Not Run.
-
-**Tiền điều kiện và dữ liệu thử:** Kênh phân biệt tiếp nhận và kết quả gửi.
-
-**Các bước:**
-
-1. Nhận ACK đang xử lý.
-2. Đọc delivery state.
-3. Đưa kết quả gửi theo provider.
-
-**Kết quả mong đợi:** Không suy ra delivered từ ACK; trạng thái đối chiếu hợp đồng kênh.
-
-**Bằng chứng cần ghi:** dữ liệu đầu vào đã che thông tin nhạy cảm, định danh nghiệp vụ, phản hồi/hiển thị, dữ liệu sau xử lý và sự kiện liên quan. Ghi phiên bản quyết định OI và thiết kế áp dụng cùng kết quả thực thi.
+| ID | Build | Môi trường | Kết quả | Bằng chứng / Defect | Người chạy | Ngày chạy |
+| --- | --- | --- | --- | --- | --- | --- |
+| TC-09-01 |  |  | Not Run |  |  |  |
+| TC-09-02 |  |  | Not Run |  |  |  |
+| TC-09-03 |  |  | Not Run |  |  |  |
+| TC-09-04 |  |  | Not Run |  |  |  |

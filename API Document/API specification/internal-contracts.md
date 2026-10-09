@@ -1,29 +1,78 @@
-# Hợp đồng xử lý nội bộ
+# Hợp đồng nội bộ giữa các microservice
 
-Phiên bản: 1.0 — 27/09/2026. Baseline: [SRS v1.4](../../srs.md). Trạng thái: Dự thảo để review, chưa phê duyệt.
+## 1. Nguyên tắc
 
-Yêu cầu nghiệp vụ lấy từ SRS; endpoint, schema, service, cơ chế kỹ thuật và mã trạng thái trong tài liệu này là **Proposal**. Chúng không thay thế quyết định của các Open Issue. Initial Release Scope: TBD — OI-11.
+- REST/HTTPS/JSON chỉ dành cho client qua API Gateway.
+- gRPC chỉ dùng cho truy vấn nội bộ cần kết quả tức thời.
+- Kafka dùng cho domain event và xử lý bất đồng bộ.
+- Producer ghi dữ liệu nghiệp vụ và Outbox trong cùng transaction.
+- Consumer dùng Inbox/Dedup theo `eventId` trước khi cập nhật dữ liệu.
+- Không service nào truy cập trực tiếp database của service khác.
 
-## Điều phối — FR-13, FR-14, FR-18
+## 2. Hợp đồng gRPC
 
-Đầu vào: bookingId, điểm đón, loại xe và snapshot ứng viên gồm driverId, dữ liệu vị trí có thời điểm, readiness và tiêu chí vận hành được duyệt. Đầu ra: tập ứng viên/kết quả lựa chọn, assignmentId được đề nghị hoặc kết quả không tìm được. Kết quả phải gắn version của chính sách để kiểm chứng.
+### INT-GRPC-01 CheckDriverEligibility
 
-Tiêu chí và mức ưu tiên OI-02; điều kiện không phản hồi OI-03; kết thúc tìm/chấp nhận muộn/đồng thời OI-14. Không mặc định bán kính, 15 giây, gửi tuần tự, số lần tối đa hoặc first-wins. Driver từ chối/không phản hồi tiếp tục trên cùng bookingId. Callback/command từ Driver trỏ assignmentId để không nhầm lần đề nghị.
+- **Caller:** `booking-service`
+- **Owner:** `driver-service`
+- **Input:** `driverId`, `serviceType`, `bookingId`
+- **Output:** `eligible`, `availability`, `vehicleId`, `reasonCode`
+- **Truy xuất:** FR-12; AC-07
 
-## Tính cước — FR-28
+### INT-GRPC-02 FindNearbyDrivers
 
-Đầu vào: tripId đã hoàn thành, loại dịch vụ và thông tin chuyến theo công thức đã duyệt. Đầu ra: FareView gồm fareId, Money, căn cứ và phiên bản quy tắc. Khi thiếu dữ liệu hoặc chưa tính được, không cung cấp số tiền 0 thay cho kết quả chưa xác định. Không phát lệnh thu tiền trước khi có cước hợp lệ. Công thức, dữ liệu, làm tròn và tiền tệ OI-01/OI-15.
+- **Caller:** `booking-service`
+- **Owner:** `location-service`
+- **Input:** điểm đón, service type và tiêu chí tìm từ cấu hình
+- **Output:** danh sách `driverId`, khoảng cách và thời điểm vị trí được nhận
+- **Truy xuất:** FR-12, FR-23, FR-24; AC-07, AC-14
 
-## Tạo và gửi thông báo — FR-15, FR-33, FR-35–FR-40
+### INT-GRPC-03 EstimateETA
 
-Đầu vào là sự kiện nghiệp vụ đã ghi nhận, định danh đối tượng và người nhận. Notification lưu ý định gửi rồi chọn adapter theo OI-12; không lấy quyền quyết định trạng thái Trip/Payment. Việc CAB đã ghi nhận ý định, provider đã tiếp nhận và người dùng đã nhận là các mốc khác nhau. Retry gửi kỹ thuật, retention và xác nhận delivery cần quyết định OI-12/OI-06. Lỗi kênh được kiểm chứng theo NFR-02, không hứa hẹn không ảnh hưởng bất kỳ thao tác nào.
+- **Caller:** `booking-service`
+- **Owner:** `location-service`
+- **Input:** vị trí Driver và điểm đón
+- **Output:** `etaSeconds`, `distanceMeters`, `calculatedAt`
+- **Truy xuất:** FR-13, FR-20; AC-08, AC-12
 
-## Quyền và audit — FR-56–FR-58
+## 3. Event envelope
 
-Kiểm soát danh tính và action áp dụng tại owner. Quyền cụ thể OI-08; xác thực OI-18. Khi sự kiện thuộc danh mục audit OI-16 xảy ra, chuyển AuditEntry theo [admin.md](admin.md); chỉ có kết quả lưu bền vững mới được coi là bằng chứng. Phương án đảm bảo ghi log và hành vi khi lỗi phải được review, không tự đặt thời gian lưu hay quyền đọc audit.
+```json
+{
+  "eventId": "uuid",
+  "eventType": "trip.completed",
+  "eventVersion": 1,
+  "occurredAt": "2026-10-09T20:30:00+07:00",
+  "producer": "trip-service",
+  "aggregateId": "uuid",
+  "aggregateVersion": 5,
+  "correlationId": "uuid",
+  "payload": {}
+}
+```
 
-## Các năng lực chưa thể đóng hợp đồng
+## 4. Domain event
 
-FR-43–FR-46: GET trong operator.md chỉ là đọc. OI-20 cần xác định cụ thể các action, điều kiện, input/output, side effect và dữ liệu còn lại khi thất bại; sau đó mới thêm operation ghi. Không dùng một endpoint quản lý tổng quát nhận JSON tùy ý để che khoảng trống đặc tả.
+| Event | Producer | Consumer chính | Mục đích |
+| --- | --- | --- | --- |
+| `identity.account-created` | identity-service | customer-service, driver-service | Khởi tạo hồ sơ tương ứng. |
+| `driver.verification-changed` | driver-service | notification-service, operations-service | Thông báo kết quả và cập nhật read model. |
+| `driver.availability-changed` | driver-service | booking-service | Cập nhật khả năng tham gia điều phối. |
+| `booking.created` | booking-service | notification-service, operations-service | Xác nhận tiếp nhận và thống kê. |
+| `assignment.offered` | booking-service | notification-service | Thông báo Assignment cho Driver. |
+| `assignment.responded` | booking-service | operations-service | Ghi nhận Accepted, Rejected hoặc No Response. |
+| `booking.driver-assigned` | booking-service | trip-service, notification-service | Tạo Trip và thông báo hai phía. |
+| `booking.no-driver-available` | booking-service | notification-service, operations-service | Kết thúc tìm Driver. |
+| `booking.cancelled` | booking-service | trip-service, driver-service, notification-service | Đồng bộ hủy và giải phóng Driver. |
+| `trip.status-changed` | trip-service | notification-service, operations-service | Theo dõi Trip và thông báo mốc cần thiết. |
+| `trip.completed` | trip-service | payment-service, customer-service, operations-service | Tính Fare, mở quyền Rating và cập nhật báo cáo. |
+| `payment.status-changed` | payment-service | notification-service, operations-service | Thông báo kết quả và cập nhật doanh thu. |
+| `rating.submitted` | customer-service | operations-service | Cập nhật chỉ số Driver. |
 
-OI-04: chưa thiết lập command hủy, actor hoặc trạng thái cho phép. OI-09: chỉ số/actor báo cáo và dữ liệu thiếu chưa được chốt. Các nội dung này được truy vết rõ trong Test Case, không bị bỏ khỏi phạm vi phân tích.
+## 5. Nhất quán và lỗi
+
+- `booking.driver-assigned` là cách duy nhất tạo Trip; không gọi gRPC để tạo Trip.
+- `trip.completed` kích hoạt tính Fare một lần.
+- Callback Payment trùng hoặc muộn được đối soát trước khi cập nhật.
+- Notification lỗi không đảo event nguồn.
+- Command từ thiết bị sau mất mạng phải có `commandId`; service xử lý idempotent và từ chối trạng thái cũ hơn.

@@ -1,105 +1,34 @@
-# TS14 — Data Integrity Security
+# TS14 – Data Integrity and Security
 
-Baseline: [SRS v1.4](../srs.md). Quy ước và trạng thái: [CAB_Test_Cases.md](CAB_Test_Cases.md).
+**Phiên bản:** 2.0  
+**Baseline:** `srs.md` v2.2  
+**Trạng thái:** Sẵn sàng thực thi  
+**Mục tiêu:** Bảo vệ dữ liệu, toàn vẹn, idempotency và chống sửa audit.
 
-## TC-67 — Kiểm chứng AC-67 — NFR-09
+## Điều kiện chung
 
-- Yêu cầu: NFR-09.
-- Tiêu chí: AC-67.
-- Cơ sở: Source-derived qua SRS.
-- Ưu tiên: Theo ưu tiên release — OI-11.
-- Điều kiện quyết định: OI-06, OI-16
-- Trạng thái: Chờ quyết định áp dụng / Not Run.
+- Môi trường kiểm thử đã triển khai đúng build được phê duyệt.
+- Dữ liệu và tài khoản kiểm thử được cô lập; thời gian, ngưỡng và chính sách có thể cấu hình phải lấy từ cấu hình của môi trường.
+- Mỗi lần chạy phải ghi kết quả `Pass`, `Fail`, `Blocked` hoặc `Not Run`, kèm bằng chứng và mã lỗi nếu có.
 
-**Tiền điều kiện và dữ liệu thử:** Dữ liệu cá nhân, phương tiện, vị trí, giao dịch và tiêu chí bảo vệ OI-16; retention OI-06.
+## Test cases
 
-**Các bước:**
+| ID | Test case | Loại / Ưu tiên | Truy xuất | Tiền điều kiện | Bước kiểm thử | Kết quả mong đợi |
+| --- | --- | --- | --- | --- | --- | --- |
+| TC-14-01 | Mật khẩu không lưu dạng đọc được | Security / P0 | NFR-08; AC-41 | Có quyền kiểm tra bản ghi và cấu hình môi trường kiểm thử. | Tạo/đổi mật khẩu rồi kiểm tra dữ liệu lưu và log. | Không tìm thấy mật khẩu rõ trong DB, log hoặc phản hồi; cơ chế băm phù hợp được áp dụng. |
+| TC-14-02 | Bảo vệ dữ liệu nhạy cảm khi truyền và lưu | Security / P0 | NFR-08; CON-02, CON-05; AC-41 | Môi trường tích hợp hoàn chỉnh. | Kiểm tra kết nối, payload, log và dữ liệu lưu của tài khoản, vị trí, phương tiện, Payment. | Kết nối bảo mật; trường nhạy cảm không lộ trái phép; CAB không lưu dữ liệu thẻ/tài khoản thanh toán nhạy cảm. |
+| TC-14-03 | Ràng buộc quan hệ nghiệp vụ | Data integrity / P0 | FR-11, FR-35, FR-38, FR-47 | Có dữ liệu Customer, Driver, Booking, Trip, Fare và Payment. | Thử tạo bản ghi thiếu đối tượng cha hoặc liên kết sang đối tượng không phù hợp. | Giao dịch bị từ chối; không có Booking/Trip/Fare/Payment/Rating mồ côi hoặc liên kết sai chủ thể. |
+| TC-14-04 | Idempotency lệnh và callback | Reliability / P0 | NFR-12; AC-45 | Có lệnh cập nhật trạng thái và callback hợp lệ. | Gửi lặp cùng định danh nhiều lần. | Hiệu ứng nghiệp vụ chỉ xảy ra một lần; phản hồi sau nhất quán với kết quả ban đầu. |
+| TC-14-05 | Chặn sửa hoặc xóa audit qua ứng dụng | Security / P0 | FR-61; NFR-10; AC-32, AC-43 | Có audit và tài khoản có quyền tra cứu. | Thử sửa/xóa audit qua các API và đường dẫn nghiệp vụ. | Không có thao tác sửa/xóa được hỗ trợ; yêu cầu bị từ chối; bản ghi audit không đổi. |
+| TC-14-06 | Thực thi retention có kiểm soát | Data lifecycle / P1 | FR-62; NFR-10; AC-33, AC-43 | Có chính sách đã phê duyệt và dữ liệu biên trước/sau điều kiện. | Chạy xử lý retention và kiểm tra audit/log. | Chỉ dữ liệu đủ điều kiện bị xử lý; dữ liệu còn hạn giữ nguyên; kết quả có thể truy vết. |
 
-1. Thực hiện checklist bảo mật đã duyệt trên từng nhóm.
-2. Kiểm tra quyền truy cập, lưu giữ và bằng chứng bảo vệ.
+## Ghi nhận thực thi
 
-**Kết quả mong đợi:** Đánh giá và kiểm thử bảo mật đối với các nhóm dữ liệu theo tiêu chí bảo vệ; mọi tiêu chí áp dụng đều đạt.
-
-**Bằng chứng cần ghi:** dữ liệu đầu vào đã che thông tin nhạy cảm, định danh nghiệp vụ, phản hồi/hiển thị, dữ liệu sau xử lý và sự kiện liên quan. Ghi phiên bản quyết định OI và thiết kế áp dụng cùng kết quả thực thi.
-
-## TC-68 — Kiểm chứng AC-68 — NFR-10
-
-- Yêu cầu: NFR-10.
-- Tiêu chí: AC-68.
-- Cơ sở: Source-derived qua SRS.
-- Ưu tiên: Theo ưu tiên release — OI-11.
-- Điều kiện quyết định: OI-17
-- Trạng thái: Chờ quyết định áp dụng / Not Run.
-
-**Tiền điều kiện và dữ liệu thử:** Giao dịch thành công/thất bại với dữ liệu thử provider; danh mục nhạy cảm OI-17.
-
-**Các bước:**
-
-1. Thực hiện thanh toán.
-2. Kiểm tra kho dữ liệu, log và mọi nơi lưu thuộc CAB.
-3. Tìm dữ liệu thử thuộc danh mục không được lưu.
-
-**Kết quả mong đợi:** Sau các giao dịch thử thành công/thất bại, kiểm tra kho dữ liệu, nhật ký và các nơi lưu trữ thuộc CAB System; không có thông tin thuộc danh mục dữ liệu thanh toán nhạy cảm không được lưu.
-
-**Bằng chứng cần ghi:** dữ liệu đầu vào đã che thông tin nhạy cảm, định danh nghiệp vụ, phản hồi/hiển thị, dữ liệu sau xử lý và sự kiện liên quan. Ghi phiên bản quyết định OI và thiết kế áp dụng cùng kết quả thực thi.
-
-## TC-78 — Customer không truy cập dữ liệu ngoài quyền
-
-- Yêu cầu: FR-56, NFR-09.
-- Tiêu chí: AC-56, AC-67.
-- Cơ sở: Derived từ yêu cầu SRS.
-- Ưu tiên: Theo ưu tiên release — OI-11.
-- Điều kiện quyết định: OI-06, OI-08, OI-16, OI-18
-- Trạng thái: Chờ quyết định áp dụng / Not Run.
-
-**Tiền điều kiện và dữ liệu thử:** Hai Customer A/B có Booking, Trip và thanh toán riêng.
-
-**Các bước:**
-
-1. Dùng A truy xuất tài nguyên B.
-2. Kiểm tra response và side effect.
-
-**Kết quả mong đợi:** Không trả dữ liệu hoặc cho thao tác vượt quyền được duyệt.
-
-**Bằng chứng cần ghi:** dữ liệu đầu vào đã che thông tin nhạy cảm, định danh nghiệp vụ, phản hồi/hiển thị, dữ liệu sau xử lý và sự kiện liên quan. Ghi phiên bản quyết định OI và thiết kế áp dụng cùng kết quả thực thi.
-
-## TC-79 — Driver phản hồi assignment không gửi cho mình
-
-- Yêu cầu: FR-16, FR-17, NFR-09.
-- Tiêu chí: AC-16, AC-17, AC-67.
-- Cơ sở: Derived từ yêu cầu SRS.
-- Ưu tiên: Theo ưu tiên release — OI-11.
-- Điều kiện quyết định: OI-06, OI-08, OI-14, OI-16
-- Trạng thái: Chờ quyết định áp dụng / Not Run.
-
-**Tiền điều kiện và dữ liệu thử:** Assignment dành cho Driver A; Driver B xác thực.
-
-**Các bước:**
-
-1. B gửi phản hồi cho assignment của A.
-2. Kiểm tra bản ghi và tiến trình điều phối.
-
-**Kết quả mong đợi:** Không áp dụng phản hồi ngoài quyền; đề nghị không bị gán/từ chối bởi B.
-
-**Bằng chứng cần ghi:** dữ liệu đầu vào đã che thông tin nhạy cảm, định danh nghiệp vụ, phản hồi/hiển thị, dữ liệu sau xử lý và sự kiện liên quan. Ghi phiên bản quyết định OI và thiết kế áp dụng cùng kết quả thực thi.
-
-## TC-97 — Hết hạn dữ liệu theo retention
-
-- Yêu cầu: FR-41, FR-50, FR-58, NFR-09.
-- Tiêu chí: AC-41, AC-50, AC-58, AC-67.
-- Cơ sở: Derived từ yêu cầu SRS.
-- Ưu tiên: Theo ưu tiên release — OI-11.
-- Điều kiện quyết định: OI-06, OI-08, OI-16, OI-20
-- Trạng thái: Chờ quyết định áp dụng / Not Run.
-
-**Tiền điều kiện và dữ liệu thử:** Chính sách retention từng nhóm, dữ liệu trước/tại/sau biên hạn.
-
-**Các bước:**
-
-1. Dùng đồng hồ thử.
-2. Thực hiện tra cứu và xử lý hết hạn.
-3. Đối chiếu quy tắc từng nhóm.
-
-**Kết quả mong đợi:** Dữ liệu được lưu/tra cứu/xử lý hết hạn theo chính sách, không đặt một thời hạn cho mọi nhóm.
-
-**Bằng chứng cần ghi:** dữ liệu đầu vào đã che thông tin nhạy cảm, định danh nghiệp vụ, phản hồi/hiển thị, dữ liệu sau xử lý và sự kiện liên quan. Ghi phiên bản quyết định OI và thiết kế áp dụng cùng kết quả thực thi.
+| ID | Build | Môi trường | Kết quả | Bằng chứng / Defect | Người chạy | Ngày chạy |
+| --- | --- | --- | --- | --- | --- | --- |
+| TC-14-01 |  |  | Not Run |  |  |  |
+| TC-14-02 |  |  | Not Run |  |  |  |
+| TC-14-03 |  |  | Not Run |  |  |  |
+| TC-14-04 |  |  | Not Run |  |  |  |
+| TC-14-05 |  |  | Not Run |  |  |  |
+| TC-14-06 |  |  | Not Run |  |  |  |

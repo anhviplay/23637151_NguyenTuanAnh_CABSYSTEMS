@@ -1,251 +1,136 @@
 # API Customer
 
-Phiên bản: 1.0 — 27/09/2026. Baseline: [SRS v1.4](../../srs.md). Trạng thái: Dự thảo để review, chưa phê duyệt.
+Tất cả operation đi qua API Gateway. Trừ đăng ký, đăng nhập và khôi phục mật khẩu, actor phải có vai trò `CUSTOMER` và chỉ được truy cập dữ liệu của mình.
 
-Yêu cầu nghiệp vụ lấy từ SRS; endpoint, schema, service, cơ chế kỹ thuật và mã trạng thái trong tài liệu này là **Proposal**. Chúng không thay thế quyết định của các Open Issue. Initial Release Scope: TBD — OI-11.
+## CUS-01 Đăng ký Customer
 
-Quy ước/schema/lỗi dùng chung: [common.md](common.md). Bảng truy vết đầy đủ: [traceability.md](../../traceability.md).
+- **Operation:** `POST /api/v1/auth/customer/registrations`
+- **Truy xuất:** FR-01; UC-01; AC-01
+- **Body:** `phoneNumber`, `password`, `otp`
+- **Kết quả:** `201` với `customerId`, `accountId`, `status`
+- **Lỗi chính:** `PHONE_ALREADY_EXISTS`, `OTP_INVALID`, `VALIDATION_ERROR`
 
-## API-01 — Đăng ký Customer
+## CUS-02 Đăng nhập
 
-**Operation đề xuất:** `POST /customers/registrations`.
+- **Operation:** `POST /api/v1/auth/sessions`
+- **Truy xuất:** FR-02; UC-02; AC-01
+- **Body:** `phoneNumber`, `password`, `actorType=CUSTOMER`
+- **Kết quả:** `200` với access token, refresh token và thời điểm hết hạn
+- **Lỗi chính:** `INVALID_CREDENTIALS`, `ACCOUNT_DISABLED`
 
-**Truy vết:** FR-01; UC-01; AC-01.
+## CUS-03 Yêu cầu OTP khôi phục mật khẩu
 
-**Điều kiện quyết định:** OI-18
+- **Operation:** `POST /api/v1/auth/password-recovery/otp`
+- **Truy xuất:** FR-03; UC-03; AC-01
+- **Body:** `phoneNumber`, `actorType=CUSTOMER`
+- **Kết quả:** `202`; không tiết lộ tài khoản có tồn tại hay không
 
-**Đầu vào:** RegistrationInput: profile và authenticationEnrollment theo OI-18.
+## CUS-04 Xác nhận mật khẩu mới
 
-**Kết quả:** 201; AccountReceipt.
+- **Operation:** `POST /api/v1/auth/password-recovery/confirm`
+- **Truy xuất:** FR-03; UC-03; AC-01
+- **Body:** `phoneNumber`, `otp`, `newPassword`
+- **Kết quả:** `204`
+- **Lỗi chính:** `OTP_INVALID`, `OTP_EXPIRED`, `PASSWORD_POLICY_VIOLATION`
 
-**Hành vi:** Cho phép chưa đăng nhập. Tạo tài khoản khi dữ liệu đáp ứng quy tắc; không tự coi đăng ký là đăng nhập thành công.
+## CUS-05 Cập nhật hồ sơ Customer
 
-**Quyền:** Không yêu cầu session có sẵn; dữ liệu đăng ký/xác thực theo OI-18.
+- **Operation:** `PATCH /api/v1/customers/me`
+- **Truy xuất:** FR-04; UC-04; AC-02
+- **Body:** các trường hồ sơ được phép cập nhật và `version`
+- **Kết quả:** `200` với hồ sơ và version mới
 
-**Lỗi:** Theo common.md §4. Dữ liệu lỗi không ghi một phần; xung đột không tự ghi đè trạng thái.
+## CUS-06 Tạo Booking
 
-**Kiểm chứng:** Đối chiếu AC nêu trên, kiểm tra body theo type tương ứng trong common.md và dữ liệu sau xử lý. Các quyết định còn mở phải có bản phê duyệt trước khi dùng hành vi phụ thuộc chúng làm kết quả nghiệm thu.
+- **Operation:** `POST /api/v1/bookings`
+- **Truy xuất:** FR-10, FR-11; UC-10; AC-06
+- **Header:** `Idempotency-Key`
+- **Body:** `pickup`, `destination`, `serviceType`
+- **Kết quả:** `201` với `bookingId`, trạng thái `SEARCHING`, thời điểm tạo
 
-## API-02 — Xác thực Customer
+```json
+{
+  "pickup": {"address": "Điểm đón", "location": {"latitude": 10.77, "longitude": 106.70}},
+  "destination": {"address": "Điểm đến", "location": {"latitude": 10.79, "longitude": 106.68}},
+  "serviceType": "BIKE"
+}
+```
 
-**Operation đề xuất:** `POST /sessions/customer`.
+## CUS-07 Theo dõi Booking
 
-**Truy vết:** FR-02, FR-56; UC-02; AC-02, AC-56.
+- **Operation:** `GET /api/v1/bookings/{bookingId}`
+- **Truy xuất:** FR-19, FR-20; UC-11, UC-12; AC-11, AC-12
+- **Kết quả:** trạng thái Booking, Driver được gán nếu có, ETA và `tripId` nếu Trip đã tạo
 
-**Điều kiện quyết định:** OI-08, OI-18
+## CUS-08 Hủy Booking hoặc Trip trước Picked Up
 
-**Đầu vào:** AuthenticationInput theo cơ chế OI-18.
+- **Operation:** `POST /api/v1/bookings/{bookingId}/cancellations`
+- **Truy xuất:** FR-29; UC-14; AC-16
+- **Header:** `Idempotency-Key`
+- **Body:** `reasonCode`, `reasonText`, `expectedVersion`
+- **Kết quả:** `200` với trạng thái sau xử lý
+- **Lỗi chính:** `CANCELLATION_NOT_ALLOWED`, `VERSION_CONFLICT`
 
-**Kết quả:** 200; SessionReceipt.
+## CUS-09 Theo dõi Trip
 
-**Hành vi:** Không đòi session trước khi xác thực. Danh tính được server xác minh, không nhận quyền do client tự khai.
+- **Operation:** `GET /api/v1/trips/{tripId}`
+- **Truy xuất:** FR-21; UC-12; AC-12
+- **Kết quả:** trạng thái Trip, các mốc đã ghi nhận, thông tin Driver/Vehicle và ETA hiện hành
 
-**Quyền:** Không yêu cầu session có sẵn; dữ liệu đăng ký/xác thực theo OI-18.
+## CUS-10 Xem lịch sử Trip
 
-**Lỗi:** Theo common.md §4. Dữ liệu lỗi không ghi một phần; xung đột không tự ghi đè trạng thái.
+- **Operation:** `GET /api/v1/customers/me/trips`
+- **Truy xuất:** FR-46; UC-16; AC-26
+- **Query:** `page`, `pageSize`, `status`, `from`, `to`
+- **Kết quả:** danh sách Trip thuộc Customer kèm Fare và trạng thái Payment
 
-**Kiểm chứng:** Đối chiếu AC nêu trên, kiểm tra body theo type tương ứng trong common.md và dữ liệu sau xử lý. Các quyết định còn mở phải có bản phê duyệt trước khi dùng hành vi phụ thuộc chúng làm kết quả nghiệm thu.
+## CUS-11 Xem Fare
 
-## API-03 — Cập nhật thông tin Customer
+- **Operation:** `GET /api/v1/trips/{tripId}/fare`
+- **Truy xuất:** FR-33, FR-34, FR-35; UC-15; AC-19
+- **Kết quả:** `serviceType`, `billableDistanceKm`, `pricePerKm`, `totalAmount`, `currency`
+- **Quy tắc:** Fare bằng quãng đường tính cước nhân đơn giá/km của loại dịch vụ
 
-**Operation đề xuất:** `PATCH /customers/me/profile`.
+## CUS-12 Chọn phương thức Payment
 
-**Truy vết:** FR-03; UC-15; AC-03.
+- **Operation:** `POST /api/v1/trips/{tripId}/payments`
+- **Truy xuất:** FR-36, FR-37; UC-15; AC-20, AC-21
+- **Header:** `Idempotency-Key`
+- **Body:** `method` nhận `CASH` hoặc `ELECTRONIC`
+- **Kết quả:** `201` với `paymentId`, `method`, `status`; với điện tử có dữ liệu chuyển hướng do provider cho phép
 
-**Điều kiện quyết định:** OI-18
+## CUS-13 Xem trạng thái Payment
 
-**Đầu vào:** ProfilePatch: các trường được phép cập nhật theo OI-18.
+- **Operation:** `GET /api/v1/payments/{paymentId}`
+- **Truy xuất:** FR-38, FR-39; UC-15; AC-21, AC-22
+- **Kết quả:** `paymentId`, `fareId`, `method`, `status`, `providerReference`, `updatedAt`
 
-**Kết quả:** 200; ProfileView.
+## CUS-14 Thực hiện lại Payment điện tử
 
-**Hành vi:** Chỉ cập nhật hồ sơ gắn với danh tính đã xác thực; kiểm tra trường và dữ liệu trước khi ghi.
+- **Operation:** `POST /api/v1/payments/{paymentId}/retry`
+- **Truy xuất:** FR-40; UC-15; AC-22
+- **Header:** `Idempotency-Key`
+- **Điều kiện:** Payment hiện tại ở `FAILED`
+- **Kết quả:** `202`; Payment chuyển về `PENDING` khi yêu cầu được chấp nhận
 
-**Quyền:** Customer đã xác thực; kiểm tra quyền trên đối tượng được yêu cầu.
+## CUS-15 Chuyển sang tiền mặt
 
-**Lỗi:** Theo common.md §4. Dữ liệu lỗi không ghi một phần; xung đột không tự ghi đè trạng thái.
+- **Operation:** `PATCH /api/v1/payments/{paymentId}/method`
+- **Truy xuất:** FR-41; UC-15; AC-22
+- **Body:** `method=CASH`, `expectedVersion`
+- **Kết quả:** `200` với Payment đã cập nhật; không tạo Fare mới
 
-**Kiểm chứng:** Đối chiếu AC nêu trên, kiểm tra body theo type tương ứng trong common.md và dữ liệu sau xử lý. Các quyết định còn mở phải có bản phê duyệt trước khi dùng hành vi phụ thuộc chúng làm kết quả nghiệm thu.
+## CUS-16 Đánh giá Driver
 
-## API-04 — Gửi Booking
+- **Operation:** `POST /api/v1/trips/{tripId}/ratings`
+- **Truy xuất:** FR-47; UC-16; AC-27
+- **Header:** `Idempotency-Key`
+- **Body:** `score` là số nguyên từ 1 đến 5
+- **Điều kiện:** Trip `COMPLETED`, thuộc Customer, chưa có Rating
+- **Kết quả:** `201` với `ratingId`, `tripId`, `driverId`, `score`
 
-**Operation đề xuất:** `POST /bookings`.
+## CUS-17 Xem điểm tổng hợp Driver
 
-**Truy vết:** FR-11, FR-12; UC-05; AC-11, AC-12.
-
-**Điều kiện quyết định:** OI-14, OI-15, OI-18
-
-**Đầu vào:** BookingInput: pickup: Place, destination: Place, vehicleTypeId: ID.
-
-**Kết quả:** 201; BookingView.
-
-**Hành vi:** Tiếp nhận Booking và bắt đầu luồng tìm Driver; tạo Trip tại thời điểm nào phụ thuộc OI-14. Không yêu cầu chọn thanh toán trước Booking nếu chưa có quyết định.
-
-**Quyền:** Customer đã xác thực; kiểm tra quyền trên đối tượng được yêu cầu.
-
-**Lỗi:** Theo common.md §4. Dữ liệu lỗi không ghi một phần; xung đột không tự ghi đè trạng thái.
-
-**Kiểm chứng:** Đối chiếu AC nêu trên, kiểm tra body theo type tương ứng trong common.md và dữ liệu sau xử lý. Các quyết định còn mở phải có bản phê duyệt trước khi dùng hành vi phụ thuộc chúng làm kết quả nghiệm thu.
-
-## API-05 — Theo dõi Booking
-
-**Operation đề xuất:** `GET /bookings/{bookingId}`.
-
-**Truy vết:** FR-19, FR-20, FR-21, FR-22; UC-05, UC-06, UC-07; AC-19, AC-20, AC-21, AC-22.
-
-**Điều kiện quyết định:** OI-14, OI-19
-
-**Đầu vào:** bookingId: ID thuộc Customer hiện tại.
-
-**Kết quả:** 200; BookingView, gồm Driver được gán và ETA khi có.
-
-**Hành vi:** Hiển thị kết quả tìm Driver, Driver nhận chuyến và thời gian dự kiến đến. Không biến chưa có ETA thành giá trị 0.
-
-**Quyền:** Customer đã xác thực; kiểm tra quyền trên đối tượng được yêu cầu.
-
-**Lỗi:** Theo common.md §4. Dữ liệu lỗi không ghi một phần; xung đột không tự ghi đè trạng thái.
-
-**Kiểm chứng:** Đối chiếu AC nêu trên, kiểm tra body theo type tương ứng trong common.md và dữ liệu sau xử lý. Các quyết định còn mở phải có bản phê duyệt trước khi dùng hành vi phụ thuộc chúng làm kết quả nghiệm thu.
-
-## API-06 — Theo dõi Trip
-
-**Operation đề xuất:** `GET /trips/{tripId}`.
-
-**Truy vết:** FR-21, FR-22, FR-23; UC-05, UC-06, UC-07, UC-08; AC-21, AC-22, AC-23.
-
-**Điều kiện quyết định:** OI-05, OI-14, OI-19
-
-**Đầu vào:** tripId: ID thuộc Customer hiện tại.
-
-**Kết quả:** 200; TripView.
-
-**Hành vi:** Trả trạng thái, thông tin Driver phù hợp quyền và ETA. Cách thể hiện dữ liệu cũ/mất kết nối phụ thuộc OI-05.
-
-**Quyền:** Customer đã xác thực; kiểm tra quyền trên đối tượng được yêu cầu.
-
-**Lỗi:** Theo common.md §4. Dữ liệu lỗi không ghi một phần; xung đột không tự ghi đè trạng thái.
-
-**Kiểm chứng:** Đối chiếu AC nêu trên, kiểm tra body theo type tương ứng trong common.md và dữ liệu sau xử lý. Các quyết định còn mở phải có bản phê duyệt trước khi dùng hành vi phụ thuộc chúng làm kết quả nghiệm thu.
-
-## API-07 — Xem số tiền phải trả
-
-**Operation đề xuất:** `GET /trips/{tripId}/fare`.
-
-**Truy vết:** FR-29; UC-09, UC-10; AC-29.
-
-**Điều kiện quyết định:** OI-01, OI-15
-
-**Đầu vào:** tripId: ID thuộc Customer.
-
-**Kết quả:** 200; FareView.
-
-**Hành vi:** Trả tiền tệ và số tiền cuối cùng khi đã tính; trạng thái chưa có cước được phân biệt với số tiền bằng 0.
-
-**Quyền:** Customer đã xác thực; kiểm tra quyền trên đối tượng được yêu cầu.
-
-**Lỗi:** Theo common.md §4. Dữ liệu lỗi không ghi một phần; xung đột không tự ghi đè trạng thái.
-
-**Kiểm chứng:** Đối chiếu AC nêu trên, kiểm tra body theo type tương ứng trong common.md và dữ liệu sau xử lý. Các quyết định còn mở phải có bản phê duyệt trước khi dùng hành vi phụ thuộc chúng làm kết quả nghiệm thu.
-
-## API-08 — Đề nghị thanh toán
-
-**Operation đề xuất:** `POST /trips/{tripId}/payments`.
-
-**Truy vết:** FR-30, FR-31; UC-09; AC-30, AC-31.
-
-**Điều kiện quyết định:** OI-17
-
-**Đầu vào:** PaymentInput: method = cash hoặc electronic; Idempotency-Key theo common.md.
-
-**Kết quả:** 202; PaymentView.
-
-**Hành vi:** Khởi tạo hoặc tiếp nhận xử lý thanh toán. Chọn cash không đồng nghĩa xác nhận đã nhận tiền; chủ thể và bằng chứng nhận tiền chờ OI-17. Không nhận thẻ/tài khoản nhạy cảm trực tiếp.
-
-**Quyền:** Customer đã xác thực; kiểm tra quyền trên đối tượng được yêu cầu.
-
-**Lỗi:** Theo common.md §4. Dữ liệu lỗi không ghi một phần; xung đột không tự ghi đè trạng thái.
-
-**Kiểm chứng:** Đối chiếu AC nêu trên, kiểm tra body theo type tương ứng trong common.md và dữ liệu sau xử lý. Các quyết định còn mở phải có bản phê duyệt trước khi dùng hành vi phụ thuộc chúng làm kết quả nghiệm thu.
-
-## API-09 — Xem kết quả thanh toán
-
-**Operation đề xuất:** `GET /payments/{paymentId}`.
-
-**Truy vết:** FR-32, FR-39; UC-09; AC-32, AC-39.
-
-**Điều kiện quyết định:** OI-12, OI-17
-
-**Đầu vào:** paymentId: ID được phép truy cập.
-
-**Kết quả:** 200; PaymentView.
-
-**Hành vi:** Customer truy xuất kết quả đã được CAB ghi nhận. Kết quả chưa xác định được hiển thị riêng, không suy ra thất bại từ timeout.
-
-**Quyền:** Customer đã xác thực; kiểm tra quyền trên đối tượng được yêu cầu.
-
-**Lỗi:** Theo common.md §4. Dữ liệu lỗi không ghi một phần; xung đột không tự ghi đè trạng thái.
-
-**Kiểm chứng:** Đối chiếu AC nêu trên, kiểm tra body theo type tương ứng trong common.md và dữ liệu sau xử lý. Các quyết định còn mở phải có bản phê duyệt trước khi dùng hành vi phụ thuộc chúng làm kết quả nghiệm thu.
-
-## API-10 — Yêu cầu xử lý lại thanh toán
-
-**Operation đề xuất:** `POST /payments/{paymentId}/retry-requests`.
-
-**Truy vết:** FR-34; UC-09; AC-34.
-
-**Điều kiện quyết định:** OI-07, OI-17
-
-**Đầu vào:** paymentId và Idempotency-Key; không cho client tự đặt số tiền.
-
-**Kết quả:** 202; RetryReceipt gồm paymentId và attemptId nếu được phép tạo attempt.
-
-**Hành vi:** Chỉ xử lý theo điều kiện ABC duyệt tại OI-07/OI-17. Lưu dấu vết từng lần thử, không ghi đè lịch sử; idempotency không quyết định chính sách nghiệp vụ.
-
-**Quyền:** Customer đã xác thực; kiểm tra quyền trên đối tượng được yêu cầu.
-
-**Lỗi:** Theo common.md §4. Dữ liệu lỗi không ghi một phần; xung đột không tự ghi đè trạng thái.
-
-**Kiểm chứng:** Đối chiếu AC nêu trên, kiểm tra body theo type tương ứng trong common.md và dữ liệu sau xử lý. Các quyết định còn mở phải có bản phê duyệt trước khi dùng hành vi phụ thuộc chúng làm kết quả nghiệm thu.
-
-## API-11 — Xem lịch sử Trip
-
-**Operation đề xuất:** `GET /customers/me/trips`.
-
-**Truy vết:** FR-41, FR-29; UC-09, UC-10; AC-41, AC-29.
-
-**Điều kiện quyết định:** OI-06
-
-**Đầu vào:** Bộ lọc và phân trang theo common.md; kỳ dữ liệu theo OI-06.
-
-**Kết quả:** 200; Collection<TripHistoryItem>.
-
-**Hành vi:** Chỉ trả lịch sử của Customer; mỗi mục có Trip, thời điểm, trạng thái, FareView khi có. Không tự giới hạn chỉ Trip đã thanh toán.
-
-**Quyền:** Customer đã xác thực; kiểm tra quyền trên đối tượng được yêu cầu.
-
-**Lỗi:** Theo common.md §4. Dữ liệu lỗi không ghi một phần; xung đột không tự ghi đè trạng thái.
-
-**Kiểm chứng:** Đối chiếu AC nêu trên, kiểm tra body theo type tương ứng trong common.md và dữ liệu sau xử lý. Các quyết định còn mở phải có bản phê duyệt trước khi dùng hành vi phụ thuộc chúng làm kết quả nghiệm thu.
-
-## API-12 — Đánh giá Driver
-
-**Operation đề xuất:** `POST /trips/{tripId}/ratings`.
-
-**Truy vết:** FR-42; UC-11; AC-42.
-
-**Điều kiện quyết định:** OI-10
-
-**Đầu vào:** RatingInput theo thang điểm, nội dung và quy tắc tại OI-10.
-
-**Kết quả:** 201; RatingReceipt.
-
-**Hành vi:** Kiểm tra Trip hoàn thành và quyền đánh giá. Không yêu cầu thanh toán thành công. Không tự đặt giới hạn một đánh giá, điểm 1–5 hoặc thời hạn đánh giá.
-
-**Quyền:** Customer đã xác thực; kiểm tra quyền trên đối tượng được yêu cầu.
-
-**Lỗi:** Theo common.md §4. Dữ liệu lỗi không ghi một phần; xung đột không tự ghi đè trạng thái.
-
-**Kiểm chứng:** Đối chiếu AC nêu trên, kiểm tra body theo type tương ứng trong common.md và dữ liệu sau xử lý. Các quyết định còn mở phải có bản phê duyệt trước khi dùng hành vi phụ thuộc chúng làm kết quả nghiệm thu.
-
-## Hủy Booking / Trip
-
-Chưa ban hành endpoint hoặc giới hạn trạng thái hủy vì OI-04 chưa được giải quyết. Sau quyết định về chủ thể, điều kiện, kết quả và ảnh hưởng thanh toán, mới bổ sung operation, exception và test tương ứng. Không giữ quy tắc cũ “chỉ hủy khi đang tìm Driver”.
+- **Operation:** `GET /api/v1/drivers/{driverId}/rating-summary`
+- **Truy xuất:** FR-48; UC-16; AC-27
+- **Kết quả:** `driverId`, `averageScore`, `ratingCount`, `updatedAt`

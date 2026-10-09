@@ -1,219 +1,34 @@
-# TS15 — End to End Critical Scenarios
-
-Baseline: [SRS v1.4](../srs.md). Quy ước và trạng thái: [CAB_Test_Cases.md](CAB_Test_Cases.md).
-
-## TC-98 — Booking đến hoàn thành Trip
-
-- Yêu cầu: FR-11, FR-12, FR-16, FR-24, FR-25, FR-26, FR-27.
-- Tiêu chí: AC-11, AC-12, AC-16, AC-24, AC-25, AC-26, AC-27.
-- Cơ sở: Derived từ yêu cầu SRS.
-- Ưu tiên: Theo ưu tiên release — OI-11.
-- Điều kiện quyết định: OI-02, OI-12, OI-14, OI-15, OI-18, OI-19
-- Trạng thái: Chờ quyết định áp dụng / Not Run.
-
-**Tiền điều kiện và dữ liệu thử:** Môi trường tích hợp và bộ dữ liệu hợp lệ; các OI liên quan đã có quyết định áp dụng.
-
-**Các bước:**
-
-1. Tạo Booking.
-2. Driver nhận.
-3. Cập nhật các mốc hợp lệ đến hoàn thành.
-
-**Kết quả mong đợi:** Booking/Trip/Driver liên kết đúng; Customer theo dõi kết quả; chuyển tiếp đúng baseline đã duyệt.
-
-**Bằng chứng cần ghi:** dữ liệu đầu vào đã che thông tin nhạy cảm, định danh nghiệp vụ, phản hồi/hiển thị, dữ liệu sau xử lý và sự kiện liên quan. Ghi phiên bản quyết định OI và thiết kế áp dụng cùng kết quả thực thi.
-
-## TC-99 — Từ chối rồi tìm Driver khác
-
-- Yêu cầu: FR-17.
-- Tiêu chí: AC-17.
-- Cơ sở: Derived từ yêu cầu SRS.
-- Ưu tiên: Theo ưu tiên release — OI-11.
-- Điều kiện quyết định: OI-02, OI-12, OI-14
-- Trạng thái: Chờ quyết định áp dụng / Not Run.
-
-**Tiền điều kiện và dữ liệu thử:** Môi trường tích hợp và bộ dữ liệu hợp lệ; các OI liên quan đã có quyết định áp dụng.
-
-**Các bước:**
-
-1. Tạo Booking.
-2. Driver được đề nghị từ chối.
-3. Quan sát tìm ứng viên khác.
-
-**Kết quả mong đợi:** Customer không phải gửi lại Booking; bookingId được giữ.
-
-**Bằng chứng cần ghi:** dữ liệu đầu vào đã che thông tin nhạy cảm, định danh nghiệp vụ, phản hồi/hiển thị, dữ liệu sau xử lý và sự kiện liên quan. Ghi phiên bản quyết định OI và thiết kế áp dụng cùng kết quả thực thi.
-
-## TC-100 — Không phản hồi rồi tìm Driver khác
-
-- Yêu cầu: FR-18.
-- Tiêu chí: AC-18.
-- Cơ sở: Derived từ yêu cầu SRS.
-- Ưu tiên: Theo ưu tiên release — OI-11.
-- Điều kiện quyết định: OI-02, OI-03, OI-14
-- Trạng thái: Chờ quyết định áp dụng / Not Run.
-
-**Tiền điều kiện và dữ liệu thử:** Môi trường tích hợp và bộ dữ liệu hợp lệ; các OI liên quan đã có quyết định áp dụng.
-
-**Các bước:**
-
-1. Đề nghị Driver.
-2. Không phản hồi tới điều kiện đã duyệt.
-3. Quan sát lần tìm tiếp.
-
-**Kết quả mong đợi:** Tiếp tục trên cùng Booking theo OI-03, không dùng timeout cố định tự đặt.
-
-**Bằng chứng cần ghi:** dữ liệu đầu vào đã che thông tin nhạy cảm, định danh nghiệp vụ, phản hồi/hiển thị, dữ liệu sau xử lý và sự kiện liên quan. Ghi phiên bản quyết định OI và thiết kế áp dụng cùng kết quả thực thi.
-
-## TC-101 — Không tìm được Driver
-
-- Yêu cầu: FR-19.
-- Tiêu chí: AC-19.
-- Cơ sở: Derived từ yêu cầu SRS.
-- Ưu tiên: Theo ưu tiên release — OI-11.
-- Điều kiện quyết định: OI-02, OI-12, OI-14
-- Trạng thái: Chờ quyết định áp dụng / Not Run.
-
-**Tiền điều kiện và dữ liệu thử:** Môi trường tích hợp và bộ dữ liệu hợp lệ; các OI liên quan đã có quyết định áp dụng.
-
-**Các bước:**
-
-1. Gửi Booking với tập ứng viên không phù hợp.
-2. Đạt điều kiện kết thúc tìm.
-3. Xem thông báo.
-
-**Kết quả mong đợi:** Customer nhận kết quả rõ ràng theo điều kiện tìm đã chốt.
-
-**Bằng chứng cần ghi:** dữ liệu đầu vào đã che thông tin nhạy cảm, định danh nghiệp vụ, phản hồi/hiển thị, dữ liệu sau xử lý và sự kiện liên quan. Ghi phiên bản quyết định OI và thiết kế áp dụng cùng kết quả thực thi.
-
-## TC-102 — Hoàn thành và thanh toán tiền mặt
-
-- Yêu cầu: FR-27, FR-28, FR-29, FR-30.
-- Tiêu chí: AC-27, AC-28, AC-29, AC-30.
-- Cơ sở: Derived từ yêu cầu SRS.
-- Ưu tiên: Theo ưu tiên release — OI-11.
-- Điều kiện quyết định: OI-01, OI-14, OI-15, OI-17
-- Trạng thái: Chờ quyết định áp dụng / Not Run.
-
-**Tiền điều kiện và dữ liệu thử:** Môi trường tích hợp và bộ dữ liệu hợp lệ; các OI liên quan đã có quyết định áp dụng.
-
-**Các bước:**
-
-1. Hoàn thành Trip.
-2. Tính cước.
-3. Chọn cash.
-4. Xác nhận nhận tiền theo quy trình.
-
-**Kết quả mong đợi:** Số tiền và kết quả thanh toán đúng dữ liệu chuẩn, chủ thể xác nhận và chính sách.
-
-**Bằng chứng cần ghi:** dữ liệu đầu vào đã che thông tin nhạy cảm, định danh nghiệp vụ, phản hồi/hiển thị, dữ liệu sau xử lý và sự kiện liên quan. Ghi phiên bản quyết định OI và thiết kế áp dụng cùng kết quả thực thi.
-
-## TC-103 — Điện tử thất bại và xử lý lại
-
-- Yêu cầu: FR-31, FR-32, FR-33, FR-34, FR-39.
-- Tiêu chí: AC-31, AC-32, AC-33, AC-34, AC-39.
-- Cơ sở: Derived từ yêu cầu SRS.
-- Ưu tiên: Theo ưu tiên release — OI-11.
-- Điều kiện quyết định: OI-01, OI-07, OI-12, OI-17
-- Trạng thái: Chờ quyết định áp dụng / Not Run.
-
-**Tiền điều kiện và dữ liệu thử:** Môi trường tích hợp và bộ dữ liệu hợp lệ; các OI liên quan đã có quyết định áp dụng.
-
-**Các bước:**
-
-1. Khởi tạo payment.
-2. Provider báo failure.
-3. Thông báo Customer.
-4. Xử lý lại theo chính sách.
-5. Nhận kết quả.
-
-**Kết quả mong đợi:** Giao dịch và các attempt đối chiếu đúng; Customer nhận kết quả theo chính sách đã chốt.
-
-**Bằng chứng cần ghi:** dữ liệu đầu vào đã che thông tin nhạy cảm, định danh nghiệp vụ, phản hồi/hiển thị, dữ liệu sau xử lý và sự kiện liên quan. Ghi phiên bản quyết định OI và thiết kế áp dụng cùng kết quả thực thi.
-
-## TC-104 — Thông báo lỗi trong lúc đặt xe
-
-- Yêu cầu: NFR-02, FR-12.
-- Tiêu chí: AC-60, AC-12.
-- Cơ sở: Derived từ yêu cầu SRS.
-- Ưu tiên: Theo ưu tiên release — OI-11.
-- Điều kiện quyết định: OI-12, OI-13, OI-14, OI-18
-- Trạng thái: Chờ quyết định áp dụng / Not Run.
-
-**Tiền điều kiện và dữ liệu thử:** Môi trường tích hợp và bộ dữ liệu hợp lệ; các OI liên quan đã có quyết định áp dụng.
-
-**Các bước:**
-
-1. Đặt Booking.
-2. Gây lỗi kênh thông báo.
-3. Tiếp tục luồng đặt xe.
-4. Đo ảnh hưởng.
-
-**Kết quả mong đợi:** Lỗi không làm toàn bộ đặt xe ngừng; mức ảnh hưởng đối chiếu OI-13.
-
-**Bằng chứng cần ghi:** dữ liệu đầu vào đã che thông tin nhạy cảm, định danh nghiệp vụ, phản hồi/hiển thị, dữ liệu sau xử lý và sự kiện liên quan. Ghi phiên bản quyết định OI và thiết kế áp dụng cùng kết quả thực thi.
-
-## TC-105 — Mất kết nối khi cập nhật Trip
-
-- Yêu cầu: FR-23, EIR-05.
-- Tiêu chí: AC-23, AC-73.
-- Cơ sở: Derived từ yêu cầu SRS.
-- Ưu tiên: Theo ưu tiên release — OI-11.
-- Điều kiện quyết định: OI-05, OI-14, OI-19
-- Trạng thái: Chờ quyết định áp dụng / Not Run.
-
-**Tiền điều kiện và dữ liệu thử:** Môi trường tích hợp và bộ dữ liệu hợp lệ; các OI liên quan đã có quyết định áp dụng.
-
-**Các bước:**
-
-1. Thực hiện Trip.
-2. Mất kết nối.
-3. Phát các cập nhật theo tình huống thử.
-4. Khôi phục.
-5. Đối chiếu dữ liệu.
-
-**Kết quả mong đợi:** Hành vi hiển thị/đồng bộ đúng quyết định OI-05, không mặc định last-state/reconnect tự động.
-
-**Bằng chứng cần ghi:** dữ liệu đầu vào đã che thông tin nhạy cảm, định danh nghiệp vụ, phản hồi/hiển thị, dữ liệu sau xử lý và sự kiện liên quan. Ghi phiên bản quyết định OI và thiết kế áp dụng cùng kết quả thực thi.
-
-## TC-106 — Lịch sử và đánh giá sau Trip
-
-- Yêu cầu: FR-41, FR-42.
-- Tiêu chí: AC-41, AC-42.
-- Cơ sở: Derived từ yêu cầu SRS.
-- Ưu tiên: Theo ưu tiên release — OI-11.
-- Điều kiện quyết định: OI-06, OI-10, OI-14
-- Trạng thái: Chờ quyết định áp dụng / Not Run.
-
-**Tiền điều kiện và dữ liệu thử:** Môi trường tích hợp và bộ dữ liệu hợp lệ; các OI liên quan đã có quyết định áp dụng.
-
-**Các bước:**
-
-1. Hoàn thành Trip.
-2. Xem lịch sử còn hạn lưu.
-3. Gửi rating hợp lệ.
-
-**Kết quả mong đợi:** Lịch sử đúng Customer và rating đáp ứng điều kiện hoàn thành; không thêm điều kiện thanh toán thành công.
-
-**Bằng chứng cần ghi:** dữ liệu đầu vào đã che thông tin nhạy cảm, định danh nghiệp vụ, phản hồi/hiển thị, dữ liệu sau xử lý và sự kiện liên quan. Ghi phiên bản quyết định OI và thiết kế áp dụng cùng kết quả thực thi.
-
-## TC-107 — Hủy theo chính sách được duyệt
-
-- Yêu cầu: FR-54.
-- Tiêu chí: AC-54.
-- Cơ sở: Derived từ yêu cầu SRS.
-- Ưu tiên: Theo ưu tiên release — OI-11.
-- Điều kiện quyết định: OI-04, OI-09, OI-14, OI-17
-- Trạng thái: Chờ quyết định áp dụng / Not Run.
-
-**Tiền điều kiện và dữ liệu thử:** Môi trường tích hợp và bộ dữ liệu hợp lệ; các OI liên quan đã có quyết định áp dụng.
-
-**Các bước:**
-
-1. Tạo Booking/Trip tại các mốc thuộc chính sách hủy.
-2. Gửi yêu cầu từ chủ thể được duyệt.
-3. Kiểm tra kết quả và báo cáo.
-
-**Kết quả mong đợi:** Toàn bộ điều kiện hủy, hệ quả và số liệu tuân theo OI-04/OI-09. Đây là khung test có điều kiện; chưa có endpoint hủy mặc định.
-
-**Bằng chứng cần ghi:** dữ liệu đầu vào đã che thông tin nhạy cảm, định danh nghiệp vụ, phản hồi/hiển thị, dữ liệu sau xử lý và sự kiện liên quan. Ghi phiên bản quyết định OI và thiết kế áp dụng cùng kết quả thực thi.
+# TS15 – End-to-End Critical Scenarios
+
+**Phiên bản:** 2.0  
+**Baseline:** `srs.md` v2.2  
+**Trạng thái:** Sẵn sàng thực thi  
+**Mục tiêu:** Các luồng xuyên suốt trọng yếu của CAB Core Ride-Hailing MVP.
+
+## Điều kiện chung
+
+- Môi trường kiểm thử đã triển khai đúng build được phê duyệt.
+- Dữ liệu và tài khoản kiểm thử được cô lập; thời gian, ngưỡng và chính sách có thể cấu hình phải lấy từ cấu hình của môi trường.
+- Mỗi lần chạy phải ghi kết quả `Pass`, `Fail`, `Blocked` hoặc `Not Run`, kèm bằng chứng và mã lỗi nếu có.
+
+## Test cases
+
+| ID | Test case | Loại / Ưu tiên | Truy xuất | Tiền điều kiện | Bước kiểm thử | Kết quả mong đợi |
+| --- | --- | --- | --- | --- | --- | --- |
+| TC-15-01 | E2E Bike thanh toán tiền mặt | E2E / P0 | FR-10–FR-46; AC-06–AC-26 | Customer/Driver hợp lệ; Driver Bike Available. | Tạo Booking; điều phối; nhận chuyến; hoàn thành Trip; tính Fare; chọn Cash; Driver xác nhận thu; xem lịch sử. | Một chuỗi Booking–Trip–Fare–Payment nhất quán; Fare dùng 5.000 VNĐ/km; thông báo và lịch sử đúng. |
+| TC-15-02 | E2E Car 4-seat thanh toán điện tử | E2E / P0 | FR-10–FR-46; AC-06–AC-26 | Driver Car 4-seat Available; Provider trả thành công. | Thực hiện toàn bộ chuyến và thanh toán điện tử. | Fare dùng 10.000 VNĐ/km; Payment thành công đúng một lần; dữ liệu xuyên suốt cùng Customer/Driver/Trip. |
+| TC-15-03 | E2E Car 7-seat Payment thất bại rồi tiền mặt | E2E / P0 | FR-10–FR-46; AC-06–AC-26 | Driver Car 7-seat Available; Provider trả thất bại. | Hoàn thành Trip; thử Electronic; đổi sang Cash; xác nhận thu. | Fare dùng 13.000 VNĐ/km; Fare không tạo lại; Payment chuyển hợp lệ và Customer được thông báo. |
+| TC-15-04 | E2E không tìm được Driver | E2E exception / P0 | FR-12–FR-19; AC-07–AC-11 | Không có Driver đủ điều kiện. | Customer tạo Booking và chờ quy trình kết thúc theo cấu hình. | Booking thành No Driver Available; không tạo Trip; Customer được thông báo. |
+| TC-15-05 | E2E mất mạng trong Trip | E2E recovery / P0 | FR-23–FR-32; AC-14, AC-15, AC-18 | Trip đang thực hiện. | Ngắt mạng; tạo cập nhật cục bộ; kết nối lại và đồng bộ. | Vị trí/trạng thái được khôi phục theo thứ tự, không trùng và không ghi đè dữ liệu mới hơn; Trip tiếp tục hợp lệ. |
+| TC-15-06 | Xác nhận phạm vi release 7 tuần | Release verification / P0 | CON-01; AC-52 | Có danh sách phạm vi MVP, kế hoạch release và bằng chứng triển khai. | Đối chiếu các hạng mục phát hành với phạm vi SRS và mốc 7 tuần. | Các chức năng MVP đã phê duyệt có bằng chứng build, test và triển khai trong 7 tuần; hạng mục ngoài phạm vi không được tính là điều kiện nghiệm thu MVP. |
+
+## Ghi nhận thực thi
+
+| ID | Build | Môi trường | Kết quả | Bằng chứng / Defect | Người chạy | Ngày chạy |
+| --- | --- | --- | --- | --- | --- | --- |
+| TC-15-01 |  |  | Not Run |  |  |  |
+| TC-15-02 |  |  | Not Run |  |  |  |
+| TC-15-03 |  |  | Not Run |  |  |  |
+| TC-15-04 |  |  | Not Run |  |  |  |
+| TC-15-05 |  |  | Not Run |  |  |  |
+| TC-15-06 |  |  | Not Run |  |  |  |
