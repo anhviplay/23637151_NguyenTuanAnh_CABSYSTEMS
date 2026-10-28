@@ -20,6 +20,8 @@
 | TC-12-03 | Tạo audit cho thao tác nhạy cảm | Audit / P0 | FR-60; UC-19; AC-32 | Có thao tác duyệt Driver, đổi giá, xử lý Trip/Payment hoặc đổi quyền. | Thực hiện thao tác hợp lệ. | Audit ghi actor, thời điểm, đối tượng, hành động, giá trị trước/sau và lý do khi bắt buộc. |
 | TC-12-04 | Tra cứu audit theo quyền | Positive + Negative / P0 | FR-61; UC-19; AC-32 | Có audit; hai Staff có và không có quyền xem. | Tìm kiếm audit bằng từng tài khoản. | Tài khoản có quyền xem đúng kết quả; tài khoản thiếu quyền bị từ chối. |
 | TC-12-05 | Áp dụng chính sách lưu trữ được phê duyệt | Data lifecycle / P1 | FR-62; AC-33 | ABC đã phê duyệt và cấu hình chính sách cho từng nhóm dữ liệu. | Chạy xử lý vòng đời trên dữ liệu đạt điều kiện. | Dữ liệu được lưu, xóa hoặc ẩn danh đúng cấu hình; có log thực thi; không dùng thời hạn ngoài cấu hình. |
+| TC-12-06 | Token JWT bị thay đổi | Security / P0 | Rubric-27; NFR-08; AC-41 | Có token hợp lệ và API yêu cầu xác thực. | Sửa `sub`/role trong payload hoặc chữ ký rồi gọi API; đối chiếu token gốc. | Token sửa bị từ chối HTTP 401; không truy cập dữ liệu/quyền Admin; token gốc vẫn dùng đúng quyền. |
+| TC-12-07 | Customer gọi Driver API trái quyền | Authorization / P0 | Rubric-28; NFR-09; AC-42; DRV-12 | Có Customer token và hồ sơ Driver. | Dùng Customer token gọi `GET /api/v1/drivers/{driverId}`. | HTTP 403 Forbidden; response không chứa dữ liệu Driver. |
 
 ## Ghi nhận thực thi
 
@@ -30,3 +32,5 @@
 | TC-12-03 |  |  | Not Run |  |  |  |
 | TC-12-04 |  |  | Not Run |  |  |  |
 | TC-12-05 |  |  | Not Run |  |  |  |
+| TC-12-06 |  |  | Not Run |  |  |  |
+| TC-12-07 |  |  | Not Run |  |  |  |

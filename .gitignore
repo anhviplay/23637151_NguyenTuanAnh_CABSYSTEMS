@@ -1,0 +1,19 @@
+# Dependencies
+node_modules/
+
+# Cau hinh rieng va bi mat
+.env
+.env.*
+!.env.example
+
+# Ket qua build va logs
+dist/
+coverage/
+*.log
+
+# Du lieu chay cuc bo
+.data/
+
+# File he dieu hanh
+.DS_Store
+Thumbs.db

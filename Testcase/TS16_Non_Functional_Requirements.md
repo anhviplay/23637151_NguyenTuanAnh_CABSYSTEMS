@@ -28,6 +28,7 @@
 | TC-16-11 | Audit chống sửa đổi qua nghiệp vụ | Security / P0 | NFR-10; AC-43 | Có audit log và tài khoản có quyền tra cứu. | Thử cập nhật hoặc xóa audit qua các chức năng nghiệp vụ; kiểm tra dữ liệu trước/sau. | Mọi yêu cầu sửa/xóa bị từ chối; audit không đổi và tiếp tục tuân theo chính sách lưu trữ đã cấu hình. |
 | TC-16-12 | Khôi phục RPO/RTO | Recovery / P0 | NFR-11; AC-44 | Có bản sao lưu hằng ngày và môi trường khôi phục. | Giả lập mất hệ thống; khôi phục và đo mất dữ liệu/thời gian. | RPO không quá 24 giờ; RTO không quá 4 giờ; dữ liệu sau khôi phục vượt kiểm tra toàn vẹn. |
 | TC-16-13 | Nhất quán khi gửi lặp và chuyển trạng thái sai | Reliability / P0 | NFR-12; AC-45 | Có lệnh trạng thái, callback Payment và gói đồng bộ. | Gửi lặp và gửi chuyển trạng thái không hợp lệ. | Không tạo dữ liệu trùng; kết quả idempotent; mọi chuyển trạng thái sai bị từ chối. |
+| TC-16-14 | Rate limiting tại Gateway | Security + Resilience / P0 | Rubric-29; NFR-03, NFR-08 | Gateway đã cấu hình ngưỡng rate limit cho môi trường; có công cụ gửi tải. | Gửi nhiều request liên tiếp tới API Booking vượt ngưỡng cấu hình, ghi ngưỡng thật của môi trường. | Request vượt ngưỡng trả HTTP 429, không tạo Booking cho request bị chặn; Gateway/hệ thống vẫn đáp ứng request hợp lệ sau đó. |
 
 ## Ghi nhận thực thi
 
@@ -46,3 +47,4 @@
 | TC-16-11 |  |  | Not Run |  |  |  |
 | TC-16-12 |  |  | Not Run |  |  |  |
 | TC-16-13 |  |  | Not Run |  |  |  |
+| TC-16-14 |  |  | Not Run |  |  |  |

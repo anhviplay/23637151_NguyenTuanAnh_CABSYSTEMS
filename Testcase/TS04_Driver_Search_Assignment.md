@@ -20,6 +20,7 @@
 | TC-04-03 | Ưu tiên Driver gần và phù hợp | Positive / P0 | FR-13; UC-11; AC-08 | Có ít nhất hai Driver đủ điều kiện với ETA khác nhau. | Xếp hạng ứng viên. | Driver phù hợp với ETA tốt hơn được ưu tiên; kết quả dùng cùng bộ dữ liệu là ổn định. |
 | TC-04-04 | Gửi Assignment tuần tự | Positive / P0 | FR-14; UC-11; AC-09 | Có danh sách Driver đã xếp hạng. | Bắt đầu điều phối và quan sát các Assignment. | Mỗi thời điểm chỉ Driver theo thứ tự hiện hành được mời; kết quả của Assignment trước được ghi trước khi tiếp tục. |
 | TC-04-05 | Kết thúc khi hết ứng viên | Exception / P0 | FR-18, FR-19; UC-11; AC-11 | Không còn Driver phù hợp hoặc đạt điều kiện kết thúc đã cấu hình. | Tiếp tục quy trình tìm Driver. | Tìm kiếm dừng; Booking thành No Driver Available; Customer được thông báo đúng Booking. |
+| TC-04-06 | Nearby Driver qua REST | API / P0 | Rubric-13; FR-12, FR-13; CUS-19 | Có ít nhất 5 Driver với availability khác nhau, vị trí còn hiệu lực quanh tọa độ kiểm thử; có token Staff đúng quyền. | GET nearby với `radiusMeters=1000`, lần lượt `page=1`, `page=2`, `pageSize=2`; thử tọa độ ngoài vùng và token Customer. | Danh sách chỉ theo phạm vi 1 km và vị trí còn hiệu lực; giới hạn 2 phần tử/trang, không trùng giữa trang, totalItems đúng; API không tự gán eligibility; Customer bị 403. |
 
 ## Ghi nhận thực thi
 
@@ -30,3 +31,4 @@
 | TC-04-03 |  |  | Not Run |  |  |  |
 | TC-04-04 |  |  | Not Run |  |  |  |
 | TC-04-05 |  |  | Not Run |  |  |  |
+| TC-04-06 |  |  | Not Run |  |  |  |

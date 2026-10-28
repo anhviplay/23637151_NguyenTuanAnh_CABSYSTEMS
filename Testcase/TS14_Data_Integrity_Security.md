@@ -21,6 +21,9 @@
 | TC-14-04 | Idempotency lệnh và callback | Reliability / P0 | NFR-12; AC-45 | Có lệnh cập nhật trạng thái và callback hợp lệ. | Gửi lặp cùng định danh nhiều lần. | Hiệu ứng nghiệp vụ chỉ xảy ra một lần; phản hồi sau nhất quán với kết quả ban đầu. |
 | TC-14-05 | Chặn sửa hoặc xóa audit qua ứng dụng | Security / P0 | FR-61; NFR-10; AC-32, AC-43 | Có audit và tài khoản có quyền tra cứu. | Thử sửa/xóa audit qua các API và đường dẫn nghiệp vụ. | Không có thao tác sửa/xóa được hỗ trợ; yêu cầu bị từ chối; bản ghi audit không đổi. |
 | TC-14-06 | Thực thi retention có kiểm soát | Data lifecycle / P1 | FR-62; NFR-10; AC-33, AC-43 | Có chính sách đã phê duyệt và dữ liệu biên trước/sau điều kiện. | Chạy xử lý retention và kiểm tra audit/log. | Chỉ dữ liệu đủ điều kiện bị xử lý; dữ liệu còn hạn giữ nguyên; kết quả có thể truy vết. |
+| TC-14-07 | Quản lý key và secret của dữ liệu nhạy cảm | Security / P0 | Rubric-24; NFR-08; AC-41 | Có môi trường kiểm thử và quyền xem cấu hình/DB ở mức phù hợp. | Kiểm tra password hash, dữ liệu được phân loại nhạy cảm, vị trí lưu key/secret và khả năng đọc dữ liệu khi chỉ có bản sao DB. | Không có plaintext cần bảo vệ trong DB/log; mật khẩu không đảo ngược; key/secret không nằm trong DB hoặc source công khai và có cơ chế quản lý truy cập. |
+| TC-14-08 | SQL Injection vào đăng nhập | Security / P0 | Rubric-25; NFR-08; AC-41; CUS-02 | Có tài khoản kiểm thử và API đăng nhập. | Gửi chuỗi SQLi trong trường định danh đăng nhập và password, gồm payload của phiếu chấm điều chỉnh đúng tên trường API. | HTTP 400 hoặc 401; không đăng nhập thành công, không bypass truy vấn và không lộ dữ liệu DB trong response/log khách hàng. |
+| TC-14-09 | XSS ở trường văn bản hiển thị | Security / P0 | Rubric-26; NFR-08; AC-41; CUS-16 | Có luồng nhập và hiển thị nhận xét Rating. | Gửi `<script>alert('hack')</script>` qua `comment`, đọc response và mở nơi hiển thị nhận xét. | Script không thực thi; output hiển thị được escape/xử lý an toàn, không lộ dữ liệu khác. |
 
 ## Ghi nhận thực thi
 
@@ -32,3 +35,6 @@
 | TC-14-04 |  |  | Not Run |  |  |  |
 | TC-14-05 |  |  | Not Run |  |  |  |
 | TC-14-06 |  |  | Not Run |  |  |  |
+| TC-14-07 |  |  | Not Run |  |  |  |
+| TC-14-08 |  |  | Not Run |  |  |  |
+| TC-14-09 |  |  | Not Run |  |  |  |

@@ -19,6 +19,7 @@
 | TC-03-02 | Tạo Booking Car 4-seat và Car 7-seat | Positive / P0 | FR-10, FR-11; UC-10; AC-06 | Customer đã đăng nhập. | Tạo lần lượt Booking với hai loại dịch vụ ô tô. | Mỗi Booking được tạo duy nhất ở Searching và giữ đúng loại dịch vụ đã chọn. |
 | TC-03-03 | Từ chối dữ liệu Booking thiếu hoặc sai | Negative / P0 | FR-10, FR-11; UC-10; AC-06 | Customer đã đăng nhập. | Bỏ trống điểm đón, điểm đến hoặc gửi loại dịch vụ không hỗ trợ. | Yêu cầu bị từ chối với lỗi trường dữ liệu; không tạo Booking dở dang. |
 | TC-03-04 | Gửi lặp yêu cầu tạo Booking | Reliability / P0 | FR-11; NFR-12; AC-06, AC-45 | Customer đã đăng nhập; dùng cùng Idempotency-Key. | Gửi lại cùng yêu cầu tạo Booking do mất phản hồi. | Chỉ một Booking được tạo; các phản hồi trỏ tới cùng bookingId. |
+| TC-03-05 | Liệt kê Booking của Customer | API + Authorization / P0 | Rubric-14; FR-11, FR-20; CUS-20 | Customer A có ít nhất 5 Booking; Customer B có Booking riêng. | Dùng token A GET danh sách với `pageSize=2`, đọc liên tiếp các trang; thử token B và token Driver. | Mỗi trang tối đa 2 Booking, totalItems/tổng trang đúng; đủ 5 Booking của A không lặp và không có Booking của B; token B chỉ thấy Booking B, Driver bị 403. |
 
 ## Ghi nhận thực thi
 
@@ -28,3 +29,4 @@
 | TC-03-02 |  |  | Not Run |  |  |  |
 | TC-03-03 |  |  | Not Run |  |  |  |
 | TC-03-04 |  |  | Not Run |  |  |  |
+| TC-03-05 |  |  | Not Run |  |  |  |

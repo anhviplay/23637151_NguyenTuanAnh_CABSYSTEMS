@@ -6,18 +6,20 @@
 
 Tất cả operation đi qua API Gateway.
 
-Trừ đăng ký, đăng nhập và khôi phục mật khẩu, actor phải có vai trò `DRIVER`. Driver chỉ được thao tác hồ sơ, phương tiện, Assignment và Trip thuộc mình.
+Trừ đăng ký, đăng nhập, khôi phục mật khẩu và quyền tra cứu Staff nêu tại DRV-12, actor phải có vai trò `DRIVER`. Driver chỉ được thao tác hồ sơ, phương tiện, Assignment và Trip thuộc mình.
 
 Mọi command phải được service sở hữu dữ liệu kiểm tra quyền, điều kiện nghiệp vụ và trạng thái hiện hành.
 
 ## DRV-01 Đăng ký Driver
 
-- **Operation:** `POST /api/v1/auth/driver/registrations`
-- **Truy xuất:** FR-05; UC-05; AC-03
-- **Body:** thông tin tài khoản, hồ sơ Driver, giấy phép và thông tin phương tiện bắt buộc
-- **Kết quả:** `201` với `driverId`, trạng thái `PENDING_VERIFICATION`
+- **Operations (nhánh Driver tự đăng ký):**
+  1. `POST /api/v1/auth/driver/registration-otp` với `phoneNumber`; identity-service gửi OTP và trả `202`.
+  2. `POST /api/v1/auth/driver/registration-otp/verify` với `phoneNumber`, `otp`; identity-service xác minh theo chính sách OTP hiện có và trả `200` với `otpVerificationToken` dùng một lần cho cùng số điện thoại.
+  3. `POST /api/v1/auth/driver/registrations` với `phoneNumber`, `password`, `otpVerificationToken`, hồ sơ Driver, giấy phép và thông tin phương tiện bắt buộc; trả `201` với `driverId`, trạng thái `PENDING_VERIFICATION`.
+- **Truy xuất:** Rubric-21; FR-05; UC-05; AC-03
+- **Lỗi chính:** `OTP_INVALID`, `OTP_EXPIRED`, `OTP_ALREADY_USED`, `PHONE_ALREADY_EXISTS`, `VALIDATION_ERROR`. OTP/proof sai, hết hạn hoặc đã dùng không tạo tài khoản/hồ sơ.
 
-Hồ sơ do `driver-service` sở hữu. Sự kiện `driver.profile-submitted` được phát để `operations-service` cập nhật dữ liệu xét duyệt.
+`identity-service` sở hữu OTP và tài khoản; `driver-service` sở hữu hồ sơ. Chỉ sau khi xác minh OTP hợp lệ, hồ sơ mới được tạo và `driver.profile-submitted` được phát để `operations-service` cập nhật dữ liệu xét duyệt. Nhánh Operations Staff tạo Driver theo OPS-01 không yêu cầu OTP của Driver. Không đặt thời hạn OTP mới ngoài cấu hình hiện hành.
 
 ## DRV-02 Đăng nhập và khôi phục mật khẩu
 
@@ -151,6 +153,15 @@ Nếu Trip đã `PICKED_UP` hoặc không còn cho phép hủy thông thường,
 - **Kết quả:** `200` với Payment `PAID`
 
 `payment-service` là chủ sở hữu trạng thái Payment. Khi Payment thay đổi, service phát `payment.status-changed` tới consumer liên quan.
+
+## DRV-12 Xem hồ sơ Driver theo ID
+
+- **Operation:** `GET /api/v1/drivers/{driverId}`
+- **Truy xuất:** Rubric-12; FR-08, FR-49; UC-07, UC-17; AC-05, AC-28
+- **Actor:** Driver đã đăng nhập chỉ xem `driverId` của chính mình; Operations Staff có quyền tra cứu Driver theo FR-49. Customer không được gọi operation này.
+- **Kết quả:** `200` với `driverId`, `verificationStatus`, `availability`, danh sách `vehicleId` và `version` trong envelope chung. Không trả mật khẩu, OTP hoặc bản sao giấy tờ xác minh.
+- **Lỗi:** `401` khi token thiếu/không hợp lệ; `403` khi actor không được phép hoặc Driver truy vấn hồ sơ người khác; `404` khi ID không tồn tại trong phạm vi được phép.
+- **Owner:** `driver-service`; Gateway chỉ định tuyến và xác thực token.
 
 ## Quy tắc nhất quán chung
 

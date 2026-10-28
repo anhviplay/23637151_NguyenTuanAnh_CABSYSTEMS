@@ -405,14 +405,14 @@ mindmap
 | FR-02 | Cho phép Customer và Driver đăng nhập bằng số điện thoại và mật khẩu. | Customer, Driver | Must | BR-01, BR-02, BR-18 |
 | FR-03 | Cho phép Customer và Driver khôi phục mật khẩu bằng OTP. | Customer, Driver | Must | BR-01, BR-02, BR-18 |
 | FR-04 | Cho phép Customer cập nhật thông tin cá nhân của mình. | Customer | Must | BR-01 |
-| FR-47 | Cho phép Customer gửi một Rating 1–5 sao sau khi Trip hoàn thành. | Customer | Must | BR-11 |
+| FR-47 | Cho phép Customer gửi một Rating 1–5 sao kèm nhận xét sau khi Trip hoàn thành. | Customer | Must | BR-11 |
 | FR-48 | Hiển thị điểm đánh giá trung bình của Driver từ các đánh giá hợp lệ. | Tự động | Must | BR-11, BR-14 |
 
 #### 2.2.2 Phân hệ 2.0: Quản lý Driver & Phương tiện
 
 | ID | Yêu cầu chức năng | Chủ thể/Thực thi | Ưu tiên | BR |
 | --- | --- | --- | --- | --- |
-| FR-05 | Cho phép Driver tự đăng ký và nộp hồ sơ xác minh. | Driver | Must | BR-02 |
+| FR-05 | Cho phép Driver tự đăng ký sau khi xác minh số điện thoại bằng OTP và nộp hồ sơ xác minh. | Driver | Must | BR-02 |
 | FR-06 | Cho phép Operations Staff tạo tài khoản và hồ sơ Driver. | Operations Staff | Must | BR-02, BR-12 |
 | FR-07 | Cho phép Operations Staff có quyền cập nhật trạng thái hồ sơ Driver và ghi nhận lý do. | Operations Staff | Must | BR-02, BR-12, BR-19 |
 | FR-08 | Cho phép Driver cập nhật hồ sơ và phương tiện; thay đổi thông tin cần xác minh đưa hồ sơ về `Pending Verification`. | Driver | Must | BR-02 |
@@ -619,7 +619,7 @@ mindmap
 
 | Thuộc tính | Nội dung |
 | --- | --- |
-| Quy tắc | Customer được gửi một Rating 1–5 cho Driver sau khi Trip `Completed`. |
+| Quy tắc | Customer được gửi một Rating 1–5 kèm nhận xét bắt buộc cho Driver sau khi Trip `Completed`. |
 | Áp dụng | Customer |
 | Yêu cầu liên quan | FR-47, FR-48 |
 
@@ -722,9 +722,9 @@ erDiagram
 | Assignment | Assignment ID, Booking ID, Driver ID, thứ tự, thời điểm gửi/hết hạn/phản hồi, kết quả | Một Booking có nhiều Assignment nhưng tối đa một Accepted. |
 | Trip | Trip ID, Booking ID, Driver ID, Vehicle ID, trạng thái, mốc thời gian, quãng đường | Một Booking có tối đa một Trip thực hiện. |
 | Fare | Fare ID, Trip ID, loại dịch vụ, quãng đường tính cước, đơn giá/km, tổng tiền | Một Trip hoàn thành có một Fare. |
-| Payment | Payment ID, Fare ID, phương thức, trạng thái, provider reference, thời điểm | Theo dõi Cash hoặc kết quả do External Payment Provider trả về. |
+| Payment | Payment ID, Fare ID, phương thức (chưa chọn khi mới tạo), trạng thái, provider reference, thời điểm | Được tạo ở `PENDING` cùng Fare; theo dõi Cash hoặc kết quả do External Payment Provider trả về. |
 | Notification | Notification ID, người nhận, sự kiện, kênh, trạng thái, thời điểm | Kết quả gửi được ghi nhận mà không thay đổi giao dịch nguồn. |
-| Rating | Rating ID, Trip ID, Customer ID, Driver ID, số sao, thời điểm | Một Rating 1–5 sao cho một Trip đã hoàn thành. |
+| Rating | Rating ID, Trip ID, Customer ID, Driver ID, số sao, nhận xét, thời điểm | Một Rating 1–5 sao kèm nhận xét cho một Trip đã hoàn thành. |
 | Audit Log | Audit ID, actor, hành động, đối tượng, trước/sau, lý do, thời điểm | Không được sửa hoặc xóa qua chức năng nghiệp vụ. |
 
 ### 4.3 Cardinality và toàn vẹn
@@ -926,8 +926,8 @@ Các use case cập nhật hồ sơ, phương tiện và trạng thái làm vi�
 | Primary Actor | Driver, Operations Staff |
 | Trigger | Driver tự đăng ký hoặc Operations Staff tạo Driver mới. |
 | Preconditions | Chưa có hồ sơ Driver tương ứng |
-| Main Flow | 1. Driver tự đăng ký hoặc Operations Staff tạo hồ sơ<br>2. nhập thông tin định danh và liên hệ<br>3. nộp giấy phép lái xe<br>4. hệ thống tạo hồ sơ `Pending Verification`. |
-| Alternative/Exception Flow | EX-01 |
+| Main Flow | 1. Nếu Driver tự đăng ký: nhập số điện thoại, yêu cầu và xác minh OTP<br>2. Driver đã xác minh OTP nhập thông tin định danh, phương tiện và giấy phép; hoặc Operations Staff có quyền nhập hồ sơ theo nhánh tạo hộ<br>3. hệ thống tạo hồ sơ `Pending Verification`. |
+| Alternative/Exception Flow | OTP sai, hết hạn hoặc đã dùng trong nhánh tự đăng ký: từ chối, không tạo hồ sơ; dữ liệu hồ sơ không hợp lệ: EX-01. |
 | Postconditions | Hồ sơ Driver tồn tại ở `Pending Verification` và chưa được nhận Booking. |
 | Requirements | FR-05, FR-06 |
 
@@ -1056,7 +1056,7 @@ Các use case cập nhật hồ sơ, phương tiện và trạng thái làm vi�
 | Primary Actor | Customer, Driver, External Payment Provider |
 | Trigger | Trip chuyển sang `Completed` và Fare cần được xác định. |
 | Preconditions | Trip ở `Completed` |
-| Main Flow | 1. Hệ thống tính và hiển thị Fare<br>2. Customer chọn tiền mặt hoặc điện tử<br>3. Driver xác nhận tiền mặt hoặc External Payment Provider xử lý điện tử<br>4. hệ thống đối soát kết quả<br>5. hệ thống cập nhật Payment và thông báo Customer. |
+| Main Flow | 1. Hệ thống tính Fare, tạo một Payment hiện hành ở `PENDING` và hiển thị Fare<br>2. Customer chọn tiền mặt hoặc điện tử cho Payment đã có<br>3. Driver xác nhận tiền mặt hoặc External Payment Provider xử lý điện tử<br>4. hệ thống đối soát kết quả<br>5. hệ thống cập nhật Payment và thông báo Customer. |
 | Alternative/Exception Flow | EX-10, EX-11 |
 | Postconditions | Fare và Payment có trạng thái, số tiền và kết quả đối soát nhất quán. |
 | Requirements | FR-33–FR-42 |
@@ -1069,8 +1069,8 @@ Các use case cập nhật hồ sơ, phương tiện và trạng thái làm vi�
 | Primary Actor | Customer |
 | Trigger | Customer mở lịch sử hoặc chọn đánh giá một Trip đã hoàn thành. |
 | Preconditions | Customer đã đăng nhập |
-| Main Flow | 1. Customer mở lịch sử<br>2. chọn Trip và xem Fare/Payment<br>3. chọn Trip `Completed` chưa có Rating<br>4. gửi Rating 1–5<br>5. hệ thống lưu một lần và cập nhật điểm trung bình của Driver. |
-| Alternative/Exception Flow | Đã đánh giá hoặc Trip chưa hoàn thành: từ chối Rating. |
+| Main Flow | 1. Customer mở lịch sử<br>2. chọn Trip và xem Fare/Payment<br>3. chọn Trip `Completed` chưa có Rating<br>4. gửi Rating 1–5 kèm nhận xét<br>5. hệ thống lưu một lần và cập nhật điểm trung bình của Driver. |
+| Alternative/Exception Flow | Đã đánh giá, Trip chưa hoàn thành hoặc thiếu nhận xét: từ chối Rating. |
 | Postconditions | Customer xem đúng dữ liệu của mình; Rating hợp lệ được lưu tối đa một lần. |
 | Requirements | FR-46–FR-48 |
 
@@ -1131,7 +1131,7 @@ Acceptance Criteria được viết theo **Given–When–Then**, phải kiểm 
 | --- | --- | --- | --- |
 | AC-01 | Tài khoản và xác thực | FR-01, FR-02, FR-03 | **GIVEN** Customer/Driver cung cấp số điện thoại và thông tin xác thực hợp lệ.<br>**WHEN** Người dùng đăng ký, đăng nhập hoặc khôi phục mật khẩu với OTP hợp lệ.<br>**THEN** Tài khoản/phiên được tạo đúng; OTP sai, hết hạn hoặc đã dùng bị từ chối an toàn. |
 | AC-02 | Cập nhật hồ sơ Customer | FR-04 | **GIVEN** Customer đã đăng nhập.<br>**WHEN** Customer gửi dữ liệu hồ sơ hợp lệ.<br>**THEN** Dữ liệu mới được lưu và đọc lại đúng; dữ liệu sai không được ghi. |
-| AC-03 | Tạo hồ sơ Driver | FR-05, FR-06 | **GIVEN** Driver tự đăng ký hoặc Operations Staff tạo hồ sơ.<br>**WHEN** Thông tin và giấy tờ tối thiểu được nộp hợp lệ.<br>**THEN** Driver được tạo ở `Pending Verification` và chưa được nhận Booking. |
+| AC-03 | Tạo hồ sơ Driver | FR-05, FR-06 | **GIVEN** Driver tự đăng ký hoặc Operations Staff có quyền tạo hồ sơ.<br>**WHEN** Driver tự đăng ký xác minh OTP hợp lệ rồi nộp thông tin/giấy tờ; hoặc Staff nộp hồ sơ hợp lệ theo quyền.<br>**THEN** Driver được tạo ở `Pending Verification` và chưa được nhận Booking; OTP sai, hết hạn hoặc đã dùng không hoàn tất đăng ký tự phục vụ. |
 | AC-04 | Xét duyệt Driver | FR-07 | **GIVEN** Hồ sơ Driver đang `Pending Verification` và Operations Staff có quyền.<br>**WHEN** Operations Staff cập nhật trạng thái kèm lý do.<br>**THEN** Duyệt chuyển sang `Active`; từ chối lưu lý do; thao tác có audit. |
 | AC-05 | Hồ sơ, phương tiện và trạng thái làm việc | FR-08, FR-09 | **GIVEN** Driver đã đăng nhập.<br>**WHEN** Driver cập nhật dữ liệu hoặc chuyển `Offline/Available`.<br>**THEN** Thao tác hợp lệ được lưu; thay đổi cần xác minh hoặc Driver đang có Trip không được chuyển sai trạng thái. |
 
@@ -1157,8 +1157,8 @@ Acceptance Criteria được viết theo **Given–When–Then**, phải kiểm 
 
 | AC | Tiêu chí | FR | Given–When–Then |
 | --- | --- | --- | --- |
-| AC-19 | Tính Fare | FR-33, FR-34, FR-35 | **GIVEN** Trip hoàn thành với loại dịch vụ và quãng đường tính cước xác định.<br>**WHEN** CAB System tính Fare.<br>**THEN** áp dụng đúng đơn giá/km 5.000/10.000/13.000 VNĐ tương ứng Bike/Car 4-seat/Car 7-seat và lưu đầy đủ dữ liệu tính cước. |
-| AC-20 | Chọn phương thức Payment | FR-36 | **GIVEN** Fare đang `Payment Pending`.<br>**WHEN** Customer chọn tiền mặt hoặc điện tử.<br>**THEN** Phương thức được lưu cho đúng Payment và không tạo Fare mới. |
+| AC-19 | Tính Fare | FR-33, FR-34, FR-35 | **GIVEN** Trip hoàn thành với loại dịch vụ và quãng đường tính cước xác định.<br>**WHEN** CAB System tính Fare.<br>**THEN** áp dụng đúng đơn giá/km 5.000/10.000/13.000 VNĐ tương ứng Bike/Car 4-seat/Car 7-seat, lưu đầy đủ dữ liệu tính cước và tạo đúng một Payment hiện hành ở `PENDING` cho Fare. |
+| AC-20 | Chọn phương thức Payment | FR-36 | **GIVEN** Fare đang `Payment Pending`.<br>**WHEN** Customer chọn tiền mặt hoặc điện tử.<br>**THEN** Phương thức được lưu vào Payment đã có; không tạo Fare hoặc Payment mới. |
 | AC-21 | Thanh toán điện tử | FR-37, FR-38 | **GIVEN** Customer chọn thanh toán điện tử.<br>**WHEN** CAB gửi giao dịch và nhận callback hợp lệ hoặc trùng.<br>**THEN** Payment cập nhật đúng một lần theo mã tham chiếu; CAB không lưu dữ liệu thẻ/tài khoản nhạy cảm. |
 | AC-22 | Thanh toán thất bại và thực hiện lại | FR-39, FR-40, FR-41 | **GIVEN** External Payment Provider trả kết quả thất bại.<br>**WHEN** Customer thực hiện lại hoặc đổi sang tiền mặt.<br>**THEN** Customer được thông báo; trạng thái Payment được cập nhật đúng và không tạo Fare mới. |
 | AC-23 | Xác nhận tiền mặt và xử lý ngoại lệ | FR-42 | **GIVEN** Customer chọn tiền mặt hoặc Payment cần hỗ trợ.<br>**WHEN** Driver xác nhận đã thu hoặc Operations Staff có quyền xử lý và ghi lý do.<br>**THEN** Payment chuyển trạng thái đúng; thao tác Operations có audit. |
@@ -1170,7 +1170,7 @@ Acceptance Criteria được viết theo **Given–When–Then**, phải kiểm 
 | AC-24 | Thông báo mốc nghiệp vụ | FR-43, FR-44 | **GIVEN** Một mốc Booking, Assignment, Trip hoặc Payment xảy ra.<br>**WHEN** Hệ thống phát Notification.<br>**THEN** Đúng Customer/Driver nhận nội dung tương ứng qua in-app và push. |
 | AC-25 | Notification lỗi tạm thời | FR-45 | **GIVEN** Nhà cung cấp trả lỗi tạm thời.<br>**WHEN** Hệ thống xử lý lại theo cấu hình.<br>**THEN** Kết quả gửi được ghi nhận và giao dịch nghiệp vụ nguồn không bị đảo. |
 | AC-26 | Lịch sử Trip | FR-46 | **GIVEN** Customer đã đăng nhập.<br>**WHEN** Customer mở lịch sử và chi tiết.<br>**THEN** Chỉ dữ liệu của Customer được hiển thị và khớp Trip, Fare, Payment. |
-| AC-27 | Rating Driver | FR-47, FR-48 | **GIVEN** Trip đã `Completed` và chưa có Rating.<br>**WHEN** Customer gửi số nguyên 1–5.<br>**THEN** Rating được lưu cho Trip và dữ liệu tổng hợp Driver được cập nhật; Rating trùng bị từ chối. |
+| AC-27 | Rating Driver | FR-47, FR-48 | **GIVEN** Trip đã `Completed` và chưa có Rating.<br>**WHEN** Customer gửi số nguyên 1–5 và nhận xét.<br>**THEN** Rating cùng nhận xét được lưu cho Trip và dữ liệu tổng hợp Driver được cập nhật; Rating trùng bị từ chối. |
 
 #### 7.2.5 Operations, Reports, Security và Retention
 
@@ -1267,7 +1267,7 @@ Acceptance Criteria được viết theo **Given–When–Then**, phải kiểm 
 | BG-01, BG-03 | BR-01, BR-02, BR-18 | FR-02 | Cho phép Customer và Driver đăng nhập bằng số điện thoại và mật khẩu. | UC-02 | AC-01 | TS01 |
 | BG-01, BG-03 | BR-01, BR-02, BR-18 | FR-03 | Cho phép Customer và Driver khôi phục mật khẩu bằng OTP. | UC-03 | AC-01 | TS01 |
 | BG-01, BG-03 | BR-01 | FR-04 | Cho phép Customer cập nhật thông tin cá nhân của mình. | UC-04 | AC-02 | TS01 |
-| BG-01, BG-03 | BR-02 | FR-05 | Cho phép Driver tự đăng ký và nộp hồ sơ xác minh. | UC-05 | AC-03 | TS02 |
+| BG-01, BG-03 | BR-02 | FR-05 | Cho phép Driver tự đăng ký sau khi xác minh số điện thoại bằng OTP và nộp hồ sơ xác minh. | UC-05 | AC-03 | TS02 |
 | BG-01, BG-03 | BR-02, BR-12 | FR-06 | Cho phép Operations Staff tạo tài khoản và hồ sơ Driver. | UC-05 | AC-03 | TS02 |
 | BG-01, BG-03 | BR-02, BR-12, BR-19 | FR-07 | Cho phép Operations Staff có quyền cập nhật trạng thái hồ sơ Driver và ghi nhận lý do. | UC-06 | AC-04 | TS02 |
 | BG-01, BG-03 | BR-02 | FR-08 | Cho phép Driver cập nhật hồ sơ và phương tiện; thay đổi thông tin cần xác minh đưa hồ sơ về `Pending Verification`. | UC-07, UC-08 | AC-05 | TS02 |
@@ -1309,7 +1309,7 @@ Acceptance Criteria được viết theo **Given–When–Then**, phải kiểm 
 | BG-01, BG-02 | BR-10 | FR-44 | Gửi Driver thông báo về Booking mới và thay đổi của Trip được gán. | Quy trình hệ thống | AC-24 | TS09 |
 | BG-01, BG-02, BG-04 | BR-10, BR-15 | FR-45 | Ghi nhận lỗi gửi và thực hiện lại theo cấu hình đối với lỗi tạm thời mà không đảo giao dịch nguồn. | Quy trình hệ thống | AC-25 | TS09 |
 | BG-02, BG-03 | BR-07 | FR-46 | Cho phép Customer xem lịch sử Trip và chi tiết cước/thanh toán của mình. | UC-16 | AC-26 | TS03/TS06/TS10 |
-| BG-02 | BR-11 | FR-47 | Cho phép Customer gửi một Rating 1–5 sao sau khi Trip hoàn thành. | UC-16 | AC-27 | TS10 |
+| BG-02 | BR-11 | FR-47 | Cho phép Customer gửi một Rating 1–5 sao kèm nhận xét sau khi Trip hoàn thành. | UC-16 | AC-27 | TS10 |
 | BG-02, BG-03 | BR-11, BR-14 | FR-48 | Hiển thị điểm đánh giá trung bình của Driver từ các đánh giá hợp lệ. | UC-16 | AC-27 | TS10 |
 | BG-01, BG-03 | BR-12, BR-13, BR-19 | FR-49 | Cho phép Operations Staff tìm kiếm và xem Customer, Driver, phương tiện, Booking, Trip và Payment theo quyền. | UC-17 | AC-28 | TS11/TS13 |
 | BG-01, BG-03 | BR-12, BR-19 | FR-50 | Cho phép Operations Staff cập nhật thông tin hỗ trợ và ghi chú xử lý trong phạm vi quyền được cấp. | UC-17 | AC-28 | TS11/TS13 |

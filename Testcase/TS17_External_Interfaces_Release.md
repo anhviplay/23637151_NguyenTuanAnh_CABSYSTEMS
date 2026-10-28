@@ -22,6 +22,7 @@
 | TC-17-05 | Location and Routing | Integration / P0 | EIR-05; AC-50 | Dịch vụ bản đồ/định tuyến kiểm thử sẵn sàng. | Gửi vị trí; tìm Driver; tính ETA, khoảng cách và quãng đường Trip; giả lập lỗi dịch vụ. | Dữ liệu hợp lệ được dùng đúng; vị trí cũ bị loại; lỗi được xử lý rõ mà không tạo kết quả giả. |
 | TC-17-06 | Notification Channel | Integration / P1 | EIR-06; AC-51 | In-app và push provider kiểm thử sẵn sàng. | Gửi các mốc thông báo; kiểm thử thành công, lỗi tạm thời và callback trùng. | Đúng người nhận/nội dung; kết quả được ghi; xử lý lại theo cấu hình; giao dịch nguồn không bị đảo. |
 | TC-17-07 | Hợp đồng giao tiếp và phiên bản | Contract / P1 | NFR-06, NFR-07; AC-39, AC-40 | Có schema/hợp đồng API và event của bản phát hành. | Chạy contract test producer/consumer và regression khi thay implementation tương thích. | Hợp đồng hiện hành tương thích; thay thành phần tương thích không làm hỏng luồng nghiệp vụ liên quan. |
+| TC-17-08 | Health và readiness | Technical / P0 | Rubric-06; NFR-02, NFR-03 | Gateway và 9 service được triển khai; có token Operations được cấp quyền. | Gọi `GET /health`, `GET /ready`, `GET /health/services`; lặp lại khi một service không xác định được tình trạng và khi Gateway chưa ready. | Health trả HEALTHY khi Gateway sống; ready phản ánh khả năng nhận/định tuyến; danh sách có đúng 9 service với trạng thái thật hoặc UNKNOWN; thiếu quyền không trả danh sách. |
 
 ## Ghi nhận thực thi
 
@@ -34,3 +35,4 @@
 | TC-17-05 |  |  | Not Run |  |  |  |
 | TC-17-06 |  |  | Not Run |  |  |  |
 | TC-17-07 |  |  | Not Run |  |  |  |
+| TC-17-08 |  |  | Not Run |  |  |  |

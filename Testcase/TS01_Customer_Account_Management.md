@@ -20,6 +20,7 @@
 | TC-01-03 | Đăng nhập Customer và Driver | Positive / P0 | FR-02; UC-02; AC-01 | Có tài khoản Customer và Driver hợp lệ. | Đăng nhập từng tài khoản bằng số điện thoại và mật khẩu đúng. | Mỗi người dùng nhận phiên hợp lệ với đúng danh tính và quyền; không trả mật khẩu trong phản hồi. |
 | TC-01-04 | Khôi phục mật khẩu | Positive / P0 | FR-03; UC-03; AC-01 | Tài khoản đã tồn tại; OTP khôi phục hợp lệ. | Yêu cầu OTP; xác nhận mật khẩu mới; đăng nhập bằng mật khẩu mới rồi thử mật khẩu cũ. | Mật khẩu mới hoạt động; mật khẩu cũ bị từ chối; OTP không thể dùng lại. |
 | TC-01-05 | Cập nhật hồ sơ Customer | Positive + Negative / P1 | FR-04; UC-04; AC-02 | Customer đã đăng nhập. | Cập nhật dữ liệu hợp lệ và đọc lại; sau đó gửi dữ liệu sai định dạng. | Dữ liệu hợp lệ được lưu và đọc đúng; lần gửi sai bị từ chối và không làm thay đổi hồ sơ hiện có. |
+| TC-01-06 | Xem Customer theo ID bằng token | API + Authorization / P0 | Rubric-11; FR-04; UC-04; AC-02; CUS-18 | Có hai Customer khác nhau và token của một Customer. | GET theo ID của chính mình; lặp lại với token thiếu/sai, ID Customer khác và ID không tồn tại. | ID của mình trả 200 và đúng hồ sơ không có credential; token thiếu/sai trả 401; ID khác bị 403; ID không tồn tại trả 404 theo phạm vi được phép. |
 
 ## Ghi nhận thực thi
 
@@ -30,3 +31,4 @@
 | TC-01-03 |  |  | Not Run |  |  |  |
 | TC-01-04 |  |  | Not Run |  |  |  |
 | TC-01-05 |  |  | Not Run |  |  |  |
+| TC-01-06 |  |  | Not Run |  |  |  |
