@@ -102,10 +102,10 @@ Danh sách dùng `page`, `pageSize`, `sort` và bộ lọc được công bố t
 
 | Đối tượng | Trạng thái |
 | --- | --- |
-| Booking | `SEARCHING`, `DRIVER_ASSIGNED`, `TRIP_CREATED`, `COMPLETED`, `CANCELLED`, `NO_DRIVER_AVAILABLE` |
+| Booking | `SEARCHING`, `DRIVER_ASSIGNED`, `TRIP_CREATED`, `COMPLETED`, `CANCELED`, `NO_DRIVER_AVAILABLE` |
 | Assignment | `OFFERED`, `ACCEPTED`, `REJECTED`, `NO_RESPONSE`, `EXPIRED` |
-| Trip | `CREATED`, `DRIVER_ARRIVED`, `PICKED_UP`, `IN_PROGRESS`, `COMPLETED`, `CANCELLED` |
-| Payment | `PENDING`, `PAID`, `FAILED` |
+| Trip | `CREATED`, `DRIVER_ARRIVED`, `PICKED_UP`, `IN_PROGRESS`, `COMPLETED`, `CANCELED` |
+| Payment | `PENDING`, `COMPLETED`, `FAILED` |
 | Driver availability | `OFFLINE`, `AVAILABLE`, `BUSY` |
 | Driver verification | `PENDING_VERIFICATION`, `ACTIVE`, `REJECTED` |
 

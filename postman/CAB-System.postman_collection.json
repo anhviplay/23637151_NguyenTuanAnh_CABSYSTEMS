@@ -1,0 +1,2237 @@
+{
+  "info": {
+    "name": "CAB System",
+    "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
+  },
+  "item": [
+    {
+      "name": "06 — Health check",
+      "item": [
+        {
+          "name": "Health",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": "{{baseUrl}}/health"
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"HTTP 200\", function () { pm.response.to.have.status(200); });",
+                  "const d = pm.response.json().data;"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "Ready",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": "{{baseUrl}}/ready"
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"HTTP 200\", function () { pm.response.to.have.status(200); });",
+                  "const d = pm.response.json().data;"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "Danh sách 9 service",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{operationsToken}}"
+              }
+            ],
+            "url": "{{baseUrl}}/health/services"
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"HTTP 200\", function () { pm.response.to.have.status(200); });",
+                  "const d = pm.response.json().data;",
+                  "pm.test(\"9 service\",()=>pm.expect(d.services).to.have.lengthOf(9));"
+                ]
+              }
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "Đăng nhập tài khoản đã chuẩn bị",
+      "item": [
+        {
+          "name": "Đăng nhập operations",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              },
+              {
+                "key": "Idempotency-Key",
+                "value": "{{$guid}}"
+              }
+            ],
+            "url": "{{baseUrl}}/api/v1/auth/sessions",
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"phoneNumber\": \"{{operationsPhone}}\",\n  \"password\": \"{{operationsPassword}}\",\n  \"actorType\": \"OPERATIONS\"\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            }
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"HTTP 200\", function () { pm.response.to.have.status(200); });",
+                  "const d = pm.response.json().data;",
+                  "if (d && d.accessToken !== undefined) pm.environment.set(\"operationsToken\", d.accessToken);",
+                  "if (d && d.actorId !== undefined) pm.environment.set(\"operationsId\", d.actorId);"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "Đăng nhập customer",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              },
+              {
+                "key": "Idempotency-Key",
+                "value": "{{$guid}}"
+              }
+            ],
+            "url": "{{baseUrl}}/api/v1/auth/sessions",
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"phoneNumber\": \"{{customerPhone}}\",\n  \"password\": \"{{customerPassword}}\",\n  \"actorType\": \"CUSTOMER\"\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            }
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"HTTP 200\", function () { pm.response.to.have.status(200); });",
+                  "const d = pm.response.json().data;",
+                  "if (d && d.accessToken !== undefined) pm.environment.set(\"customerToken\", d.accessToken);",
+                  "if (d && d.actorId !== undefined) pm.environment.set(\"customerId\", d.actorId);"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "Đăng nhập driver",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              },
+              {
+                "key": "Idempotency-Key",
+                "value": "{{$guid}}"
+              }
+            ],
+            "url": "{{baseUrl}}/api/v1/auth/sessions",
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"phoneNumber\": \"{{driverPhone}}\",\n  \"password\": \"{{driverPassword}}\",\n  \"actorType\": \"DRIVER\"\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            }
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"HTTP 200\", function () { pm.response.to.have.status(200); });",
+                  "const d = pm.response.json().data;",
+                  "if (d && d.accessToken !== undefined) pm.environment.set(\"driverToken\", d.accessToken);",
+                  "if (d && d.actorId !== undefined) pm.environment.set(\"driverId\", d.actorId);"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "Đăng nhập cancelDriver",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              },
+              {
+                "key": "Idempotency-Key",
+                "value": "{{$guid}}"
+              }
+            ],
+            "url": "{{baseUrl}}/api/v1/auth/sessions",
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"phoneNumber\": \"{{cancelDriverPhone}}\",\n  \"password\": \"{{cancelDriverPassword}}\",\n  \"actorType\": \"DRIVER\"\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            }
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"HTTP 200\", function () { pm.response.to.have.status(200); });",
+                  "const d = pm.response.json().data;",
+                  "if (d && d.accessToken !== undefined) pm.environment.set(\"cancelDriverToken\", d.accessToken);",
+                  "if (d && d.actorId !== undefined) pm.environment.set(\"cancelDriverId\", d.actorId);"
+                ]
+              }
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "09 — Đăng ký Customer",
+      "item": [
+        {
+          "name": "Yêu cầu OTP",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              },
+              {
+                "key": "Idempotency-Key",
+                "value": "{{$guid}}"
+              }
+            ],
+            "url": "{{baseUrl}}/api/v1/auth/customer/registration-otp",
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"phoneNumber\": \"{{newCustomerPhone}}\"\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            }
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"HTTP 202\", function () { pm.response.to.have.status(202); });",
+                  "const d = pm.response.json().data;"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "Lấy OTP từ hộp thư sandbox",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "X-Sandbox-Key",
+                "value": "{{sandboxKey}}"
+              }
+            ],
+            "url": "{{baseUrl}}/api/v1/sandbox/otp?phoneNumber={{newCustomerPhone}}&actorType=CUSTOMER"
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"HTTP 200\", function () { pm.response.to.have.status(200); });",
+                  "const d = pm.response.json().data;",
+                  "if (d && d.otp !== undefined) pm.environment.set(\"customerOtp\", d.otp);"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "Đăng ký Customer",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              },
+              {
+                "key": "Idempotency-Key",
+                "value": "{{$guid}}"
+              }
+            ],
+            "url": "{{baseUrl}}/api/v1/auth/customer/registrations",
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"phoneNumber\": \"{{newCustomerPhone}}\",\n  \"password\": \"{{newCustomerPassword}}\",\n  \"otp\": \"{{customerOtp}}\",\n  \"fullName\": \"Customer\"\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            }
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"HTTP 201\", function () { pm.response.to.have.status(201); });",
+                  "const d = pm.response.json().data;"
+                ]
+              }
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "10 — Đăng nhập Customer",
+      "item": [
+        {
+          "name": "Đăng nhập",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              },
+              {
+                "key": "Idempotency-Key",
+                "value": "{{$guid}}"
+              }
+            ],
+            "url": "{{baseUrl}}/api/v1/auth/sessions",
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"phoneNumber\": \"{{customerPhone}}\",\n  \"password\": \"{{customerPassword}}\",\n  \"actorType\": \"CUSTOMER\"\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            }
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"HTTP 200\", function () { pm.response.to.have.status(200); });",
+                  "const d = pm.response.json().data;",
+                  "if (d && d.accessToken !== undefined) pm.environment.set(\"customerToken\", d.accessToken);",
+                  "if (d && d.actorId !== undefined) pm.environment.set(\"customerId\", d.actorId);"
+                ]
+              }
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "11 — Thông tin Customer",
+      "item": [
+        {
+          "name": "Xem Customer theo ID",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{customerToken}}"
+              }
+            ],
+            "url": "{{baseUrl}}/api/v1/customers/{{customerId}}"
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"HTTP 200\", function () { pm.response.to.have.status(200); });",
+                  "const d = pm.response.json().data;",
+                  "if (d && d.version !== undefined) pm.environment.set(\"customerVersion\", d.version);"
+                ]
+              }
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "12 — Thông tin Driver",
+      "item": [
+        {
+          "name": "Xem Driver theo ID",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{driverToken}}"
+              }
+            ],
+            "url": "{{baseUrl}}/api/v1/drivers/{{driverId}}"
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"HTTP 200\", function () { pm.response.to.have.status(200); });",
+                  "const d = pm.response.json().data;",
+                  "if (d && d.version !== undefined) pm.environment.set(\"driverVersion\", d.version);"
+                ]
+              }
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "13 — Driver trong bán kính 1 km",
+      "item": [
+        {
+          "name": "Driver gần, trang 1",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{operationsToken}}"
+              }
+            ],
+            "url": "{{baseUrl}}/api/v1/drivers/nearby?latitude=10.77&longitude=106.70&radiusMeters=1000&page=1&pageSize=2"
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"HTTP 200\", function () { pm.response.to.have.status(200); });",
+                  "const d = pm.response.json().data;",
+                  "pm.test(\"Có phân trang\",()=>pm.expect(pm.response.json().meta.pageSize).to.eql(2));"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "Driver gần, trang 2",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{operationsToken}}"
+              }
+            ],
+            "url": "{{baseUrl}}/api/v1/drivers/nearby?latitude=10.77&longitude=106.70&radiusMeters=1000&page=2&pageSize=2"
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"HTTP 200\", function () { pm.response.to.have.status(200); });",
+                  "const d = pm.response.json().data;"
+                ]
+              }
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "14 — Booking của Customer",
+      "item": [
+        {
+          "name": "Danh sách Booking",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{customerToken}}"
+              }
+            ],
+            "url": "{{baseUrl}}/api/v1/customers/me/bookings?page=1&pageSize=2"
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"HTTP 200\", function () { pm.response.to.have.status(200); });",
+                  "const d = pm.response.json().data;",
+                  "pm.test(\"Ít nhất 5 Booking\",()=>pm.expect(pm.response.json().meta.totalItems).to.be.at.least(5));"
+                ]
+              }
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "15 — Đặt xe",
+      "item": [
+        {
+          "name": "Tạo Booking",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{customerToken}}"
+              },
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              },
+              {
+                "key": "Idempotency-Key",
+                "value": "{{bookingCommandKey}}"
+              }
+            ],
+            "url": "{{baseUrl}}/api/v1/bookings",
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"pickup\": {\n    \"address\": \"Điểm đón\",\n    \"location\": {\n      \"latitude\": 10.77,\n      \"longitude\": 106.7\n    }\n  },\n  \"destination\": {\n    \"address\": \"Điểm đến\",\n    \"location\": {\n      \"latitude\": 10.79,\n      \"longitude\": 106.7\n    }\n  },\n  \"serviceType\": \"BIKE\"\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            }
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"HTTP 201\", function () { pm.response.to.have.status(201); });",
+                  "const d = pm.response.json().data;",
+                  "if (d && d.bookingId !== undefined) pm.environment.set(\"bookingId\", d.bookingId);",
+                  "if (d && d.version !== undefined) pm.environment.set(\"bookingVersion\", d.version);",
+                  "pm.test(\"Đang tìm tài xế\",()=>pm.expect(d.status).to.eql(\"SEARCHING\"));"
+                ]
+              }
+            },
+            {
+              "listen": "prerequest",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.environment.set(\"bookingCommandKey\",pm.variables.replaceIn(\"{{$guid}}\"));"
+                ]
+              }
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "16 — Driver nhận chuyến",
+      "item": [
+        {
+          "name": "Xem Assignment",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{driverToken}}"
+              }
+            ],
+            "url": "{{baseUrl}}/api/v1/drivers/me/assignments/current"
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"HTTP 200\", function () { pm.response.to.have.status(200); });",
+                  "const d = pm.response.json().data;",
+                  "if (d && d.assignmentId !== undefined) pm.environment.set(\"assignmentId\", d.assignmentId);",
+                  "pm.test(\"Có Assignment\",()=>pm.expect(d).not.to.eql(null));"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "Chấp nhận",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{driverToken}}"
+              },
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              },
+              {
+                "key": "Idempotency-Key",
+                "value": "{{$guid}}"
+              }
+            ],
+            "url": "{{baseUrl}}/api/v1/assignments/{{assignmentId}}/responses",
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"decision\": \"ACCEPTED\"\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            }
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"HTTP 200\", function () { pm.response.to.have.status(200); });",
+                  "const d = pm.response.json().data;"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "Xem Booking và Trip",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{customerToken}}"
+              }
+            ],
+            "url": "{{baseUrl}}/api/v1/bookings/{{bookingId}}"
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"HTTP 200\", function () { pm.response.to.have.status(200); });",
+                  "const d = pm.response.json().data;",
+                  "if (d && d.tripId !== undefined) pm.environment.set(\"tripId\", d.tripId);",
+                  "if (d && d.version !== undefined) pm.environment.set(\"bookingVersion\", d.version);",
+                  "pm.test(\"Trip đã được tạo\",()=>pm.expect(d.tripId).to.be.a(\"string\"));"
+                ]
+              }
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "17 — Trạng thái và vị trí Trip",
+      "item": [
+        {
+          "name": "Xem Trip hiện tại",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{driverToken}}"
+              }
+            ],
+            "url": "{{baseUrl}}/api/v1/trips/{{tripId}}"
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"HTTP 200\", function () { pm.response.to.have.status(200); });",
+                  "const d = pm.response.json().data;",
+                  "if (d && d.version !== undefined) pm.environment.set(\"tripVersion\", d.version);"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "Đến điểm đón",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{driverToken}}"
+              },
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              },
+              {
+                "key": "Idempotency-Key",
+                "value": "{{$guid}}"
+              }
+            ],
+            "url": "{{baseUrl}}/api/v1/trips/{{tripId}}/status-transitions",
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"targetStatus\": \"DRIVER_ARRIVED\",\n  \"occurredAt\": \"{{$isoTimestamp}}\",\n  \"expectedVersion\": {{tripVersion}}\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            }
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"HTTP 200\", function () { pm.response.to.have.status(200); });",
+                  "const d = pm.response.json().data;",
+                  "if (d && d.version !== undefined) pm.environment.set(\"tripVersion\", d.version);",
+                  "pm.test(\"Trạng thái DRIVER_ARRIVED\",()=>pm.expect(d.status).to.eql(\"DRIVER_ARRIVED\"));"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "Đón khách",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{driverToken}}"
+              },
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              },
+              {
+                "key": "Idempotency-Key",
+                "value": "{{$guid}}"
+              }
+            ],
+            "url": "{{baseUrl}}/api/v1/trips/{{tripId}}/status-transitions",
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"targetStatus\": \"PICKED_UP\",\n  \"occurredAt\": \"{{$isoTimestamp}}\",\n  \"expectedVersion\": {{tripVersion}}\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            }
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"HTTP 200\", function () { pm.response.to.have.status(200); });",
+                  "const d = pm.response.json().data;",
+                  "if (d && d.version !== undefined) pm.environment.set(\"tripVersion\", d.version);",
+                  "pm.test(\"Trạng thái PICKED_UP\",()=>pm.expect(d.status).to.eql(\"PICKED_UP\"));"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "Cập nhật vị trí Bắt đầu chuyến",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{driverToken}}"
+              },
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              },
+              {
+                "key": "Idempotency-Key",
+                "value": "{{$guid}}"
+              }
+            ],
+            "url": "{{baseUrl}}/api/v1/drivers/me/locations",
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"latitude\": 10.78,\n  \"longitude\": 106.7,\n  \"observedAt\": \"{{$isoTimestamp}}\",\n  \"sequence\": {{locationSequence}}\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            }
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"HTTP 201\", function () { pm.response.to.have.status(201); });",
+                  "const d = pm.response.json().data;"
+                ]
+              }
+            },
+            {
+              "listen": "prerequest",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.variables.set(\"locationSequence\",Date.now());"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "Bắt đầu chuyến",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{driverToken}}"
+              },
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              },
+              {
+                "key": "Idempotency-Key",
+                "value": "{{$guid}}"
+              }
+            ],
+            "url": "{{baseUrl}}/api/v1/trips/{{tripId}}/status-transitions",
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"targetStatus\": \"IN_PROGRESS\",\n  \"occurredAt\": \"{{$isoTimestamp}}\",\n  \"expectedVersion\": {{tripVersion}}\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            }
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"HTTP 200\", function () { pm.response.to.have.status(200); });",
+                  "const d = pm.response.json().data;",
+                  "if (d && d.version !== undefined) pm.environment.set(\"tripVersion\", d.version);",
+                  "pm.test(\"Trạng thái IN_PROGRESS\",()=>pm.expect(d.status).to.eql(\"IN_PROGRESS\"));"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "Cập nhật vị trí Hoàn thành chuyến",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{driverToken}}"
+              },
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              },
+              {
+                "key": "Idempotency-Key",
+                "value": "{{$guid}}"
+              }
+            ],
+            "url": "{{baseUrl}}/api/v1/drivers/me/locations",
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"latitude\": 10.79,\n  \"longitude\": 106.7,\n  \"observedAt\": \"{{$isoTimestamp}}\",\n  \"sequence\": {{locationSequence}}\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            }
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"HTTP 201\", function () { pm.response.to.have.status(201); });",
+                  "const d = pm.response.json().data;"
+                ]
+              }
+            },
+            {
+              "listen": "prerequest",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.variables.set(\"locationSequence\",Date.now());"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "Hoàn thành chuyến",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{driverToken}}"
+              },
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              },
+              {
+                "key": "Idempotency-Key",
+                "value": "{{$guid}}"
+              }
+            ],
+            "url": "{{baseUrl}}/api/v1/trips/{{tripId}}/status-transitions",
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"targetStatus\": \"COMPLETED\",\n  \"occurredAt\": \"{{$isoTimestamp}}\",\n  \"expectedVersion\": {{tripVersion}},\n  \"distanceKm\": 5\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            }
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"HTTP 200\", function () { pm.response.to.have.status(200); });",
+                  "const d = pm.response.json().data;",
+                  "if (d && d.version !== undefined) pm.environment.set(\"tripVersion\", d.version);",
+                  "pm.test(\"Trạng thái COMPLETED\",()=>pm.expect(d.status).to.eql(\"COMPLETED\"));"
+                ]
+              }
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "18 — Hủy chuyến",
+      "item": [
+        {
+          "name": "Tạo Booking cần hủy",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{customerToken}}"
+              },
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              },
+              {
+                "key": "Idempotency-Key",
+                "value": "{{$guid}}"
+              }
+            ],
+            "url": "{{baseUrl}}/api/v1/bookings",
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"pickup\": {\n    \"address\": \"Điểm đón\",\n    \"location\": {\n      \"latitude\": 10.77,\n      \"longitude\": 106.7\n    }\n  },\n  \"destination\": {\n    \"address\": \"Điểm đến\",\n    \"location\": {\n      \"latitude\": 10.79,\n      \"longitude\": 106.7\n    }\n  },\n  \"serviceType\": \"BIKE\"\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            }
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"HTTP 201\", function () { pm.response.to.have.status(201); });",
+                  "const d = pm.response.json().data;",
+                  "if (d && d.bookingId !== undefined) pm.environment.set(\"cancelBookingId\", d.bookingId);"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "Driver nhận Assignment",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{cancelDriverToken}}"
+              }
+            ],
+            "url": "{{baseUrl}}/api/v1/drivers/me/assignments/current"
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"HTTP 200\", function () { pm.response.to.have.status(200); });",
+                  "const d = pm.response.json().data;",
+                  "if (d && d.assignmentId !== undefined) pm.environment.set(\"cancelAssignmentId\", d.assignmentId);",
+                  "pm.test(\"Có Assignment\",()=>pm.expect(d).not.to.eql(null));"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "Chấp nhận chuyến cần hủy",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{cancelDriverToken}}"
+              },
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              },
+              {
+                "key": "Idempotency-Key",
+                "value": "{{$guid}}"
+              }
+            ],
+            "url": "{{baseUrl}}/api/v1/assignments/{{cancelAssignmentId}}/responses",
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"decision\": \"ACCEPTED\"\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            }
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"HTTP 200\", function () { pm.response.to.have.status(200); });",
+                  "const d = pm.response.json().data;"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "Xem Booking trước khi hủy",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{customerToken}}"
+              }
+            ],
+            "url": "{{baseUrl}}/api/v1/bookings/{{cancelBookingId}}"
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"HTTP 200\", function () { pm.response.to.have.status(200); });",
+                  "const d = pm.response.json().data;",
+                  "if (d && d.tripId !== undefined) pm.environment.set(\"cancelTripId\", d.tripId);",
+                  "if (d && d.version !== undefined) pm.environment.set(\"cancelVersion\", d.version);",
+                  "pm.test(\"Trip đã được tạo\",()=>pm.expect(d.tripId).to.be.a(\"string\"));"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "Customer hủy",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{customerToken}}"
+              },
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              },
+              {
+                "key": "Idempotency-Key",
+                "value": "{{$guid}}"
+              }
+            ],
+            "url": "{{baseUrl}}/api/v1/bookings/{{cancelBookingId}}/cancellations",
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"reasonCode\": \"CUSTOMER_REQUEST\",\n  \"reasonText\": \"Thay đổi kế hoạch\",\n  \"expectedVersion\": {{cancelVersion}}\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            }
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"HTTP 200\", function () { pm.response.to.have.status(200); });",
+                  "const d = pm.response.json().data;",
+                  "pm.test(\"CANCELED\",()=>pm.expect(d.status).to.eql(\"CANCELED\"));"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "Xem Trip đã hủy",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{customerToken}}"
+              }
+            ],
+            "url": "{{baseUrl}}/api/v1/trips/{{cancelTripId}}"
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"HTTP 200\", function () { pm.response.to.have.status(200); });",
+                  "const d = pm.response.json().data;",
+                  "pm.test(\"CANCELED\",()=>pm.expect(d.status).to.eql(\"CANCELED\"));"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "Thông báo Customer",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{customerToken}}"
+              }
+            ],
+            "url": "{{baseUrl}}/api/v1/notifications/me"
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"HTTP 200\", function () { pm.response.to.have.status(200); });",
+                  "const d = pm.response.json().data;"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "Thông báo Driver",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{cancelDriverToken}}"
+              }
+            ],
+            "url": "{{baseUrl}}/api/v1/notifications/me"
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"HTTP 200\", function () { pm.response.to.have.status(200); });",
+                  "const d = pm.response.json().data;"
+                ]
+              }
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "19 — Thanh toán online",
+      "item": [
+        {
+          "name": "Xem Fare",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{customerToken}}"
+              }
+            ],
+            "url": "{{baseUrl}}/api/v1/trips/{{tripId}}/fare"
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"HTTP 200\", function () { pm.response.to.have.status(200); });",
+                  "const d = pm.response.json().data;",
+                  "if (d && d.paymentId !== undefined) pm.environment.set(\"paymentId\", d.paymentId);",
+                  "pm.environment.set(\"paymentCommandKey\",pm.variables.replaceIn(\"{{$guid}}\"));",
+                  "pm.environment.set(\"paymentInitialVersion\",1);"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "Chọn Electronic",
+          "request": {
+            "method": "PATCH",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{customerToken}}"
+              },
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              },
+              {
+                "key": "Idempotency-Key",
+                "value": "{{paymentCommandKey}}"
+              }
+            ],
+            "url": "{{baseUrl}}/api/v1/payments/{{paymentId}}/method",
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"method\": \"ELECTRONIC\",\n  \"expectedVersion\": {{paymentInitialVersion}}\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            }
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"HTTP 200\", function () { pm.response.to.have.status(200); });",
+                  "const d = pm.response.json().data;",
+                  "if (d && d.providerReference !== undefined) pm.environment.set(\"providerReference\", d.providerReference);",
+                  "pm.environment.set(\"paymentFirstResponse\",pm.response.text());"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "Xác nhận giao dịch tại sandbox",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{operationsToken}}"
+              },
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              },
+              {
+                "key": "Idempotency-Key",
+                "value": "{{$guid}}"
+              }
+            ],
+            "url": "{{baseUrl}}/api/v1/sandbox/payments/{{providerReference}}/settle",
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"result\": \"SUCCESS\"\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            }
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"HTTP 200\", function () { pm.response.to.have.status(200); });",
+                  "const d = pm.response.json().data;"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "Xem kết quả Payment",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{customerToken}}"
+              }
+            ],
+            "url": "{{baseUrl}}/api/v1/payments/{{paymentId}}"
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"HTTP 200\", function () { pm.response.to.have.status(200); });",
+                  "const d = pm.response.json().data;",
+                  "pm.test(\"COMPLETED\",()=>pm.expect(d.status).to.eql(\"COMPLETED\"));"
+                ]
+              }
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "20 — Đánh giá chuyến",
+      "item": [
+        {
+          "name": "Gửi sao và nhận xét",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{customerToken}}"
+              },
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              },
+              {
+                "key": "Idempotency-Key",
+                "value": "{{$guid}}"
+              }
+            ],
+            "url": "{{baseUrl}}/api/v1/trips/{{tripId}}/ratings",
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"score\": 5,\n  \"comment\": \"Chuyến đi tốt\"\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            }
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"HTTP 201\", function () { pm.response.to.have.status(201); });",
+                  "const d = pm.response.json().data;"
+                ]
+              }
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "21 — Đăng ký Driver",
+      "item": [
+        {
+          "name": "Yêu cầu OTP Driver",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              },
+              {
+                "key": "Idempotency-Key",
+                "value": "{{$guid}}"
+              }
+            ],
+            "url": "{{baseUrl}}/api/v1/auth/driver/registration-otp",
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"phoneNumber\": \"{{newDriverPhone}}\"\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            }
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"HTTP 202\", function () { pm.response.to.have.status(202); });",
+                  "const d = pm.response.json().data;"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "Lấy OTP từ hộp thư sandbox",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "X-Sandbox-Key",
+                "value": "{{sandboxKey}}"
+              }
+            ],
+            "url": "{{baseUrl}}/api/v1/sandbox/otp?phoneNumber={{newDriverPhone}}&actorType=DRIVER"
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"HTTP 200\", function () { pm.response.to.have.status(200); });",
+                  "const d = pm.response.json().data;",
+                  "if (d && d.otp !== undefined) pm.environment.set(\"driverOtp\", d.otp);"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "Xác minh OTP",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              },
+              {
+                "key": "Idempotency-Key",
+                "value": "{{$guid}}"
+              }
+            ],
+            "url": "{{baseUrl}}/api/v1/auth/driver/registration-otp/verify",
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"phoneNumber\": \"{{newDriverPhone}}\",\n  \"otp\": \"{{driverOtp}}\"\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            }
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"HTTP 200\", function () { pm.response.to.have.status(200); });",
+                  "const d = pm.response.json().data;",
+                  "if (d && d.otpVerificationToken !== undefined) pm.environment.set(\"driverProof\", d.otpVerificationToken);"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "Gửi hồ sơ Driver",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              },
+              {
+                "key": "Idempotency-Key",
+                "value": "{{$guid}}"
+              }
+            ],
+            "url": "{{baseUrl}}/api/v1/auth/driver/registrations",
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"phoneNumber\": \"{{newDriverPhone}}\",\n  \"password\": \"{{newDriverPassword}}\",\n  \"otpVerificationToken\": \"{{driverProof}}\",\n  \"fullName\": \"Driver\",\n  \"licenseNumber\": \"LICENSE-NEW\",\n  \"vehicle\": {\n    \"plateNumber\": \"59A-NEW\",\n    \"serviceType\": \"BIKE\"\n  }\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            }
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"HTTP 201\", function () { pm.response.to.have.status(201); });",
+                  "const d = pm.response.json().data;",
+                  "if (d && d.driverId !== undefined) pm.environment.set(\"newDriverId\", d.driverId);",
+                  "pm.test(\"Chờ duyệt\",()=>pm.expect(d.status).to.eql(\"PENDING_VERIFICATION\"));"
+                ]
+              }
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "22 — Duyệt hồ sơ Driver",
+      "item": [
+        {
+          "name": "Xem hồ sơ",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{operationsToken}}"
+              }
+            ],
+            "url": "{{baseUrl}}/api/v1/drivers/{{newDriverId}}"
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"HTTP 200\", function () { pm.response.to.have.status(200); });",
+                  "const d = pm.response.json().data;",
+                  "if (d && d.version !== undefined) pm.environment.set(\"newDriverVersion\", d.version);"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "Duyệt hồ sơ",
+          "request": {
+            "method": "PATCH",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{operationsToken}}"
+              },
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              },
+              {
+                "key": "Idempotency-Key",
+                "value": "{{$guid}}"
+              }
+            ],
+            "url": "{{baseUrl}}/api/v1/operations/drivers/{{newDriverId}}/verification",
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"decision\": \"ACTIVE\",\n  \"reason\": \"Hồ sơ hợp lệ\",\n  \"expectedVersion\": {{newDriverVersion}}\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            }
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"HTTP 200\", function () { pm.response.to.have.status(200); });",
+                  "const d = pm.response.json().data;",
+                  "pm.test(\"ACTIVE\",()=>pm.expect(d.verificationStatus).to.eql(\"ACTIVE\"));"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "Driver đăng nhập",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              },
+              {
+                "key": "Idempotency-Key",
+                "value": "{{$guid}}"
+              }
+            ],
+            "url": "{{baseUrl}}/api/v1/auth/sessions",
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"phoneNumber\": \"{{newDriverPhone}}\",\n  \"password\": \"{{newDriverPassword}}\",\n  \"actorType\": \"DRIVER\"\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            }
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"HTTP 200\", function () { pm.response.to.have.status(200); });",
+                  "const d = pm.response.json().data;",
+                  "if (d && d.accessToken !== undefined) pm.environment.set(\"newDriverToken\", d.accessToken);"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "Driver nhận kết quả duyệt",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{newDriverToken}}"
+              }
+            ],
+            "url": "{{baseUrl}}/api/v1/notifications/me"
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"HTTP 200\", function () { pm.response.to.have.status(200); });",
+                  "const d = pm.response.json().data;",
+                  "pm.test(\"Nhận kết quả ACTIVE\",()=>pm.expect(d.some(n=>n.eventType===\"driver.verification-changed\"&&n.details.status===\"ACTIVE\")).to.eql(true));"
+                ]
+              }
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "23 — Online và Offline",
+      "item": [
+        {
+          "name": "Xem version Driver",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{driverToken}}"
+              }
+            ],
+            "url": "{{baseUrl}}/api/v1/drivers/{{driverId}}"
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"HTTP 200\", function () { pm.response.to.have.status(200); });",
+                  "const d = pm.response.json().data;",
+                  "if (d && d.version !== undefined) pm.environment.set(\"driverVersion\", d.version);"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "OFFLINE",
+          "request": {
+            "method": "PATCH",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{driverToken}}"
+              },
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              },
+              {
+                "key": "Idempotency-Key",
+                "value": "{{$guid}}"
+              }
+            ],
+            "url": "{{baseUrl}}/api/v1/drivers/me/availability",
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"availability\": \"OFFLINE\",\n  \"expectedVersion\": {{driverVersion}}\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            }
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"HTTP 200\", function () { pm.response.to.have.status(200); });",
+                  "const d = pm.response.json().data;",
+                  "if (d && d.version !== undefined) pm.environment.set(\"driverVersion\", d.version);"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "AVAILABLE",
+          "request": {
+            "method": "PATCH",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{driverToken}}"
+              },
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              },
+              {
+                "key": "Idempotency-Key",
+                "value": "{{$guid}}"
+              }
+            ],
+            "url": "{{baseUrl}}/api/v1/drivers/me/availability",
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"availability\": \"AVAILABLE\",\n  \"expectedVersion\": {{driverVersion}}\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            }
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"HTTP 200\", function () { pm.response.to.have.status(200); });",
+                  "const d = pm.response.json().data;",
+                  "if (d && d.version !== undefined) pm.environment.set(\"driverVersion\", d.version);"
+                ]
+              }
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "25 — SQL injection",
+      "item": [
+        {
+          "name": "Input SQL injection",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              },
+              {
+                "key": "Idempotency-Key",
+                "value": "{{$guid}}"
+              }
+            ],
+            "url": "{{baseUrl}}/api/v1/auth/sessions",
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"phoneNumber\": \"' OR 1=1 --\",\n  \"password\": \"anything\",\n  \"actorType\": \"CUSTOMER\"\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            }
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"HTTP 400\", function () { pm.response.to.have.status(400); });",
+                  "const d = pm.response.json().data;"
+                ]
+              }
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "26 — XSS",
+      "item": [
+        {
+          "name": "Xem version hồ sơ",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{customerToken}}"
+              }
+            ],
+            "url": "{{baseUrl}}/api/v1/customers/{{customerId}}"
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"HTTP 200\", function () { pm.response.to.have.status(200); });",
+                  "const d = pm.response.json().data;",
+                  "if (d && d.version !== undefined) pm.environment.set(\"customerVersion\", d.version);"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "Nhập script vào tên",
+          "request": {
+            "method": "PATCH",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{customerToken}}"
+              },
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              },
+              {
+                "key": "Idempotency-Key",
+                "value": "{{$guid}}"
+              }
+            ],
+            "url": "{{baseUrl}}/api/v1/customers/me",
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"fullName\": \"<script>alert('hack')</script>\",\n  \"version\": {{customerVersion}}\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            }
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"HTTP 200\", function () { pm.response.to.have.status(200); });",
+                  "const d = pm.response.json().data;",
+                  "pm.test(\"Output escaped\",()=>pm.expect(pm.response.text()).to.include(\"\\\\u003c\"));"
+                ]
+              }
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "27 — JWT tampering",
+      "item": [
+        {
+          "name": "Token bị sửa",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{tamperedToken}}"
+              }
+            ],
+            "url": "{{baseUrl}}/health/services"
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"HTTP 401\", function () { pm.response.to.have.status(401); });",
+                  "const d = pm.response.json().data;"
+                ]
+              }
+            },
+            {
+              "listen": "prerequest",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "let p=pm.environment.get(\"customerToken\").split(\".\");p[1]=\"eyJzdWIiOiJhZG1pbl8wMDEiLCJhY3RvclR5cGUiOiJPUEVSQVRJT05TIn0\";pm.variables.set(\"tamperedToken\",p.join(\".\"));"
+                ]
+              }
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "28 — Truy cập sai quyền",
+      "item": [
+        {
+          "name": "Customer gọi API Driver",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{customerToken}}"
+              }
+            ],
+            "url": "{{baseUrl}}/api/v1/drivers/{{driverId}}"
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"HTTP 403\", function () { pm.response.to.have.status(403); });",
+                  "const d = pm.response.json().data;"
+                ]
+              }
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "29 — Rate limit",
+      "item": [
+        {
+          "name": "Gửi nhiều request Booking",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{customerToken}}"
+              },
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              },
+              {
+                "key": "Idempotency-Key",
+                "value": "{{bookingCommandKey}}"
+              }
+            ],
+            "url": "{{baseUrl}}/api/v1/bookings",
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"pickup\": {\n    \"address\": \"Điểm đón\",\n    \"location\": {\n      \"latitude\": 10.77,\n      \"longitude\": 106.7\n    }\n  },\n  \"destination\": {\n    \"address\": \"Điểm đến\",\n    \"location\": {\n      \"latitude\": 10.79,\n      \"longitude\": 106.7\n    }\n  },\n  \"serviceType\": \"BIKE\"\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            }
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"HTTP 429\", function () { pm.response.to.have.status(429); });",
+                  "const d = pm.response.json().data;"
+                ]
+              }
+            },
+            {
+              "listen": "prerequest",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "const key=pm.environment.get(\"bookingCommandKey\"); if(!key) throw new Error(\"Chạy mục 15 trước\");",
+                  "const url=pm.environment.get(\"baseUrl\")+\"/api/v1/bookings\";",
+                  "const headers={\"Content-Type\":\"application/json\",\"Authorization\":\"Bearer \"+pm.environment.get(\"customerToken\"),\"Idempotency-Key\":key};",
+                  "const body=\"{\\\"pickup\\\": {\\\"address\\\": \\\"\\u0110i\\u1ec3m \\u0111\\u00f3n\\\", \\\"location\\\": {\\\"latitude\\\": 10.77, \\\"longitude\\\": 106.7}}, \\\"destination\\\": {\\\"address\\\": \\\"\\u0110i\\u1ec3m \\u0111\\u1ebfn\\\", \\\"location\\\": {\\\"latitude\\\": 10.79, \\\"longitude\\\": 106.7}}, \\\"serviceType\\\": \\\"BIKE\\\"}\";",
+                  "for(let i=0;i<130;i++){pm.sendRequest({url,method:\"POST\",header:headers,body:{mode:\"raw\",raw:body}},function(error,response){if(error)console.error(error.message);});}"
+                ]
+              }
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "30 — Replay và idempotency",
+      "item": [
+        {
+          "name": "Gửi lại lệnh Payment",
+          "request": {
+            "method": "PATCH",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{customerToken}}"
+              },
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              },
+              {
+                "key": "Idempotency-Key",
+                "value": "{{paymentCommandKey}}"
+              }
+            ],
+            "url": "{{baseUrl}}/api/v1/payments/{{paymentId}}/method",
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"method\": \"ELECTRONIC\",\n  \"expectedVersion\": {{paymentInitialVersion}}\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            }
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"HTTP 200\", function () { pm.response.to.have.status(200); });",
+                  "const d = pm.response.json().data;",
+                  "pm.test(\"Response cũ\",()=>pm.expect(pm.response.text()).to.eql(pm.environment.get(\"paymentFirstResponse\")));"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "Gửi lại callback",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{operationsToken}}"
+              },
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              },
+              {
+                "key": "Idempotency-Key",
+                "value": "{{$guid}}"
+              }
+            ],
+            "url": "{{baseUrl}}/api/v1/sandbox/payments/{{providerReference}}/replay-callback",
+            "body": {
+              "mode": "raw",
+              "raw": "{}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            }
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"HTTP 200\", function () { pm.response.to.have.status(200); });",
+                  "const d = pm.response.json().data;"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "Payment vẫn hoàn tất",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{customerToken}}"
+              }
+            ],
+            "url": "{{baseUrl}}/api/v1/payments/{{paymentId}}"
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"HTTP 200\", function () { pm.response.to.have.status(200); });",
+                  "const d = pm.response.json().data;",
+                  "pm.test(\"COMPLETED\",()=>pm.expect(d.status).to.eql(\"COMPLETED\"));"
+                ]
+              }
+            }
+          ]
+        }
+      ]
+    }
+  ]
+}

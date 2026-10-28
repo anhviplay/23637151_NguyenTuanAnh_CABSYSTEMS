@@ -1,0 +1,535 @@
+services:
+  postgres:
+    image: postgres:17-bookworm
+    environment:
+      POSTGRES_USER: cab_admin
+      POSTGRES_DB: postgres
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:?Thieu POSTGRES_PASSWORD trong .env}
+      IDENTITY_DB_PASSWORD: ${IDENTITY_DB_PASSWORD:?Thieu IDENTITY_DB_PASSWORD trong .env}
+      CUSTOMER_DB_PASSWORD: ${CUSTOMER_DB_PASSWORD:?Thieu CUSTOMER_DB_PASSWORD trong .env}
+      DRIVER_DB_PASSWORD: ${DRIVER_DB_PASSWORD:?Thieu DRIVER_DB_PASSWORD trong .env}
+      BOOKING_DB_PASSWORD: ${BOOKING_DB_PASSWORD:?Thieu BOOKING_DB_PASSWORD trong .env}
+      TRIP_DB_PASSWORD: ${TRIP_DB_PASSWORD:?Thieu TRIP_DB_PASSWORD trong .env}
+      PAYMENT_DB_PASSWORD: ${PAYMENT_DB_PASSWORD:?Thieu PAYMENT_DB_PASSWORD trong .env}
+      OPERATIONS_DB_PASSWORD: ${OPERATIONS_DB_PASSWORD:?Thieu OPERATIONS_DB_PASSWORD trong .env}
+    volumes:
+      - postgres-data:/var/lib/postgresql/data
+      - type: bind
+        source: ./infra/postgres/01-create-databases.sql
+        target: /docker-entrypoint-initdb.d/01-create-databases.sql
+        read_only: true
+        bind:
+          create_host_path: false
+    networks:
+      - backend
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -h 127.0.0.1 -U cab_admin -d postgres"]
+      interval: 5s
+      timeout: 5s
+      retries: 12
+      start_period: 20s
+
+  mongo-keyfile:
+    image: mongo:8.0
+    user: "0:0"
+    entrypoint: ["bash", "-ec"]
+    command:
+      - 'if [ ! -s /keys/keyfile ]; then openssl rand -base64 756 > /keys/keyfile; fi; chown 999:999 /keys/keyfile; chmod 400 /keys/keyfile'
+    volumes:
+      - mongo-keyfile:/keys
+    networks: [backend]
+
+  mongo:
+    image: mongo:8.0
+    command: ["mongod", "--replSet", "cab-rs", "--bind_ip_all", "--keyFile", "/keys/keyfile", "--wiredTigerCacheSizeGB", "0.25"]
+    environment:
+      MONGO_INITDB_ROOT_USERNAME: cab_admin
+      MONGO_INITDB_ROOT_PASSWORD: ${MONGO_ROOT_PASSWORD:?Thieu MONGO_ROOT_PASSWORD}
+    depends_on:
+      mongo-keyfile:
+        condition: service_completed_successfully
+    volumes:
+      - mongo-data:/data/db
+      - mongo-keyfile:/keys:ro
+    networks: [backend]
+    healthcheck:
+      test: ["CMD-SHELL", "mongosh --quiet --host 127.0.0.1 --username cab_admin --password \"$$MONGO_INITDB_ROOT_PASSWORD\" --authenticationDatabase admin --eval 'quit(db.adminCommand({ping:1}).ok ? 0 : 1)' > /dev/null"]
+      interval: 10s
+      timeout: 10s
+      retries: 12
+      start_period: 20s
+
+  mongo-init:
+    image: mongo:8.0
+    entrypoint: ["bash", "-ec"]
+    command:
+      - 'for i in $$(seq 1 90); do if mongosh --quiet --host mongo --username cab_admin --password "$$MONGO_ROOT_PASSWORD" --authenticationDatabase admin /setup/init.js; then exit 0; fi; sleep 2; done; exit 1'
+    environment:
+      MONGO_ROOT_PASSWORD: ${MONGO_ROOT_PASSWORD:?Thieu MONGO_ROOT_PASSWORD}
+      LOCATION_MONGO_PASSWORD: ${LOCATION_MONGO_PASSWORD:?Thieu LOCATION_MONGO_PASSWORD}
+      NOTIFICATION_MONGO_PASSWORD: ${NOTIFICATION_MONGO_PASSWORD:?Thieu NOTIFICATION_MONGO_PASSWORD}
+    volumes:
+      - ./infra/mongo/init.js:/setup/init.js:ro
+    depends_on:
+      mongo:
+        condition: service_healthy
+    networks: [backend]
+
+  redis-gateway:
+    image: redis:7.4-alpine
+    environment:
+      REDIS_PASSWORD: ${GATEWAY_REDIS_PASSWORD:?Thieu GATEWAY_REDIS_PASSWORD}
+      REDISCLI_AUTH: ${GATEWAY_REDIS_PASSWORD:?Thieu GATEWAY_REDIS_PASSWORD}
+    command: ["sh", "-ec", 'exec redis-server --appendonly yes --requirepass "$$REDIS_PASSWORD"']
+    volumes: ["redis-gateway-data:/data"]
+    networks: [backend]
+    healthcheck:
+      test: ["CMD", "redis-cli", "ping"]
+      interval: 5s
+      timeout: 3s
+      retries: 12
+
+  redis-location:
+    image: redis:7.4-alpine
+    environment:
+      REDIS_PASSWORD: ${LOCATION_REDIS_PASSWORD:?Thieu LOCATION_REDIS_PASSWORD}
+      REDISCLI_AUTH: ${LOCATION_REDIS_PASSWORD:?Thieu LOCATION_REDIS_PASSWORD}
+    command: ["sh", "-ec", 'exec redis-server --appendonly yes --requirepass "$$REDIS_PASSWORD"']
+    volumes: ["redis-location-data:/data"]
+    networks: [backend]
+    healthcheck:
+      test: ["CMD", "redis-cli", "ping"]
+      interval: 5s
+      timeout: 3s
+      retries: 12
+
+  kafka-storage-init:
+    image: apache/kafka:4.1.2
+    user: '0:0'
+    entrypoint: ['sh', '-ec']
+    command: ['chown 1000:1000 /data']
+    volumes: ['kafka-data:/data']
+    networks: [backend]
+
+  kafka:
+    image: apache/kafka:4.1.2
+    depends_on:
+      kafka-storage-init:
+        condition: service_completed_successfully
+    environment:
+      KAFKA_NODE_ID: 1
+      KAFKA_PROCESS_ROLES: broker,controller
+      KAFKA_LISTENERS: INTERNAL://:9092,CONTROLLER://:9093
+      KAFKA_ADVERTISED_LISTENERS: INTERNAL://kafka:9092
+      KAFKA_LISTENER_SECURITY_PROTOCOL_MAP: INTERNAL:PLAINTEXT,CONTROLLER:PLAINTEXT
+      KAFKA_INTER_BROKER_LISTENER_NAME: INTERNAL
+      KAFKA_CONTROLLER_LISTENER_NAMES: CONTROLLER
+      KAFKA_CONTROLLER_QUORUM_VOTERS: 1@kafka:9093
+      KAFKA_OFFSETS_TOPIC_REPLICATION_FACTOR: 1
+      KAFKA_TRANSACTION_STATE_LOG_REPLICATION_FACTOR: 1
+      KAFKA_TRANSACTION_STATE_LOG_MIN_ISR: 1
+      KAFKA_AUTO_CREATE_TOPICS_ENABLE: "false"
+      KAFKA_LOG_DIRS: /tmp/kraft-combined-logs
+      KAFKA_HEAP_OPTS: "-Xms256m -Xmx512m"
+    volumes: ["kafka-data:/tmp/kraft-combined-logs"]
+    networks: [backend]
+    healthcheck:
+      test: ["CMD-SHELL", "/opt/kafka/bin/kafka-topics.sh --bootstrap-server kafka:9092 --list > /dev/null 2>&1"]
+      interval: 15s
+      timeout: 15s
+      retries: 15
+      start_period: 30s
+
+  kafka-init:
+    image: apache/kafka:4.1.2
+    entrypoint: ['sh', '/setup/create-topics.sh']
+    volumes:
+      - ./infra/kafka/create-topics.sh:/setup/create-topics.sh:ro
+    depends_on:
+      kafka:
+        condition: service_healthy
+    networks: [backend]
+
+  payment-sandbox:
+    build: ./sandbox/payment
+    environment:
+      SANDBOX_API_KEY: ${SANDBOX_API_KEY:?Thieu SANDBOX_API_KEY}
+      PAYMENT_CALLBACK_SECRET: ${PAYMENT_CALLBACK_SECRET:?Thieu PAYMENT_CALLBACK_SECRET}
+      PAYMENT_CALLBACK_URL: https://gateway:8443/api/v1/integrations/payments/local-sandbox/results
+      TLS_CERT_FILE: /tls/cert.pem
+      TLS_KEY_FILE: /tls/key.pem
+      NODE_EXTRA_CA_CERTS: /tls/cert.pem
+    volumes:
+      - sandbox-payment-data:/data
+      - ./.data/tls:/tls:ro
+    networks: [backend]
+    healthcheck:
+      test: ["CMD", "node", "-e", "fetch('https://localhost:3000/health').then(r=>process.exit(r.ok?0:1)).catch(()=>process.exit(1))"]
+      interval: 10s
+      timeout: 5s
+      retries: 6
+
+  identity-service:
+    image: cab-system-backend:local
+    environment:
+      SERVICE_NAME: "identity-service"
+      DB_NAME: "identity_db"
+      DB_USER: "identity_user"
+      DB_PASSWORD: "${IDENTITY_DB_PASSWORD}"
+      JWT_SECRET: "${JWT_SECRET}"
+      DATA_ENCRYPTION_KEY: "${DATA_ENCRYPTION_KEY}"
+      INTERNAL_SECRET: "${INTERNAL_SECRET}"
+      SANDBOX_API_KEY: "${SANDBOX_API_KEY}"
+      TOKEN_TTL_SECONDS: "${TOKEN_TTL_SECONDS}"
+      OTP_TTL_SECONDS: "${OTP_TTL_SECONDS}"
+      NODE_EXTRA_CA_CERTS: "/tls/cert.pem"
+      LOCATION_MAX_AGE_SECONDS: "${LOCATION_MAX_AGE_SECONDS}"
+      DISPATCH_RADIUS_METERS: "${DISPATCH_RADIUS_METERS}"
+      ETA_SPEED_METERS_PER_SECOND: "${ETA_SPEED_METERS_PER_SECOND}"
+      ASSIGNMENT_RESPONSE_SECONDS: "${ASSIGNMENT_RESPONSE_SECONDS}"
+      BOOTSTRAP_OPERATIONS_PHONE: "${BOOTSTRAP_OPERATIONS_PHONE}"
+      BOOTSTRAP_OPERATIONS_PASSWORD: "${BOOTSTRAP_OPERATIONS_PASSWORD}"
+    volumes:
+      - ./.data/tls/cert.pem:/tls/cert.pem:ro
+    networks: [backend]
+    depends_on:
+      kafka-init:
+        condition: service_completed_successfully
+      postgres:
+        condition: service_healthy
+    healthcheck:
+      test: ["CMD", "node", "-e", "fetch('http://localhost:3000/health').then(r=>process.exit(r.ok?0:1)).catch(()=>process.exit(1))"]
+      interval: 10s
+      timeout: 5s
+      retries: 18
+      start_period: 30s
+
+  customer-service:
+    image: cab-system-backend:local
+    environment:
+      SERVICE_NAME: "customer-service"
+      DB_NAME: "customer_db"
+      DB_USER: "customer_user"
+      DB_PASSWORD: "${CUSTOMER_DB_PASSWORD}"
+      JWT_SECRET: "${JWT_SECRET}"
+      DATA_ENCRYPTION_KEY: "${DATA_ENCRYPTION_KEY}"
+      INTERNAL_SECRET: "${INTERNAL_SECRET}"
+      SANDBOX_API_KEY: "${SANDBOX_API_KEY}"
+      TOKEN_TTL_SECONDS: "${TOKEN_TTL_SECONDS}"
+      OTP_TTL_SECONDS: "${OTP_TTL_SECONDS}"
+      NODE_EXTRA_CA_CERTS: "/tls/cert.pem"
+      LOCATION_MAX_AGE_SECONDS: "${LOCATION_MAX_AGE_SECONDS}"
+      DISPATCH_RADIUS_METERS: "${DISPATCH_RADIUS_METERS}"
+      ETA_SPEED_METERS_PER_SECOND: "${ETA_SPEED_METERS_PER_SECOND}"
+      ASSIGNMENT_RESPONSE_SECONDS: "${ASSIGNMENT_RESPONSE_SECONDS}"
+    volumes:
+      - ./.data/tls/cert.pem:/tls/cert.pem:ro
+    networks: [backend]
+    depends_on:
+      kafka-init:
+        condition: service_completed_successfully
+      postgres:
+        condition: service_healthy
+    healthcheck:
+      test: ["CMD", "node", "-e", "fetch('http://localhost:3000/health').then(r=>process.exit(r.ok?0:1)).catch(()=>process.exit(1))"]
+      interval: 10s
+      timeout: 5s
+      retries: 18
+      start_period: 30s
+
+  driver-service:
+    image: cab-system-backend:local
+    environment:
+      SERVICE_NAME: "driver-service"
+      DB_NAME: "driver_db"
+      DB_USER: "driver_user"
+      DB_PASSWORD: "${DRIVER_DB_PASSWORD}"
+      JWT_SECRET: "${JWT_SECRET}"
+      DATA_ENCRYPTION_KEY: "${DATA_ENCRYPTION_KEY}"
+      INTERNAL_SECRET: "${INTERNAL_SECRET}"
+      SANDBOX_API_KEY: "${SANDBOX_API_KEY}"
+      TOKEN_TTL_SECONDS: "${TOKEN_TTL_SECONDS}"
+      OTP_TTL_SECONDS: "${OTP_TTL_SECONDS}"
+      NODE_EXTRA_CA_CERTS: "/tls/cert.pem"
+      LOCATION_MAX_AGE_SECONDS: "${LOCATION_MAX_AGE_SECONDS}"
+      DISPATCH_RADIUS_METERS: "${DISPATCH_RADIUS_METERS}"
+      ETA_SPEED_METERS_PER_SECOND: "${ETA_SPEED_METERS_PER_SECOND}"
+      ASSIGNMENT_RESPONSE_SECONDS: "${ASSIGNMENT_RESPONSE_SECONDS}"
+    volumes:
+      - ./.data/tls/cert.pem:/tls/cert.pem:ro
+    networks: [backend]
+    depends_on:
+      kafka-init:
+        condition: service_completed_successfully
+      postgres:
+        condition: service_healthy
+    healthcheck:
+      test: ["CMD", "node", "-e", "fetch('http://localhost:3000/health').then(r=>process.exit(r.ok?0:1)).catch(()=>process.exit(1))"]
+      interval: 10s
+      timeout: 5s
+      retries: 18
+      start_period: 30s
+
+  location-service:
+    image: cab-system-backend:local
+    environment:
+      SERVICE_NAME: "location-service"
+      DB_NAME: "location_db"
+      DB_USER: "location_user"
+      DB_PASSWORD: "${LOCATION_MONGO_PASSWORD}"
+      JWT_SECRET: "${JWT_SECRET}"
+      DATA_ENCRYPTION_KEY: "${DATA_ENCRYPTION_KEY}"
+      INTERNAL_SECRET: "${INTERNAL_SECRET}"
+      SANDBOX_API_KEY: "${SANDBOX_API_KEY}"
+      TOKEN_TTL_SECONDS: "${TOKEN_TTL_SECONDS}"
+      OTP_TTL_SECONDS: "${OTP_TTL_SECONDS}"
+      NODE_EXTRA_CA_CERTS: "/tls/cert.pem"
+      LOCATION_MAX_AGE_SECONDS: "${LOCATION_MAX_AGE_SECONDS}"
+      DISPATCH_RADIUS_METERS: "${DISPATCH_RADIUS_METERS}"
+      ETA_SPEED_METERS_PER_SECOND: "${ETA_SPEED_METERS_PER_SECOND}"
+      ASSIGNMENT_RESPONSE_SECONDS: "${ASSIGNMENT_RESPONSE_SECONDS}"
+      MONGO_HOST: "mongo"
+      REDIS_HOST: "redis-location"
+      REDIS_PASSWORD: "${LOCATION_REDIS_PASSWORD}"
+    volumes:
+      - ./.data/tls/cert.pem:/tls/cert.pem:ro
+    networks: [backend]
+    depends_on:
+      kafka-init:
+        condition: service_completed_successfully
+      mongo-init:
+        condition: service_completed_successfully
+      redis-location:
+        condition: service_healthy
+    healthcheck:
+      test: ["CMD", "node", "-e", "fetch('http://localhost:3000/health').then(r=>process.exit(r.ok?0:1)).catch(()=>process.exit(1))"]
+      interval: 10s
+      timeout: 5s
+      retries: 18
+      start_period: 30s
+
+  booking-service:
+    image: cab-system-backend:local
+    environment:
+      SERVICE_NAME: "booking-service"
+      DB_NAME: "booking_db"
+      DB_USER: "booking_user"
+      DB_PASSWORD: "${BOOKING_DB_PASSWORD}"
+      JWT_SECRET: "${JWT_SECRET}"
+      DATA_ENCRYPTION_KEY: "${DATA_ENCRYPTION_KEY}"
+      INTERNAL_SECRET: "${INTERNAL_SECRET}"
+      SANDBOX_API_KEY: "${SANDBOX_API_KEY}"
+      TOKEN_TTL_SECONDS: "${TOKEN_TTL_SECONDS}"
+      OTP_TTL_SECONDS: "${OTP_TTL_SECONDS}"
+      NODE_EXTRA_CA_CERTS: "/tls/cert.pem"
+      LOCATION_MAX_AGE_SECONDS: "${LOCATION_MAX_AGE_SECONDS}"
+      DISPATCH_RADIUS_METERS: "${DISPATCH_RADIUS_METERS}"
+      ETA_SPEED_METERS_PER_SECOND: "${ETA_SPEED_METERS_PER_SECOND}"
+      ASSIGNMENT_RESPONSE_SECONDS: "${ASSIGNMENT_RESPONSE_SECONDS}"
+    volumes:
+      - ./.data/tls/cert.pem:/tls/cert.pem:ro
+    networks: [backend]
+    depends_on:
+      kafka-init:
+        condition: service_completed_successfully
+      postgres:
+        condition: service_healthy
+    healthcheck:
+      test: ["CMD", "node", "-e", "fetch('http://localhost:3000/health').then(r=>process.exit(r.ok?0:1)).catch(()=>process.exit(1))"]
+      interval: 10s
+      timeout: 5s
+      retries: 18
+      start_period: 30s
+
+  trip-service:
+    image: cab-system-backend:local
+    environment:
+      SERVICE_NAME: "trip-service"
+      DB_NAME: "trip_db"
+      DB_USER: "trip_user"
+      DB_PASSWORD: "${TRIP_DB_PASSWORD}"
+      JWT_SECRET: "${JWT_SECRET}"
+      DATA_ENCRYPTION_KEY: "${DATA_ENCRYPTION_KEY}"
+      INTERNAL_SECRET: "${INTERNAL_SECRET}"
+      SANDBOX_API_KEY: "${SANDBOX_API_KEY}"
+      TOKEN_TTL_SECONDS: "${TOKEN_TTL_SECONDS}"
+      OTP_TTL_SECONDS: "${OTP_TTL_SECONDS}"
+      NODE_EXTRA_CA_CERTS: "/tls/cert.pem"
+      LOCATION_MAX_AGE_SECONDS: "${LOCATION_MAX_AGE_SECONDS}"
+      DISPATCH_RADIUS_METERS: "${DISPATCH_RADIUS_METERS}"
+      ETA_SPEED_METERS_PER_SECOND: "${ETA_SPEED_METERS_PER_SECOND}"
+      ASSIGNMENT_RESPONSE_SECONDS: "${ASSIGNMENT_RESPONSE_SECONDS}"
+    volumes:
+      - ./.data/tls/cert.pem:/tls/cert.pem:ro
+    networks: [backend]
+    depends_on:
+      kafka-init:
+        condition: service_completed_successfully
+      postgres:
+        condition: service_healthy
+    healthcheck:
+      test: ["CMD", "node", "-e", "fetch('http://localhost:3000/health').then(r=>process.exit(r.ok?0:1)).catch(()=>process.exit(1))"]
+      interval: 10s
+      timeout: 5s
+      retries: 18
+      start_period: 30s
+
+  payment-service:
+    image: cab-system-backend:local
+    environment:
+      SERVICE_NAME: "payment-service"
+      DB_NAME: "payment_db"
+      DB_USER: "payment_user"
+      DB_PASSWORD: "${PAYMENT_DB_PASSWORD}"
+      JWT_SECRET: "${JWT_SECRET}"
+      DATA_ENCRYPTION_KEY: "${DATA_ENCRYPTION_KEY}"
+      INTERNAL_SECRET: "${INTERNAL_SECRET}"
+      SANDBOX_API_KEY: "${SANDBOX_API_KEY}"
+      TOKEN_TTL_SECONDS: "${TOKEN_TTL_SECONDS}"
+      OTP_TTL_SECONDS: "${OTP_TTL_SECONDS}"
+      NODE_EXTRA_CA_CERTS: "/tls/cert.pem"
+      LOCATION_MAX_AGE_SECONDS: "${LOCATION_MAX_AGE_SECONDS}"
+      DISPATCH_RADIUS_METERS: "${DISPATCH_RADIUS_METERS}"
+      ETA_SPEED_METERS_PER_SECOND: "${ETA_SPEED_METERS_PER_SECOND}"
+      ASSIGNMENT_RESPONSE_SECONDS: "${ASSIGNMENT_RESPONSE_SECONDS}"
+      PAYMENT_CALLBACK_SECRET: "${PAYMENT_CALLBACK_SECRET}"
+    volumes:
+      - ./.data/tls/cert.pem:/tls/cert.pem:ro
+    networks: [backend]
+    depends_on:
+      kafka-init:
+        condition: service_completed_successfully
+      postgres:
+        condition: service_healthy
+      payment-sandbox:
+        condition: service_healthy
+    healthcheck:
+      test: ["CMD", "node", "-e", "fetch('http://localhost:3000/health').then(r=>process.exit(r.ok?0:1)).catch(()=>process.exit(1))"]
+      interval: 10s
+      timeout: 5s
+      retries: 18
+      start_period: 30s
+
+  notification-service:
+    image: cab-system-backend:local
+    environment:
+      SERVICE_NAME: "notification-service"
+      DB_NAME: "notification_db"
+      DB_USER: "notification_user"
+      DB_PASSWORD: "${NOTIFICATION_MONGO_PASSWORD}"
+      JWT_SECRET: "${JWT_SECRET}"
+      DATA_ENCRYPTION_KEY: "${DATA_ENCRYPTION_KEY}"
+      INTERNAL_SECRET: "${INTERNAL_SECRET}"
+      SANDBOX_API_KEY: "${SANDBOX_API_KEY}"
+      TOKEN_TTL_SECONDS: "${TOKEN_TTL_SECONDS}"
+      OTP_TTL_SECONDS: "${OTP_TTL_SECONDS}"
+      NODE_EXTRA_CA_CERTS: "/tls/cert.pem"
+      LOCATION_MAX_AGE_SECONDS: "${LOCATION_MAX_AGE_SECONDS}"
+      DISPATCH_RADIUS_METERS: "${DISPATCH_RADIUS_METERS}"
+      ETA_SPEED_METERS_PER_SECOND: "${ETA_SPEED_METERS_PER_SECOND}"
+      ASSIGNMENT_RESPONSE_SECONDS: "${ASSIGNMENT_RESPONSE_SECONDS}"
+      MONGO_HOST: "mongo"
+    volumes:
+      - ./.data/tls/cert.pem:/tls/cert.pem:ro
+    networks: [backend]
+    depends_on:
+      kafka-init:
+        condition: service_completed_successfully
+      mongo-init:
+        condition: service_completed_successfully
+    healthcheck:
+      test: ["CMD", "node", "-e", "fetch('http://localhost:3000/health').then(r=>process.exit(r.ok?0:1)).catch(()=>process.exit(1))"]
+      interval: 10s
+      timeout: 5s
+      retries: 18
+      start_period: 30s
+
+  operations-service:
+    image: cab-system-backend:local
+    environment:
+      SERVICE_NAME: "operations-service"
+      DB_NAME: "operations_db"
+      DB_USER: "operations_user"
+      DB_PASSWORD: "${OPERATIONS_DB_PASSWORD}"
+      JWT_SECRET: "${JWT_SECRET}"
+      DATA_ENCRYPTION_KEY: "${DATA_ENCRYPTION_KEY}"
+      INTERNAL_SECRET: "${INTERNAL_SECRET}"
+      SANDBOX_API_KEY: "${SANDBOX_API_KEY}"
+      TOKEN_TTL_SECONDS: "${TOKEN_TTL_SECONDS}"
+      OTP_TTL_SECONDS: "${OTP_TTL_SECONDS}"
+      NODE_EXTRA_CA_CERTS: "/tls/cert.pem"
+      LOCATION_MAX_AGE_SECONDS: "${LOCATION_MAX_AGE_SECONDS}"
+      DISPATCH_RADIUS_METERS: "${DISPATCH_RADIUS_METERS}"
+      ETA_SPEED_METERS_PER_SECOND: "${ETA_SPEED_METERS_PER_SECOND}"
+      ASSIGNMENT_RESPONSE_SECONDS: "${ASSIGNMENT_RESPONSE_SECONDS}"
+    volumes:
+      - ./.data/tls/cert.pem:/tls/cert.pem:ro
+    networks: [backend]
+    depends_on:
+      kafka-init:
+        condition: service_completed_successfully
+      postgres:
+        condition: service_healthy
+    healthcheck:
+      test: ["CMD", "node", "-e", "fetch('http://localhost:3000/health').then(r=>process.exit(r.ok?0:1)).catch(()=>process.exit(1))"]
+      interval: 10s
+      timeout: 5s
+      retries: 18
+      start_period: 30s
+
+  gateway:
+    image: cab-system-backend:local
+    build: .
+    environment:
+      SERVICE_NAME: gateway
+      JWT_SECRET: ${JWT_SECRET}
+      REDIS_PASSWORD: ${GATEWAY_REDIS_PASSWORD}
+      SANDBOX_API_KEY: ${SANDBOX_API_KEY}
+      RATE_LIMIT_WINDOW_SECONDS: ${RATE_LIMIT_WINDOW_SECONDS}
+      RATE_LIMIT_REQUESTS: ${RATE_LIMIT_REQUESTS}
+      NODE_EXTRA_CA_CERTS: /tls/cert.pem
+    ports:
+      - "127.0.0.1:8443:8443"
+    volumes:
+      - ./.data/tls:/tls:ro
+    networks: [frontend, backend]
+    depends_on:
+      redis-gateway:
+        condition: service_healthy
+      identity-service:
+        condition: service_healthy
+      customer-service:
+        condition: service_healthy
+      driver-service:
+        condition: service_healthy
+      location-service:
+        condition: service_healthy
+      booking-service:
+        condition: service_healthy
+      trip-service:
+        condition: service_healthy
+      payment-service:
+        condition: service_healthy
+      notification-service:
+        condition: service_healthy
+      operations-service:
+        condition: service_healthy
+    healthcheck:
+      test: ["CMD", "node", "-e", "fetch('https://localhost:8443/ready').then(r=>process.exit(r.ok?0:1)).catch(()=>process.exit(1))"]
+      interval: 10s
+      timeout: 5s
+      retries: 12
+
+volumes:
+  sandbox-payment-data:
+  postgres-data:
+  mongo-data:
+  mongo-keyfile:
+  redis-gateway-data:
+  redis-location-data:
+  kafka-data:
+
+networks:
+  frontend:
+  backend:
+    internal: true

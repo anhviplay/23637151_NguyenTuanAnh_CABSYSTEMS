@@ -1,0 +1,13 @@
+{
+  "name": "cab-system",
+  "version": "0.1.0",
+  "private": true,
+  "type": "module",
+  "description": "CAB System practical project",
+  "scripts": {"start": "node shared/launch.mjs"},
+  "dependencies": {
+    "express": "^5.1.0", "pg": "^8.16.0", "mongodb": "^6.19.0",
+    "redis": "^4.7.0", "kafkajs": "2.2.4", "jsonwebtoken": "^9.0.2",
+    "@grpc/grpc-js": "^1.13.0", "@grpc/proto-loader": "^0.7.15", "helmet": "^8.1.0"
+  }
+}

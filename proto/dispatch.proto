@@ -1,0 +1,9 @@
+syntax = "proto3";
+package cab;
+message Query { string json = 1; }
+message Result { string json = 1; }
+service Driver { rpc CheckDriverEligibility(Query) returns (Result); }
+service Location {
+  rpc FindNearbyDrivers(Query) returns (Result);
+  rpc EstimateETA(Query) returns (Result);
+}

@@ -15,6 +15,7 @@ API công khai trả kết quả được xác nhận bởi service sở hữu d
 - **Operation:** `POST /api/v1/auth/customer/registrations`
 - **Truy xuất:** FR-01; UC-01; AC-01
 - **Body:** `phoneNumber`, `password`, `otp`
+- **Yêu cầu OTP:** `POST /api/v1/auth/customer/registration-otp` với `phoneNumber`, trả `202`.
 - **Kết quả:** `201` với `customerId`, `accountId`, `status`
 - **Lỗi chính:** `PHONE_ALREADY_EXISTS`, `OTP_INVALID`, `VALIDATION_ERROR`
 
@@ -88,7 +89,7 @@ API công khai trả kết quả được xác nhận bởi service sở hữu d
 - `DRIVER_ASSIGNED`: Assignment Accepted đã được công nhận; Trip có thể đang được tạo bất đồng bộ.
 - `TRIP_CREATED`: `trip-service` đã tạo Trip và Booking đã nhận dữ liệu đồng bộ.
 - `COMPLETED`: Trip hoàn thành và Booking đã đồng bộ sự kiện hoàn thành.
-- `CANCELLED`: Booking đã hủy hợp lệ.
+- `CANCELED`: Booking đã hủy hợp lệ.
 - `NO_DRIVER_AVAILABLE`: quy trình tìm Driver kết thúc mà không có Driver phù hợp.
 
 `tripId` chỉ xuất hiện sau khi Trip đã thực sự được tạo và dữ liệu liên kết đã sẵn sàng.
@@ -178,9 +179,9 @@ Thông tin Fare/Payment được hiển thị theo dữ liệu hiện có của 
 - **Truy xuất:** FR-38, FR-39; UC-15; AC-21, AC-22
 - **Kết quả:** `paymentId`, `fareId`, `method`, `status`, `providerReference`, `updatedAt`
 
-Payment có thể ở `PENDING`, `PAID` hoặc `FAILED`.
+Payment có thể ở `PENDING`, `COMPLETED` hoặc `FAILED`.
 
-Trạng thái Trip Completed không đồng nghĩa Payment `PAID`.
+Trạng thái Trip Completed không đồng nghĩa Payment `COMPLETED`.
 
 ## CUS-14 Thực hiện lại Payment điện tử
 
@@ -216,7 +217,7 @@ Không tạo Fare mới do thử lại thanh toán.
 - `trip.completed` cung cấp dữ liệu cần thiết để xác định Trip đủ điều kiện Rating.
 - Nếu dữ liệu hoàn thành Trip chưa được đồng bộ đến `customer-service`, API không được tạo Rating khi chưa xác minh điều kiện.
 - Event lặp không mở quyền đánh giá trùng hoặc tạo Rating trùng.
-- Payment `PAID` không phải điều kiện bắt buộc để Customer đánh giá Trip Completed.
+- Payment `COMPLETED` không phải điều kiện bắt buộc để Customer đánh giá Trip Completed.
 
 ## CUS-17 Xem điểm tổng hợp Driver
 
@@ -261,7 +262,7 @@ Dữ liệu tổng hợp được tính từ Rating hợp lệ do `customer-serv
 
 - Booking và Trip là hai đối tượng nghiệp vụ riêng.
 - Assignment Accepted không đồng nghĩa Trip đã được tạo.
-- Trip Completed không đồng nghĩa Fare đã được xác định hoặc Payment đã Paid.
+- Trip Completed không đồng nghĩa Fare đã được xác định hoặc Payment đã COMPLETED.
 - Các trạng thái liên service được đồng bộ qua event theo [internal-contracts.md](internal-contracts.md).
 - Response chỉ khẳng định kết quả đã được service nguồn ghi nhận.
 - Không đọc hoặc ghi trực tiếp database của service khác.

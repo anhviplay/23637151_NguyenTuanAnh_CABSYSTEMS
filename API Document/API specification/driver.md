@@ -104,7 +104,7 @@ Phản hồi `200` xác nhận quyết định Assignment được ghi nhận; k
 - **Operation:** `POST /api/v1/trips/{tripId}/status-transitions`
 - **Truy xuất:** FR-25, FR-26, FR-27, FR-28; UC-13; AC-15
 - **Header:** `Idempotency-Key`
-- **Body:** `targetStatus`, `occurredAt`, `expectedVersion`
+- **Body:** `targetStatus`, `occurredAt`, `expectedVersion`; khi chuyển `COMPLETED`, gửi thêm `distanceKm` là quãng đường thực tế của Trip (số không âm).
 - **Trạng thái cho phép:** `DRIVER_ARRIVED`, `PICKED_UP`, `IN_PROGRESS`, `COMPLETED`
 - **Lỗi chính:** `TRIP_INVALID_TRANSITION`, `TRIP_NOT_ASSIGNED_TO_DRIVER`, `VERSION_CONFLICT`
 
@@ -121,22 +121,22 @@ Phản hồi `200` xác nhận quyết định Assignment được ghi nhận; k
 - `driver-service` cập nhật Availability theo điều kiện.
 - `payment-service` xác định Fare đúng một lần.
 
-Phản hồi Trip `COMPLETED` không đồng nghĩa Fare đã được tính xong hoặc Payment đã `PAID`.
+Phản hồi Trip `COMPLETED` không đồng nghĩa Fare đã được tính xong hoặc Payment đã `COMPLETED`.
 
 ## DRV-10 Yêu cầu hủy trước Picked Up
 
 - **Operation:** `POST /api/v1/trips/{tripId}/driver-cancellation`
 - **Truy xuất:** FR-30; UC-14; AC-16
 - **Body:** `reasonCode`, `reasonText`, `expectedVersion`
-- **Kết quả:** `200` khi `trip-service` đã công nhận hủy và ghi trạng thái Trip `CANCELLED`
+- **Kết quả:** `200` khi `trip-service` đã công nhận hủy và ghi trạng thái Trip `CANCELED`
 - **Lỗi chính:** `CANCELLATION_NOT_ALLOWED`, `TRIP_INVALID_STATE`, `VERSION_CONFLICT`
 
 ### Đồng bộ liên service
 
 1. `trip-service` kiểm tra Trip thuộc Driver và còn trước `PICKED_UP`.
-2. Khi hủy hợp lệ, Trip được chuyển `CANCELLED`.
-3. `trip-service` phát `trip.status-changed` với `currentStatus=CANCELLED`.
-4. `booking-service` cập nhật Booking tương ứng sang `CANCELLED`.
+2. Khi hủy hợp lệ, Trip được chuyển `CANCELED`.
+3. `trip-service` phát `trip.status-changed` với `currentStatus=CANCELED`.
+4. `booking-service` cập nhật Booking tương ứng sang `CANCELED`.
 5. `driver-service` cập nhật Availability theo điều kiện.
 6. `notification-service` gửi thông báo cho Customer.
 
@@ -150,7 +150,7 @@ Nếu Trip đã `PICKED_UP` hoặc không còn cho phép hủy thông thường,
 - **Truy xuất:** FR-42; UC-15; AC-23
 - **Header:** `Idempotency-Key`
 - **Điều kiện:** Payment dùng `CASH` và Trip thuộc Driver
-- **Kết quả:** `200` với Payment `PAID`
+- **Kết quả:** `200` với Payment `COMPLETED`
 
 `payment-service` là chủ sở hữu trạng thái Payment. Khi Payment thay đổi, service phát `payment.status-changed` tới consumer liên quan.
 

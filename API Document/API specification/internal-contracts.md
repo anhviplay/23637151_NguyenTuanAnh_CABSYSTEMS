@@ -150,7 +150,7 @@ Các trường tham chiếu đến service khác là logical reference, không p
 **Xử lý:**
 - Khi Trip được tạo ở `CREATED`, `booking-service` có thể cập nhật Booking sang `TRIP_CREATED` và liên kết `tripId`.
 - Các mốc `DRIVER_ARRIVED`, `PICKED_UP`, `IN_PROGRESS` được phản ánh cho consumer cần thiết.
-- Nếu Trip bị hủy hợp lệ, `booking-service` đồng bộ Booking sang `CANCELLED`.
+- Nếu Trip bị hủy hợp lệ, `booking-service` đồng bộ Booking sang `CANCELED`.
 - `driver-service` giải phóng Driver sau khi hủy hợp lệ, nếu Driver vẫn làm việc và không có Trip khác.
 - `notification-service` và `operations-service` cập nhật thông báo/read model tương ứng.
 
@@ -186,7 +186,7 @@ Các trường tham chiếu đến service khác là logical reference, không p
 - `operations-service` cập nhật báo cáo theo dữ liệu sự kiện.
 
 **Nhất quán:**
-- Trip Completed không đồng nghĩa Payment đã Paid.
+- Trip Completed không đồng nghĩa Payment đã COMPLETED.
 - Booking Completed phản ánh kết thúc chuyến đi, không phải kết quả thanh toán.
 - Consumer xử lý event lặp an toàn.
 - Fare của cùng Trip không được tạo lặp.
@@ -233,8 +233,8 @@ Các trường tham chiếu đến service khác là logical reference, không p
 
 1. Driver gọi REST cancellation qua Gateway.
 2. `trip-service` kiểm tra quyền, trạng thái và giới hạn hủy.
-3. Khi hủy hợp lệ, Trip chuyển `CANCELLED`.
-4. `trip-service` phát `trip.status-changed` với `currentStatus=CANCELLED`.
+3. Khi hủy hợp lệ, Trip chuyển `CANCELED`.
+4. `trip-service` phát `trip.status-changed` với `currentStatus=CANCELED`.
 5. `booking-service` cập nhật Booking; `driver-service` cập nhật Availability; các consumer còn lại đồng bộ theo event.
 
 Không phát `booking.cancelled` như một thao tác hủy thứ hai khi Booking chỉ đang đồng bộ kết quả từ Trip. Điều này tránh tạo vòng lặp event.

@@ -722,7 +722,7 @@ erDiagram
 | Assignment | Assignment ID, Booking ID, Driver ID, thứ tự, thời điểm gửi/hết hạn/phản hồi, kết quả | Một Booking có nhiều Assignment nhưng tối đa một Accepted. |
 | Trip | Trip ID, Booking ID, Driver ID, Vehicle ID, trạng thái, mốc thời gian, quãng đường | Một Booking có tối đa một Trip thực hiện. |
 | Fare | Fare ID, Trip ID, loại dịch vụ, quãng đường tính cước, đơn giá/km, tổng tiền | Một Trip hoàn thành có một Fare. |
-| Payment | Payment ID, Fare ID, phương thức (chưa chọn khi mới tạo), trạng thái, provider reference, thời điểm | Được tạo ở `PENDING` cùng Fare; theo dõi Cash hoặc kết quả do External Payment Provider trả về. |
+| Payment | Payment ID, Fare ID, phương thức (chưa chọn khi mới tạo), trạng thái, provider reference, thời điểm | Được tạo ở `PENDING` cùng Fare; trạng thái gồm `PENDING`, `COMPLETED`, `FAILED`; theo dõi Cash hoặc kết quả do External Payment Provider trả về. |
 | Notification | Notification ID, người nhận, sự kiện, kênh, trạng thái, thời điểm | Kết quả gửi được ghi nhận mà không thay đổi giao dịch nguồn. |
 | Rating | Rating ID, Trip ID, Customer ID, Driver ID, số sao, nhận xét, thời điểm | Một Rating 1–5 sao kèm nhận xét cho một Trip đã hoàn thành. |
 | Audit Log | Audit ID, actor, hành động, đối tượng, trước/sau, lý do, thời điểm | Không được sửa hoặc xóa qua chức năng nghiệp vụ. |
