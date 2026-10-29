@@ -12,7 +12,7 @@
           "request": {
             "method": "GET",
             "header": [],
-            "url": "{{baseUrl}}/health"
+            "url": "{{baseUrl}}/hea"
           },
           "event": [
             {
@@ -32,7 +32,7 @@
           "request": {
             "method": "GET",
             "header": [],
-            "url": "{{baseUrl}}/ready"
+            "url": "{{baseUrl}}/rea"
           },
           "event": [
             {
@@ -57,7 +57,7 @@
                 "value": "Bearer {{operationsToken}}"
               }
             ],
-            "url": "{{baseUrl}}/health/services"
+            "url": "{{baseUrl}}/hea/all"
           },
           "event": [
             {
@@ -92,7 +92,7 @@
                 "value": "{{$guid}}"
               }
             ],
-            "url": "{{baseUrl}}/api/v1/auth/sessions",
+            "url": "{{baseUrl}}/log",
             "body": {
               "mode": "raw",
               "raw": "{\"pho\": \"{{operationsPhone}}\",\"pas\": \"{{operationsPassword}}\",\"act\": \"OPERATIONS\"}",
@@ -132,7 +132,7 @@
                 "value": "{{$guid}}"
               }
             ],
-            "url": "{{baseUrl}}/api/v1/auth/sessions",
+            "url": "{{baseUrl}}/log",
             "body": {
               "mode": "raw",
               "raw": "{\"pho\": \"{{customerPhone}}\",\"pas\": \"{{customerPassword}}\",\"act\": \"CUSTOMER\"}",
@@ -172,7 +172,7 @@
                 "value": "{{$guid}}"
               }
             ],
-            "url": "{{baseUrl}}/api/v1/auth/sessions",
+            "url": "{{baseUrl}}/log",
             "body": {
               "mode": "raw",
               "raw": "{\"pho\": \"{{driverPhone}}\",\"pas\": \"{{driverPassword}}\",\"act\": \"DRIVER\"}",
@@ -212,7 +212,7 @@
                 "value": "{{$guid}}"
               }
             ],
-            "url": "{{baseUrl}}/api/v1/auth/sessions",
+            "url": "{{baseUrl}}/log",
             "body": {
               "mode": "raw",
               "raw": "{\"pho\": \"{{cancelDriverPhone}}\",\"pas\": \"{{cancelDriverPassword}}\",\"act\": \"DRIVER\"}",
@@ -257,10 +257,10 @@
                 "value": "{{$guid}}"
               }
             ],
-            "url": "{{baseUrl}}/api/v1/auth/customer/registration-otp",
+            "url": "{{baseUrl}}/cus/otp",
             "body": {
               "mode": "raw",
-              "raw": "{\"pho\": \"{{newCustomerPhone}}\"}",
+              "raw": "{\"pho\": \"{{ncp}}\"}",
               "options": {
                 "raw": {
                   "language": "json"
@@ -291,7 +291,7 @@
                 "value": "{{sandboxKey}}"
               }
             ],
-            "url": "{{baseUrl}}/api/v1/sandbox/otp?phoneNumber={{newCustomerPhone}}&actorType=CUSTOMER"
+            "url": "{{baseUrl}}/otp/cus/{{ncp}}"
           },
           "event": [
             {
@@ -321,10 +321,10 @@
                 "value": "{{$guid}}"
               }
             ],
-            "url": "{{baseUrl}}/api/v1/auth/customer/registrations",
+            "url": "{{baseUrl}}/cus/reg",
             "body": {
               "mode": "raw",
-              "raw": "{\"pho\": \"{{newCustomerPhone}}\",\"pas\": \"{{newCustomerPassword}}\",\"otp\": \"{{customerOtp}}\",\"ful\": \"Customer\"}",
+              "raw": "{\"pho\": \"{{ncp}}\",\"pas\": \"{{newCustomerPassword}}\",\"otp\": \"{{customerOtp}}\",\"ful\": \"Customer\"}",
               "options": {
                 "raw": {
                   "language": "json"
@@ -364,7 +364,7 @@
                 "value": "{{$guid}}"
               }
             ],
-            "url": "{{baseUrl}}/api/v1/auth/sessions",
+            "url": "{{baseUrl}}/log",
             "body": {
               "mode": "raw",
               "raw": "{\"pho\": \"{{customerPhone}}\",\"pas\": \"{{customerPassword}}\",\"act\": \"CUSTOMER\"}",
@@ -405,7 +405,7 @@
                 "value": "Bearer {{customerToken}}"
               }
             ],
-            "url": "{{baseUrl}}/api/v1/customers/{{customerId}}"
+            "url": "{{baseUrl}}/cus/{{cus}}"
           },
           "event": [
             {
@@ -436,7 +436,7 @@
                 "value": "Bearer {{driverToken}}"
               }
             ],
-            "url": "{{baseUrl}}/api/v1/drivers/{{driverId}}"
+            "url": "{{baseUrl}}/dri/{{dri}}"
           },
           "event": [
             {
@@ -467,7 +467,7 @@
                 "value": "Bearer {{operationsToken}}"
               }
             ],
-            "url": "{{baseUrl}}/api/v1/drivers/nearby?latitude=10.77&longitude=106.70&radiusMeters=1000&page=1&pageSize=2"
+            "url": "{{baseUrl}}/dri/near?lat=10.77&lon=106.70&rad=1000&pag=1&lim=2"
           },
           "event": [
             {
@@ -493,7 +493,7 @@
                 "value": "Bearer {{operationsToken}}"
               }
             ],
-            "url": "{{baseUrl}}/api/v1/drivers/nearby?latitude=10.77&longitude=106.70&radiusMeters=1000&page=2&pageSize=2"
+            "url": "{{baseUrl}}/dri/near?lat=10.77&lon=106.70&rad=1000&pag=2&lim=2"
           },
           "event": [
             {
@@ -523,7 +523,7 @@
                 "value": "Bearer {{customerToken}}"
               }
             ],
-            "url": "{{baseUrl}}/api/v1/customers/me/bookings?page=1&pageSize=2"
+            "url": "{{baseUrl}}/cus/me/boo?pag=1&lim=2"
           },
           "event": [
             {
@@ -562,7 +562,7 @@
                 "value": "{{bookingCommandKey}}"
               }
             ],
-            "url": "{{baseUrl}}/api/v1/bookings",
+            "url": "{{baseUrl}}/boo",
             "body": {
               "mode": "raw",
               "raw": "{\"pic\": {\"add\": \"Điểm đón\",\"loc\": {\"lat\": 10.77,\"lon\": 106.7}},\"des\": {\"add\": \"Điểm đến\",\"loc\": {\"lat\": 10.79,\"lon\": 106.7}},\"ser\": \"BIKE\"}",
@@ -613,7 +613,7 @@
                 "value": "Bearer {{driverToken}}"
               }
             ],
-            "url": "{{baseUrl}}/api/v1/drivers/me/assignments/current"
+            "url": "{{baseUrl}}/dri/ass"
           },
           "event": [
             {
@@ -676,7 +676,7 @@
                 "value": "{{$guid}}"
               }
             ],
-            "url": "{{baseUrl}}/api/v1/assignments/{{assignmentId}}/responses",
+            "url": "{{baseUrl}}/ass/{{ass}}",
             "body": {
               "mode": "raw",
               "raw": "{\"dec\": \"ACCEPTED\"}",
@@ -710,7 +710,7 @@
                 "value": "Bearer {{customerToken}}"
               }
             ],
-            "url": "{{baseUrl}}/api/v1/bookings/{{bookingId}}"
+            "url": "{{baseUrl}}/boo/{{boo}}"
           },
           "event": [
             {
@@ -772,7 +772,7 @@
                 "value": "Bearer {{driverToken}}"
               }
             ],
-            "url": "{{baseUrl}}/api/v1/trips/{{tripId}}"
+            "url": "{{baseUrl}}/tri/{{tri}}"
           },
           "event": [
             {
@@ -806,7 +806,7 @@
                 "value": "{{$guid}}"
               }
             ],
-            "url": "{{baseUrl}}/api/v1/trips/{{tripId}}/status-transitions",
+            "url": "{{baseUrl}}/tri/{{tri}}/sta",
             "body": {
               "mode": "raw",
               "raw": "{\"tar\": \"DRIVER_ARRIVED\",\"occ\": \"{{now}}\",\"exp\": {{tripVersion}}}",
@@ -850,7 +850,7 @@
                 "value": "{{$guid}}"
               }
             ],
-            "url": "{{baseUrl}}/api/v1/trips/{{tripId}}/status-transitions",
+            "url": "{{baseUrl}}/tri/{{tri}}/sta",
             "body": {
               "mode": "raw",
               "raw": "{\"tar\": \"PICKED_UP\",\"occ\": \"{{now}}\",\"exp\": {{tripVersion}}}",
@@ -894,7 +894,7 @@
                 "value": "{{$guid}}"
               }
             ],
-            "url": "{{baseUrl}}/api/v1/drivers/me/locations",
+            "url": "{{baseUrl}}/dri/loc",
             "body": {
               "mode": "raw",
               "raw": "{\"lat\": 10.78,\"lon\": 106.7,\"obs\": \"{{now}}\",\"seq\": {{seq}}}",
@@ -936,7 +936,7 @@
                 "value": "{{$guid}}"
               }
             ],
-            "url": "{{baseUrl}}/api/v1/trips/{{tripId}}/status-transitions",
+            "url": "{{baseUrl}}/tri/{{tri}}/sta",
             "body": {
               "mode": "raw",
               "raw": "{\"tar\": \"IN_PROGRESS\",\"occ\": \"{{now}}\",\"exp\": {{tripVersion}}}",
@@ -980,7 +980,7 @@
                 "value": "{{$guid}}"
               }
             ],
-            "url": "{{baseUrl}}/api/v1/drivers/me/locations",
+            "url": "{{baseUrl}}/dri/loc",
             "body": {
               "mode": "raw",
               "raw": "{\"lat\": 10.79,\"lon\": 106.7,\"obs\": \"{{now}}\",\"seq\": {{seq}}}",
@@ -1022,7 +1022,7 @@
                 "value": "{{$guid}}"
               }
             ],
-            "url": "{{baseUrl}}/api/v1/trips/{{tripId}}/status-transitions",
+            "url": "{{baseUrl}}/tri/{{tri}}/sta",
             "body": {
               "mode": "raw",
               "raw": "{\"tar\": \"COMPLETED\",\"occ\": \"{{now}}\",\"exp\": {{tripVersion}},\"dis\": 5}",
@@ -1071,7 +1071,7 @@
                 "value": "{{$guid}}"
               }
             ],
-            "url": "{{baseUrl}}/api/v1/bookings",
+            "url": "{{baseUrl}}/boo",
             "body": {
               "mode": "raw",
               "raw": "{\"pic\": {\"add\": \"Điểm đón\",\"loc\": {\"lat\": 10.77,\"lon\": 106.7}},\"des\": {\"add\": \"Điểm đến\",\"loc\": {\"lat\": 10.79,\"lon\": 106.7}},\"ser\": \"BIKE\"}",
@@ -1106,7 +1106,7 @@
                 "value": "Bearer {{cancelDriverToken}}"
               }
             ],
-            "url": "{{baseUrl}}/api/v1/drivers/me/assignments/current"
+            "url": "{{baseUrl}}/dri/ass"
           },
           "event": [
             {
@@ -1169,7 +1169,7 @@
                 "value": "{{$guid}}"
               }
             ],
-            "url": "{{baseUrl}}/api/v1/assignments/{{cancelAssignmentId}}/responses",
+            "url": "{{baseUrl}}/ass/{{cas}}",
             "body": {
               "mode": "raw",
               "raw": "{\"dec\": \"ACCEPTED\"}",
@@ -1203,7 +1203,7 @@
                 "value": "Bearer {{customerToken}}"
               }
             ],
-            "url": "{{baseUrl}}/api/v1/bookings/{{cancelBookingId}}"
+            "url": "{{baseUrl}}/boo/{{cbo}}"
           },
           "event": [
             {
@@ -1267,7 +1267,7 @@
                 "value": "{{$guid}}"
               }
             ],
-            "url": "{{baseUrl}}/api/v1/bookings/{{cancelBookingId}}/cancellations",
+            "url": "{{baseUrl}}/boo/{{cbo}}/can",
             "body": {
               "mode": "raw",
               "raw": "{\"rea\": \"CUSTOMER_REQUEST\",\"txt\": \"Thay đổi kế hoạch\",\"exp\": {{cancelVersion}}}",
@@ -1302,7 +1302,7 @@
                 "value": "Bearer {{customerToken}}"
               }
             ],
-            "url": "{{baseUrl}}/api/v1/trips/{{cancelTripId}}"
+            "url": "{{baseUrl}}/tri/{{ctr}}"
           },
           "event": [
             {
@@ -1356,7 +1356,7 @@
                 "value": "Bearer {{customerToken}}"
               }
             ],
-            "url": "{{baseUrl}}/api/v1/notifications/me"
+            "url": "{{baseUrl}}/not"
           },
           "event": [
             {
@@ -1409,7 +1409,7 @@
                 "value": "Bearer {{cancelDriverToken}}"
               }
             ],
-            "url": "{{baseUrl}}/api/v1/notifications/me"
+            "url": "{{baseUrl}}/not"
           },
           "event": [
             {
@@ -1467,7 +1467,7 @@
                 "value": "Bearer {{customerToken}}"
               }
             ],
-            "url": "{{baseUrl}}/api/v1/trips/{{tripId}}/fare"
+            "url": "{{baseUrl}}/tri/{{tri}}/far"
           },
           "event": [
             {
@@ -1531,7 +1531,7 @@
                 "value": "{{paymentCommandKey}}"
               }
             ],
-            "url": "{{baseUrl}}/api/v1/payments/{{paymentId}}/method",
+            "url": "{{baseUrl}}/pay/{{pay}}/met",
             "body": {
               "mode": "raw",
               "raw": "{\"met\": \"ELECTRONIC\",\"exp\": {{paymentInitialVersion}}}",
@@ -1575,7 +1575,7 @@
                 "value": "{{$guid}}"
               }
             ],
-            "url": "{{baseUrl}}/api/v1/sandbox/payments/{{providerReference}}/settle",
+            "url": "{{baseUrl}}/pay/{{ref}}/ok",
             "body": {
               "mode": "raw",
               "raw": "{\"res\": \"SUCCESS\"}",
@@ -1609,7 +1609,7 @@
                 "value": "Bearer {{customerToken}}"
               }
             ],
-            "url": "{{baseUrl}}/api/v1/payments/{{paymentId}}"
+            "url": "{{baseUrl}}/pay/{{pay}}"
           },
           "event": [
             {
@@ -1663,7 +1663,7 @@
                 "value": "Bearer {{customerToken}}"
               }
             ],
-            "url": "{{baseUrl}}/api/v1/trips/{{tripId}}"
+            "url": "{{baseUrl}}/tri/{{tri}}"
           },
           "event": [
             {
@@ -1712,7 +1712,7 @@
                 "value": "{{$guid}}"
               }
             ],
-            "url": "{{baseUrl}}/api/v1/trips/{{tripId}}/ratings",
+            "url": "{{baseUrl}}/tri/{{tri}}/rat",
             "body": {
               "mode": "raw",
               "raw": "{\"sco\": 5,\"com\": \"Chuyến đi tốt\"}",
@@ -1755,10 +1755,10 @@
                 "value": "{{$guid}}"
               }
             ],
-            "url": "{{baseUrl}}/api/v1/auth/driver/registration-otp",
+            "url": "{{baseUrl}}/dri/otp",
             "body": {
               "mode": "raw",
-              "raw": "{\"pho\": \"{{newDriverPhone}}\"}",
+              "raw": "{\"pho\": \"{{ndp}}\"}",
               "options": {
                 "raw": {
                   "language": "json"
@@ -1789,7 +1789,7 @@
                 "value": "{{sandboxKey}}"
               }
             ],
-            "url": "{{baseUrl}}/api/v1/sandbox/otp?phoneNumber={{newDriverPhone}}&actorType=DRIVER"
+            "url": "{{baseUrl}}/otp/dri/{{ndp}}"
           },
           "event": [
             {
@@ -1819,10 +1819,10 @@
                 "value": "{{$guid}}"
               }
             ],
-            "url": "{{baseUrl}}/api/v1/auth/driver/registration-otp/verify",
+            "url": "{{baseUrl}}/dri/ver",
             "body": {
               "mode": "raw",
-              "raw": "{\"pho\": \"{{newDriverPhone}}\",\"otp\": \"{{driverOtp}}\"}",
+              "raw": "{\"pho\": \"{{ndp}}\",\"otp\": \"{{driverOtp}}\"}",
               "options": {
                 "raw": {
                   "language": "json"
@@ -1858,10 +1858,10 @@
                 "value": "{{$guid}}"
               }
             ],
-            "url": "{{baseUrl}}/api/v1/auth/driver/registrations",
+            "url": "{{baseUrl}}/dri/reg",
             "body": {
               "mode": "raw",
-              "raw": "{\"pho\": \"{{newDriverPhone}}\",\"pas\": \"{{newDriverPassword}}\",\"otp\": \"{{driverProof}}\",\"ful\": \"Driver\",\"lic\": \"LICENSE-NEW\",\"veh\": {\"pla\": \"59A-NEW\",\"ser\": \"BIKE\"}}",
+              "raw": "{\"pho\": \"{{ndp}}\",\"pas\": \"{{newDriverPassword}}\",\"otp\": \"{{driverProof}}\",\"ful\": \"Driver\",\"lic\": \"LICENSE-NEW\",\"veh\": {\"pla\": \"59A-NEW\",\"ser\": \"BIKE\"}}",
               "options": {
                 "raw": {
                   "language": "json"
@@ -1899,7 +1899,7 @@
                 "value": "Bearer {{operationsToken}}"
               }
             ],
-            "url": "{{baseUrl}}/api/v1/operations/drivers?page=1&pageSize=20"
+            "url": "{{baseUrl}}/ops/dri?pag=1&lim=20"
           },
           "event": [
             {
@@ -1924,7 +1924,7 @@
                 "value": "Bearer {{operationsToken}}"
               }
             ],
-            "url": "{{baseUrl}}/api/v1/drivers/{{newDriverId}}"
+            "url": "{{baseUrl}}/dri/{{ndi}}"
           },
           "event": [
             {
@@ -1986,7 +1986,7 @@
                 "value": "{{$guid}}"
               }
             ],
-            "url": "{{baseUrl}}/api/v1/operations/drivers/{{newDriverId}}/verification",
+            "url": "{{baseUrl}}/ops/dri/{{ndi}}/ver",
             "body": {
               "mode": "raw",
               "raw": "{\"dec\": \"ACTIVE\",\"rea\": \"Hồ sơ hợp lệ\",\"exp\": {{newDriverVersion}}}",
@@ -2025,10 +2025,10 @@
                 "value": "{{$guid}}"
               }
             ],
-            "url": "{{baseUrl}}/api/v1/auth/sessions",
+            "url": "{{baseUrl}}/log",
             "body": {
               "mode": "raw",
-              "raw": "{\"pho\": \"{{newDriverPhone}}\",\"pas\": \"{{newDriverPassword}}\",\"act\": \"DRIVER\"}",
+              "raw": "{\"pho\": \"{{ndp}}\",\"pas\": \"{{newDriverPassword}}\",\"act\": \"DRIVER\"}",
               "options": {
                 "raw": {
                   "language": "json"
@@ -2060,7 +2060,7 @@
                 "value": "Bearer {{newDriverToken}}"
               }
             ],
-            "url": "{{baseUrl}}/api/v1/notifications/me"
+            "url": "{{baseUrl}}/not"
           },
           "event": [
             {
@@ -2119,7 +2119,7 @@
                 "value": "Bearer {{driverToken}}"
               }
             ],
-            "url": "{{baseUrl}}/api/v1/drivers/{{driverId}}"
+            "url": "{{baseUrl}}/dri/{{dri}}"
           },
           "event": [
             {
@@ -2153,7 +2153,7 @@
                 "value": "{{$guid}}"
               }
             ],
-            "url": "{{baseUrl}}/api/v1/drivers/me/availability",
+            "url": "{{baseUrl}}/dri/ava",
             "body": {
               "mode": "raw",
               "raw": "{\"ava\": \"OFFLINE\",\"exp\": {{driverVersion}}}",
@@ -2196,7 +2196,7 @@
                 "value": "{{$guid}}"
               }
             ],
-            "url": "{{baseUrl}}/api/v1/drivers/me/availability",
+            "url": "{{baseUrl}}/dri/ava",
             "body": {
               "mode": "raw",
               "raw": "{\"ava\": \"AVAILABLE\",\"exp\": {{driverVersion}}}",
@@ -2240,7 +2240,7 @@
                 "value": "{{$guid}}"
               }
             ],
-            "url": "{{baseUrl}}/api/v1/auth/sessions",
+            "url": "{{baseUrl}}/log",
             "body": {
               "mode": "raw",
               "raw": "{\"pho\": \"' OR 1=1 --\",\"pas\": \"anything\",\"act\": \"CUSTOMER\"}",
@@ -2279,7 +2279,7 @@
                 "value": "Bearer {{customerToken}}"
               }
             ],
-            "url": "{{baseUrl}}/api/v1/customers/{{customerId}}"
+            "url": "{{baseUrl}}/cus/{{cus}}"
           },
           "event": [
             {
@@ -2313,7 +2313,7 @@
                 "value": "{{$guid}}"
               }
             ],
-            "url": "{{baseUrl}}/api/v1/customers/me",
+            "url": "{{baseUrl}}/cus/me",
             "body": {
               "mode": "raw",
               "raw": "{\"ful\": \"<script>alert('hack')</script>\",\"ver\": {{customerVersion}}}",
@@ -2353,7 +2353,7 @@
                 "value": "Bearer {{tamperedToken}}"
               }
             ],
-            "url": "{{baseUrl}}/health/services"
+            "url": "{{baseUrl}}/hea/all"
           },
           "event": [
             {
@@ -2392,7 +2392,7 @@
                 "value": "Bearer {{customerToken}}"
               }
             ],
-            "url": "{{baseUrl}}/api/v1/drivers/{{driverId}}"
+            "url": "{{baseUrl}}/dri/{{dri}}"
           },
           "event": [
             {
@@ -2430,7 +2430,7 @@
                 "value": "{{bookingCommandKey}}"
               }
             ],
-            "url": "{{baseUrl}}/api/v1/bookings",
+            "url": "{{baseUrl}}/boo",
             "body": {
               "mode": "raw",
               "raw": "{\"pic\": {\"add\": \"Điểm đón\",\"loc\": {\"lat\": 10.77,\"lon\": 106.7}},\"des\": {\"add\": \"Điểm đến\",\"loc\": {\"lat\": 10.79,\"lon\": 106.7}},\"ser\": \"BIKE\"}",
@@ -2490,7 +2490,7 @@
                 "value": "{{paymentCommandKey}}"
               }
             ],
-            "url": "{{baseUrl}}/api/v1/payments/{{paymentId}}/method",
+            "url": "{{baseUrl}}/pay/{{pay}}/met",
             "body": {
               "mode": "raw",
               "raw": "{\"met\": \"ELECTRONIC\",\"exp\": {{paymentInitialVersion}}}",
@@ -2533,7 +2533,7 @@
                 "value": "{{$guid}}"
               }
             ],
-            "url": "{{baseUrl}}/api/v1/sandbox/payments/{{providerReference}}/replay-callback",
+            "url": "{{baseUrl}}/pay/{{ref}}/rep",
             "body": {
               "mode": "raw",
               "raw": "{}",
@@ -2567,7 +2567,7 @@
                 "value": "Bearer {{customerToken}}"
               }
             ],
-            "url": "{{baseUrl}}/api/v1/payments/{{paymentId}}"
+            "url": "{{baseUrl}}/pay/{{pay}}"
           },
           "event": [
             {
@@ -2593,7 +2593,9 @@
         "type": "text/javascript",
         "exec": [
           "pm.variables.set('now', new Date().toISOString());",
-          "pm.variables.set('seq', Date.now());"
+          "pm.variables.set('seq', Date.now());",
+          "const shortVariables = {\"ncp\": \"newCustomerPhone\", \"ndp\": \"newDriverPhone\", \"cus\": \"customerId\", \"dri\": \"driverId\", \"ndi\": \"newDriverId\", \"cdi\": \"cancelDriverId\", \"boo\": \"bookingId\", \"cbo\": \"cancelBookingId\", \"tri\": \"tripId\", \"ctr\": \"cancelTripId\", \"ass\": \"assignmentId\", \"cas\": \"cancelAssignmentId\", \"pay\": \"paymentId\", \"ref\": \"providerReference\"};",
+          "for (const [short, full] of Object.entries(shortVariables)) { const value=pm.environment.get(full); if(value!==undefined&&value!==null)pm.variables.set(short,value);else pm.variables.unset(short); }"
         ]
       }
     }

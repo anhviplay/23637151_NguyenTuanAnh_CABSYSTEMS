@@ -3,12 +3,14 @@ import helmet from 'helmet';
 import https from 'node:https';
 import fs from 'node:fs';
 import {expandInput} from './input.mjs';
+import {expandRoute} from './routes.mjs';
 import {createClient} from 'redis';
 import {decodeToken,id,now,fail} from '../shared/helpers.mjs';
 const services=['identity','customer','driver','location','booking','trip','payment','notification','operations'].map(x=>x+'-service');
 const app=express();app.use(helmet());app.set('json escape',true);app.use(express.json({limit:'64kb'}));
 const redis=createClient({url:`redis://:${encodeURIComponent(process.env.REDIS_PASSWORD)}@redis-gateway:6379`});redis.on('error',()=>{});await redis.connect();
 const envelope=data=>({data,meta:{correlationId:id(),occurredAt:now()}});
+app.use((req,res,next)=>{try{req.cabUrl=expandRoute(req.method,req.originalUrl);req.url=req.cabUrl;next();}catch(error){next(error);}});
 app.get('/health',(req,res)=>res.json(envelope({status:'HEALTHY'})));
 app.get('/ready',async(req,res)=>{try{await redis.ping();res.json(envelope({status:'READY'}));}catch{res.status(503).json(envelope({status:'NOT_READY'}));}});
 app.use(async(req,res,next)=>{
@@ -29,7 +31,7 @@ app.use(async(req,res)=>{
  const path=req.path;let target;
  if(path.startsWith('/api/v1/sandbox/payments/')){
   if(req.actor?.actorType!=='OPERATIONS'||!req.actor.permissions?.includes('payment:sandbox'))fail(403,'FORBIDDEN');
-  const sandboxPath=req.originalUrl.replace('/api/v1/sandbox','');
+  const sandboxPath=req.cabUrl.replace('/api/v1/sandbox','');
   req.body=expandInput(req.body,path);
   return proxy(req,res,'https://payment-sandbox:3000'+sandboxPath,{'X-Sandbox-Key':process.env.SANDBOX_API_KEY});
  }
@@ -45,7 +47,7 @@ app.use(async(req,res)=>{
  else if(path.startsWith('/api/v1/operations/'))target='operations';
  else fail(404,'NOT_FOUND');
  req.body=expandInput(req.body,path);
- return proxy(req,res,`http://${target}-service:3000`+req.originalUrl);
+ return proxy(req,res,`http://${target}-service:3000`+req.cabUrl);
 });
 async function proxy(req,res,url,extraHeaders={}){
  const headers={'X-Correlation-Id':req.headers['x-correlation-id']||id(),...extraHeaders};

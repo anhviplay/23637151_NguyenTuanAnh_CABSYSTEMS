@@ -37,7 +37,7 @@ GET /api/v1/sandbox/otp nhận query phoneNumber và actorType=CUSTOMER/DRIVER, 
 
 ## Tên trường nhập ngắn
 
-Body JSON chấp nhận tên đầy đủ hoặc tên ngắn theo 3 chữ đầu. Gateway đổi tên ngắn thành tên hợp đồng trước khi chuyển đến owner; response giữ nguyên tên đầy đủ. URL và query params không thay đổi.
+Body JSON chấp nhận tên đầy đủ hoặc tên ngắn theo 3 chữ đầu. Gateway đổi tên ngắn thành tên hợp đồng trước khi chuyển đến owner; response giữ nguyên tên đầy đủ. URL và query đầy đủ vẫn hợp lệ; các dạng ngắn bổ sung được liệt kê ở phần URL nhập ngắn.
 
 - Tài khoản: pho → phoneNumber, pas → password, act → actorType, ful → fullName, lic → licenseNumber.
 - Xe: veh → vehicle, pla → plateNumber, ser → serviceType.
@@ -54,3 +54,55 @@ Tên đầy đủ vẫn hợp lệ. Không gửi hai tên của cùng một trư
 Ví dụ vị trí: `{"lat":10.78,"lon":106.7,"obs":"{{now}}","seq":{{seq}}}`.
 
 Trong collection CAB System, pre-request script tự đặt `{{now}}` thành thời gian ISO 8601 hiện tại và `{{seq}}` thành số thứ tự theo mili giây. Body dùng `"obs":"{{now}}"` hoặc `"occ":"{{now}}"`; sequence dùng `"seq":{{seq}}` không đặt dấu ngoặc kép quanh giá trị số.
+
+## URL nhập ngắn
+
+Gateway hỗ trợ các đường ngắn dưới đây song song URL đầy đủ. Đường ngắn được đổi về cùng đường chuẩn trước khi xác thực, giới hạn request và định tuyến; quyền truy cập và idempotency giữ nguyên. Callback từ provider tiếp tục dùng URL đầy đủ.
+
+- `GET /hea` → `/health`.
+- `GET /rea` → `/ready`.
+- `GET /hea/all` → `/health/services`.
+- `POST /log` → `/api/v1/auth/sessions`.
+- `POST /cus/otp` → `/api/v1/auth/customer/registration-otp`.
+- `POST /cus/reg` → `/api/v1/auth/customer/registrations`.
+- `POST /dri/otp` → `/api/v1/auth/driver/registration-otp`.
+- `POST /dri/ver` → `/api/v1/auth/driver/registration-otp/verify`.
+- `POST /dri/reg` → `/api/v1/auth/driver/registrations`.
+- `GET /otp/cus/:phone` → `/api/v1/sandbox/otp?phoneNumber=:phone&actorType=CUSTOMER`.
+- `GET /otp/dri/:phone` → `/api/v1/sandbox/otp?phoneNumber=:phone&actorType=DRIVER`.
+- `GET /cus/me/boo` → `/api/v1/customers/me/bookings`.
+- `GET /cus/me/tri` → `/api/v1/customers/me/trips`.
+- `PATCH /cus/me` → `/api/v1/customers/me`.
+- `GET /cus/:id` → `/api/v1/customers/:id`.
+- `GET /dri/near` → `/api/v1/drivers/nearby`.
+- `GET /dri/ass` → `/api/v1/drivers/me/assignments/current`.
+- `PATCH /dri/ava` → `/api/v1/drivers/me/availability`.
+- `POST /dri/loc` → `/api/v1/drivers/me/locations`.
+- `GET /dri/:id/rat` → `/api/v1/drivers/:id/rating-summary`.
+- `GET /dri/:id` → `/api/v1/drivers/:id`.
+- `POST /ass/:id` → `/api/v1/assignments/:id/responses`.
+- `POST /boo` → `/api/v1/bookings`.
+- `POST /boo/:id/can` → `/api/v1/bookings/:id/cancellations`.
+- `GET /boo/:id` → `/api/v1/bookings/:id`.
+- `POST /tri/:id/sta` → `/api/v1/trips/:id/status-transitions`.
+- `POST /tri/:id/can` → `/api/v1/trips/:id/driver-cancellation`.
+- `GET /tri/:id/far` → `/api/v1/trips/:id/fare`.
+- `POST /tri/:id/rat` → `/api/v1/trips/:id/ratings`.
+- `GET /tri/:id` → `/api/v1/trips/:id`.
+- `PATCH /pay/:id/met` → `/api/v1/payments/:id/method`.
+- `POST /pay/:id/ret` → `/api/v1/payments/:id/retry`.
+- `POST /pay/:id/cas` → `/api/v1/payments/:id/cash-confirmation`.
+- `GET /pay/:id` → `/api/v1/payments/:id`.
+- `POST /pay/:id/ok` → `/api/v1/sandbox/payments/:id/settle`.
+- `POST /pay/:id/rep` → `/api/v1/sandbox/payments/:id/replay-callback`.
+- `GET /not` → `/api/v1/notifications/me`.
+- `GET /ops/dri` → `/api/v1/operations/drivers`.
+- `PATCH /ops/dri/:id/ver` → `/api/v1/operations/drivers/:id/verification`.
+- `GET /ops/boo` → `/api/v1/operations/bookings`.
+- `GET /ops/tri` → `/api/v1/operations/trips`.
+- `GET /ops/pay` → `/api/v1/operations/payments`.
+- `GET /ops/aud` → `/api/v1/operations/audit-entries`.
+
+Query có tên ngắn: lat/latitude, lon/longitude, rad/radiusMeters, pag/page, lim/pageSize. OTP vẫn yêu cầu X-Sandbox-Key. Các URL ngắn không bỏ kiểm tra token hoặc quyền.
+
+Collection tự đặt các biến URL ngắn từ environment: `ncp` = `newCustomerPhone`, `ndp` = `newDriverPhone`, `cus` = `customerId`, `dri` = `driverId`, `ndi` = `newDriverId`, `cdi` = `cancelDriverId`, `boo` = `bookingId`, `cbo` = `cancelBookingId`, `tri` = `tripId`, `ctr` = `cancelTripId`, `ass` = `assignmentId`, `cas` = `cancelAssignmentId`, `pay` = `paymentId`, `ref` = `providerReference`.
