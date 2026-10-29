@@ -750,7 +750,8 @@
                   "const d = pm.response.json().data;",
                   "if (d && d.tripId !== undefined) pm.environment.set(\"tripId\", d.tripId);",
                   "if (d && d.version !== undefined) pm.environment.set(\"bookingVersion\", d.version);",
-                  "pm.test(\"Trip đã được tạo\",()=>pm.expect(d.tripId).to.be.a(\"string\"));"
+                  "pm.test(\"Trip đã được tạo\",()=>pm.expect(d.tripId).to.be.a(\"string\"));",
+                  "pm.test(\"Customer nhận thông tin tài xế\",()=>{pm.expect(d.driverInfo.driverId).to.eql(pm.environment.get(\"driverId\"));pm.expect(d.driverInfo.fullName).to.be.a(\"string\").and.not.empty;pm.expect(d.driverInfo.vehicle.plateNumber).to.be.a(\"string\").and.not.empty;});"
                 ]
               }
             }
@@ -1669,6 +1670,42 @@
               }
             }
           ]
+        },
+        {
+          "name": "Xem chuyến đã thanh toán",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{customerToken}}"
+              }
+            ],
+            "url": "{{baseUrl}}/api/v1/trips/{{tripId}}"
+          },
+          "event": [
+            {
+              "listen": "prerequest",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "const deadline=Date.now()+20000;",
+                  "function check(){pm.sendRequest({url:pm.variables.replaceIn(pm.request.url.toString()),method:\"GET\",header:{Authorization:\"Bearer \"+pm.environment.get(\"customerToken\")}},(err,r)=>{let d;try{d=r.json().data;}catch(_){}if(!err&&r.code===200&&d?.paymentStatus===\"COMPLETED\")return;if(Date.now()>=deadline){pm.test(\"Trip nhận kết quả Payment\",()=>pm.expect(d?.paymentStatus).to.eql(\"COMPLETED\"));return;}setTimeout(check,300);});}check();"
+                ]
+              }
+            },
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"HTTP 200\",()=>pm.response.to.have.status(200));",
+                  "const d=pm.response.json().data;",
+                  "pm.test(\"Trip đã thanh toán\",()=>{pm.expect(d.paymentStatus).to.eql(\"COMPLETED\");pm.expect(d.paymentId).to.eql(pm.environment.get(\"paymentId\"));pm.expect(d.paidAt).to.be.a(\"string\");});"
+                ]
+              }
+            }
+          ]
         }
       ]
     },
@@ -1870,6 +1907,31 @@
     {
       "name": "22 — Duyệt hồ sơ Driver",
       "item": [
+        {
+          "name": "Danh sách hồ sơ tài xế",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{operationsToken}}"
+              }
+            ],
+            "url": "{{baseUrl}}/api/v1/operations/drivers?page=1&pageSize=20"
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"HTTP 200\",()=>pm.response.to.have.status(200));",
+                  "pm.test(\"Có danh sách hồ sơ\",()=>pm.expect(pm.response.json().data).to.be.an(\"array\").and.not.empty);"
+                ]
+              }
+            }
+          ]
+        },
         {
           "name": "Xem hồ sơ",
           "request": {
@@ -2417,7 +2479,7 @@
                   "const url=pm.environment.get(\"baseUrl\")+\"/api/v1/bookings\";",
                   "const headers={\"Content-Type\":\"application/json\",\"Authorization\":\"Bearer \"+pm.environment.get(\"customerToken\"),\"Idempotency-Key\":key};",
                   "const body=\"{\\\"pickup\\\": {\\\"address\\\": \\\"\\u0110i\\u1ec3m \\u0111\\u00f3n\\\", \\\"location\\\": {\\\"latitude\\\": 10.77, \\\"longitude\\\": 106.7}}, \\\"destination\\\": {\\\"address\\\": \\\"\\u0110i\\u1ec3m \\u0111\\u1ebfn\\\", \\\"location\\\": {\\\"latitude\\\": 10.79, \\\"longitude\\\": 106.7}}, \\\"serviceType\\\": \\\"BIKE\\\"}\";",
-                  "for(let i=0;i<130;i++){pm.sendRequest({url,method:\"POST\",header:headers,body:{mode:\"raw\",raw:body}},function(error,response){if(error)console.error(error.message);});}"
+                  "for(let i=0;i<1100;i++){pm.sendRequest({url,method:\"POST\",header:headers,body:{mode:\"raw\",raw:body}},function(error,response){if(error)console.error(error.message);});}"
                 ]
               }
             }

@@ -3,8 +3,8 @@ export async function register(c){
   c.requireFields(body,'pickup','destination','serviceType');c.coordinates(body.pickup.location);c.coordinates(body.destination.location);if(!['BIKE','CAR_4','CAR_7'].includes(body.serviceType))c.fail(400,'VALIDATION_ERROR');
   const booking={bookingId:c.id(),customerId:actor.actorId,pickup:body.pickup,destination:body.destination,serviceType:body.serviceType,status:'SEARCHING',createdAt:c.now(),version:1};await tx.put('booking',booking.bookingId,booking);await c.emit(tx,'booking.created',booking.bookingId,1,booking,correlationId);return c.ok(booking,201);
  });
- c.route('GET','/api/v1/bookings/:bookingId',['CUSTOMER'],async({tx,actor,params})=>{const b=await tx.get('booking',params.bookingId);c.owned(actor,b);return c.ok(b);});
- c.route('GET','/api/v1/customers/me/bookings',['CUSTOMER'],async({tx,actor,query})=>{const list=(await tx.list('booking')).filter(b=>b.customerId===actor.actorId).sort((a,b)=>b.createdAt.localeCompare(a.createdAt)||a.bookingId.localeCompare(b.bookingId));return {...c.page(list,query),status:200};});
+ c.route('GET','/api/v1/bookings/:bookingId',['CUSTOMER'],async({tx,actor,params})=>{const b=await tx.get('booking',params.bookingId);c.owned(actor,b);return c.ok(c.rideView(b));});
+ c.route('GET','/api/v1/customers/me/bookings',['CUSTOMER'],async({tx,actor,query})=>{const list=(await tx.list('booking')).filter(b=>b.customerId===actor.actorId).sort((a,b)=>b.createdAt.localeCompare(a.createdAt)||a.bookingId.localeCompare(b.bookingId));return {...c.page(list.map(c.rideView),query),status:200};});
  c.route('GET','/api/v1/drivers/me/assignments/current',['DRIVER'],async({tx,actor})=>{const current=(await tx.list('assignment')).find(a=>a.driverId===actor.actorId&&a.status==='OFFERED'&&Date.parse(a.expiresAt)>Date.now());return c.ok(current||null);});
  c.route('POST','/api/v1/assignments/:assignmentId/responses',['DRIVER'],async({tx,actor,params,body,correlationId})=>{
   const a=await tx.get('assignment',params.assignmentId);c.owned(actor,a,'driverId');const b=await tx.get('booking',a.bookingId);
@@ -13,7 +13,7 @@ export async function register(c){
   if(body.decision==='ACCEPTED'){
    const reservation=await tx.get('reservation',a.driverId);if(reservation?.bookingId&&reservation.bookingId!==b.bookingId)c.fail(409,'DRIVER_ALREADY_ASSIGNED');
    const eligible=await c.rpc('driver','CheckDriverEligibility',{driverId:a.driverId,serviceType:b.serviceType,bookingId:b.bookingId});if(!eligible.eligible)c.fail(409,'DRIVER_NOT_ELIGIBLE');
-   await tx.put('reservation',a.driverId,{bookingId:b.bookingId});const version=b.version+1;const assigned={...b,status:'DRIVER_ASSIGNED',driverId:a.driverId,vehicleId:eligible.vehicleId,assignmentId:a.assignmentId,version};await tx.put('booking',b.bookingId,assigned);
+   await tx.put('reservation',a.driverId,{bookingId:b.bookingId});const version=b.version+1;const assigned={...b,status:'DRIVER_ASSIGNED',driverId:a.driverId,vehicleId:eligible.vehicleId,driverInfo:eligible.driverInfo,assignmentId:a.assignmentId,version};await tx.put('booking',b.bookingId,assigned);
    await c.emit(tx,'booking.driver-assigned',b.bookingId,version,{...assigned,acceptedAt:c.now()},correlationId);
   }
   return c.ok(updated);

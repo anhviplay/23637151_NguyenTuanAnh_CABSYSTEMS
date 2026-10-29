@@ -1,38 +1,16 @@
-# TS17 – External Interfaces
+# Kiểm thử External Interfaces Release
 
-**Phiên bản:** 2.0  
-**Baseline:** `srs.md` v2.2  
-**Trạng thái:** Sẵn sàng thực thi  
-**Mục tiêu:** Kiểm thử EIR-01–EIR-06 trên luồng thành công, lỗi và bảo vệ dữ liệu.
+STT dưới đây là STT gốc trong phiếu chấm.
 
-## Điều kiện chung
-
-- Môi trường kiểm thử đã triển khai đúng build được phê duyệt.
-- Dữ liệu và tài khoản kiểm thử được cô lập; thời gian, ngưỡng và chính sách có thể cấu hình phải lấy từ cấu hình của môi trường.
-- Mỗi lần chạy phải ghi kết quả `Pass`, `Fail`, `Blocked` hoặc `Not Run`, kèm bằng chứng và mã lỗi nếu có.
-
-## Test cases
-
-| ID | Test case | Loại / Ưu tiên | Truy xuất | Tiền điều kiện | Bước kiểm thử | Kết quả mong đợi |
-| --- | --- | --- | --- | --- | --- | --- |
-| TC-17-01 | Customer Interface | Interface / P0 | EIR-01; AC-46 | Bản build Customer trên thiết bị di động được hỗ trợ. | Chạy smoke và negative cho tài khoản, Booking, theo dõi, Payment, lịch sử, Rating. | Các luồng FR được liên kết hoạt động; lỗi rõ ràng; dữ liệu Customer khác không bị lộ. |
-| TC-17-02 | Driver Interface | Interface / P0 | EIR-02; AC-47 | Bản build Driver trên thiết bị di động được hỗ trợ. | Chạy tài khoản, hồ sơ, trạng thái làm việc, vị trí, Assignment, Trip và Cash confirmation. | Các luồng FR được liên kết hoạt động; cập nhật sai quyền/trạng thái bị từ chối. |
-| TC-17-03 | Operations Interface | Interface / P0 | EIR-03; AC-48 | Giao diện web và các tài khoản Staff có quyền khác nhau. | Chạy tạo/duyệt Driver, hỗ trợ, báo cáo, giá, audit và kiểm tra trái quyền. | Chức năng hiển thị và thực thi theo quyền; server vẫn chặn khi gọi trực tiếp trái quyền. |
-| TC-17-04 | External Payment Provider | Integration / P0 | EIR-04; AC-49 | Sandbox thanh toán cục bộ (`payment-sandbox`) và secret kiểm thử sẵn sàng. | Kiểm thử gửi yêu cầu, callback thành công/thất bại/trùng, chữ ký sai và timeout. | Trao đổi qua kết nối bảo mật; mã tham chiếu duy nhất; callback hợp lệ idempotent; callback giả bị từ chối; không lộ dữ liệu nhạy cảm. |
-| TC-17-05 | Location and Routing | Integration / P0 | EIR-05; AC-50 | Dịch vụ bản đồ/định tuyến kiểm thử sẵn sàng. | Gửi vị trí; tìm Driver; tính ETA, khoảng cách và quãng đường Trip; giả lập lỗi dịch vụ. | Dữ liệu hợp lệ được dùng đúng; vị trí cũ bị loại; lỗi được xử lý rõ mà không tạo kết quả giả. |
-| TC-17-06 | Notification Channel | Integration / P1 | EIR-06; AC-51 | In-app và push provider kiểm thử sẵn sàng. | Gửi các mốc thông báo; kiểm thử thành công, lỗi tạm thời và callback trùng. | Đúng người nhận/nội dung; kết quả được ghi; xử lý lại theo cấu hình; giao dịch nguồn không bị đảo. |
-| TC-17-07 | Hợp đồng giao tiếp và phiên bản | Contract / P1 | NFR-06, NFR-07; AC-39, AC-40 | Có schema/hợp đồng API và event của bản phát hành. | Chạy contract test producer/consumer và regression khi thay implementation tương thích. | Hợp đồng hiện hành tương thích; thay thành phần tương thích không làm hỏng luồng nghiệp vụ liên quan. |
-| TC-17-08 | Health và readiness | Technical / P0 | Rubric-06; NFR-02, NFR-03 | Gateway và 9 service được triển khai; có token Operations được cấp quyền. | Gọi `GET /health`, `GET /ready`, `GET /health/services`; lặp lại khi một service không xác định được tình trạng và khi Gateway chưa ready. | Health trả HEALTHY khi Gateway sống; ready phản ánh khả năng nhận/định tuyến; danh sách có đúng 9 service với trạng thái thật hoặc UNKNOWN; thiếu quyền không trả danh sách. |
-
-## Ghi nhận thực thi
-
-| ID | Build | Môi trường | Kết quả | Bằng chứng / Defect | Người chạy | Ngày chạy |
-| --- | --- | --- | --- | --- | --- | --- |
-| TC-17-01 |  |  | Not Run |  |  |  |
-| TC-17-02 |  |  | Not Run |  |  |  |
-| TC-17-03 |  |  | Not Run |  |  |  |
-| TC-17-04 |  |  | Not Run |  |  |  |
-| TC-17-05 |  |  | Not Run |  |  |  |
-| TC-17-06 |  |  | Not Run |  |  |  |
-| TC-17-07 |  |  | Not Run |  |  |  |
-| TC-17-08 |  |  | Not Run |  |  |  |
+| STT | Nội dung | Tiền điều kiện | Kiểm tra | Kết quả |
+| --- | --- | --- | --- | --- |
+| 1 | Mô tả kiến trúc tổ chức source code | Source đã có đủ thư mục nghiệp vụ | Kiểm tra Gateway, shared, proto, infra và 9 owner. | Source gồm Gateway, 9 service nghiệp vụ, shared, proto, infra và sandbox thanh toán. |
+| 2 | Kiểm tra .gitignore và .env trên github | Repository đã khởi tạo | Đối chiếu git check-ignore và git ls-files với .env, .env.example, .data. | .env bị Git bỏ qua; .env.example chỉ chứa biến mẫu, không chứa mật khẩu hoặc khóa thực. |
+| 3 | Mô tả nhiệm vụ gateway trong hệ thống | Gateway đang chạy | Đối chiếu source xác thực/định tuyến/Redis và phản hồi HTTP. | Gateway xác thực JWT, định tuyến tới owner, giới hạn request và tổng hợp health. |
+| 4 | Mô tả IPC của các microservice | Kafka và gRPC đang chạy | Tạo Booking, nhận offer, chấp nhận và đọc Trip sau sự kiện. | Booking gọi Driver/Location qua gRPC; Kafka truyền sự kiện nghiệp vụ qua outbox/inbox. |
+| 5 | Compose hệ thống và liệt kê các container | Docker Desktop hoạt động | Đối chiếu Compose, danh sách container, health và exit code init. | 16 container chạy báo healthy; 4 tác vụ khởi tạo kết thúc mã 0. |
+| 6 | POSTMAN: API health check | Gateway HTTPS sẵn sàng, có token Operations | Gọi /health, /ready, /health/services. | Endpoint trả trạng thái healthy/ready và danh sách service. |
+| 7 | Kiểm tra hệ thống Kafka / Rabbit MQ | Kafka healthy | Liệt kê topic, đối chiếu business event và consumer xử lý. | Kafka KRaft hoạt động; 14 topic nghiệp vụ; producer và consumer xử lý được sự kiện. |
+| 8 | Kiểm tra mọi request đều phải đi qua Gateway | Các container đang chạy | Đối chiếu host ports và gọi API qua Gateway; không có cổng nghiệp vụ riêng. | Chỉ Gateway công bố cổng máy chủ 127.0.0.1:8443; API nghiệp vụ và callback đi qua Gateway. |
+| 19 | POSTMAN: Thanh toán online | Trip COMPLETED, Fare và Payment PENDING | Chọn ELECTRONIC, settle sandbox, kiểm tra Payment COMPLETED và Trip.paymentStatus=COMPLETED, paymentId, paidAt. | Payment chuyển COMPLETED; chuyến được ghi nhận đã thanh toán. |
+| 30 | POSTMAN: Replay attack (idempotency) | Đã chọn ELECTRONIC với Idempotency-Key | Gửi lại command cùng key/body trước/sau callback; so status/body gốc, Payment version và số giao dịch sandbox; gửi lại callback cùng eventId. | Không xử lý lại transaction; không double charge; trả response cũ. |

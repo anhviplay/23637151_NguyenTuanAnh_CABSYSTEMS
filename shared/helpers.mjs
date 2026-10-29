@@ -20,3 +20,5 @@ export const eventFor=(name,type,aggregate,version,payload,correlationId)=>({eve
 export function distance(a,b){const rad=x=>x*Math.PI/180;const x=Math.sin(rad(b.latitude-a.latitude)/2)**2+Math.cos(rad(a.latitude))*Math.cos(rad(b.latitude))*Math.sin(rad(b.longitude-a.longitude)/2)**2;return 6371000*2*Math.asin(Math.sqrt(Math.min(1,x)));}
 export function coordinates(value){if(!value||typeof value.latitude!=='number'||typeof value.longitude!=='number'||Math.abs(value.latitude)>90||Math.abs(value.longitude)>180)fail(400,'INVALID_COORDINATES');}
 export const cleanAccount=a=>({accountId:a.accountId,[a.actorType==='DRIVER'?'driverId':a.actorType==='CUSTOMER'?'customerId':'staffId']:a.actorId,status:a.status});
+
+export function rideView(record){if(!record.driverInfo)return record;const {plateCipher,...vehicle}=record.driverInfo.vehicle;return {...record,driverInfo:{...record.driverInfo,vehicle:{...vehicle,...(plateCipher?{plateNumber:decrypt(plateCipher)}:{})}}};}

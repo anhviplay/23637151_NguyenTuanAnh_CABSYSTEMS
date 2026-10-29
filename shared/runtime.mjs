@@ -16,7 +16,7 @@ const subscriptions={
  'driver-service':['identity.account-created','booking.driver-assigned','trip.completed','booking.cancelled','trip.status-changed'],
  'location-service':[],
  'booking-service':['driver.availability-changed','trip.status-changed','trip.completed'],
- 'trip-service':['booking.driver-assigned','booking.cancelled'],
+ 'trip-service':['booking.driver-assigned','booking.cancelled','payment.status-changed'],
  'payment-service':['trip.completed'],
  'notification-service':['driver.verification-changed','booking.created','assignment.offered','booking.driver-assigned','booking.no-driver-available','booking.cancelled','trip.status-changed','payment.status-changed'],
  'operations-service':topics

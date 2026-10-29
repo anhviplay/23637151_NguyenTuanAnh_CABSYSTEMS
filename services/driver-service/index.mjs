@@ -13,7 +13,7 @@ export async function register(c){
 }
 function publicDriver(d){return {driverId:d.driverId,verificationStatus:d.verificationStatus,availability:d.availability,vehicleIds:d.vehicles.map(v=>v.vehicleId),version:d.version};}
 export const grpc={CheckDriverEligibility:async(c,tx,input)=>{
- const d=await tx.get('driver',input.driverId);const v=d?.vehicles.find(v=>v.serviceType===input.serviceType);const eligible=!!d&&d.verificationStatus==='ACTIVE'&&d.availability==='AVAILABLE'&&!d.currentTripId&&!!v;return {eligible,availability:d?.availability||'OFFLINE',vehicleId:v?.vehicleId||null,reasonCode:eligible?null:'DRIVER_NOT_ELIGIBLE'};
+ const d=await tx.get('driver',input.driverId);const v=d?.vehicles.find(v=>v.serviceType===input.serviceType);const eligible=!!d&&d.verificationStatus==='ACTIVE'&&d.availability==='AVAILABLE'&&!d.currentTripId&&!!v;return {eligible,availability:d?.availability||'OFFLINE',vehicleId:v?.vehicleId||null,driverInfo:eligible?{driverId:d.driverId,fullName:d.fullName,vehicle:{vehicleId:v.vehicleId,serviceType:v.serviceType,plateCipher:v.plateCipher}}:null,reasonCode:eligible?null:'DRIVER_NOT_ELIGIBLE'};
 }};
 export async function event(c,tx,e){
  const p=e.payload;

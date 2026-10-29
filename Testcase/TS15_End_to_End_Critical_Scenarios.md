@@ -1,34 +1,12 @@
-# TS15 – End-to-End Critical Scenarios
+# Kiểm thử End to End Critical Scenarios
 
-**Phiên bản:** 2.0  
-**Baseline:** `srs.md` v2.2  
-**Trạng thái:** Sẵn sàng thực thi  
-**Mục tiêu:** Các luồng xuyên suốt trọng yếu của CAB Core Ride-Hailing MVP.
+STT dưới đây là STT gốc trong phiếu chấm.
 
-## Điều kiện chung
-
-- Môi trường kiểm thử đã triển khai đúng build được phê duyệt.
-- Dữ liệu và tài khoản kiểm thử được cô lập; thời gian, ngưỡng và chính sách có thể cấu hình phải lấy từ cấu hình của môi trường.
-- Mỗi lần chạy phải ghi kết quả `Pass`, `Fail`, `Blocked` hoặc `Not Run`, kèm bằng chứng và mã lỗi nếu có.
-
-## Test cases
-
-| ID | Test case | Loại / Ưu tiên | Truy xuất | Tiền điều kiện | Bước kiểm thử | Kết quả mong đợi |
-| --- | --- | --- | --- | --- | --- | --- |
-| TC-15-01 | E2E Bike thanh toán tiền mặt | E2E / P0 | FR-10–FR-46; AC-06–AC-26 | Customer/Driver hợp lệ; Driver Bike Available. | Tạo Booking; điều phối; nhận chuyến; hoàn thành Trip; tính Fare; chọn Cash; Driver xác nhận thu; xem lịch sử. | Một chuỗi Booking–Trip–Fare–Payment nhất quán; Fare dùng 5.000 VNĐ/km; thông báo và lịch sử đúng. |
-| TC-15-02 | E2E Car 4-seat thanh toán điện tử | E2E / P0 | FR-10–FR-46; AC-06–AC-26 | Driver Car 4-seat Available; Provider trả thành công. | Thực hiện toàn bộ chuyến và thanh toán điện tử. | Fare dùng 10.000 VNĐ/km; Payment thành công đúng một lần; dữ liệu xuyên suốt cùng Customer/Driver/Trip. |
-| TC-15-03 | E2E Car 7-seat Payment thất bại rồi tiền mặt | E2E / P0 | FR-10–FR-46; AC-06–AC-26 | Driver Car 7-seat Available; Provider trả thất bại. | Hoàn thành Trip; thử Electronic; đổi sang Cash; xác nhận thu. | Fare dùng 13.000 VNĐ/km; Fare không tạo lại; Payment chuyển hợp lệ và Customer được thông báo. |
-| TC-15-04 | E2E không tìm được Driver | E2E exception / P0 | FR-12–FR-19; AC-07–AC-11 | Không có Driver đủ điều kiện. | Customer tạo Booking và chờ quy trình kết thúc theo cấu hình. | Booking thành No Driver Available; không tạo Trip; Customer được thông báo. |
-| TC-15-05 | E2E mất mạng trong Trip | E2E recovery / P0 | FR-23–FR-32; AC-14, AC-15, AC-18 | Trip đang thực hiện. | Ngắt mạng; tạo cập nhật cục bộ; kết nối lại và đồng bộ. | Vị trí/trạng thái được khôi phục theo thứ tự, không trùng và không ghi đè dữ liệu mới hơn; Trip tiếp tục hợp lệ. |
-| TC-15-06 | Xác nhận phạm vi release 7 tuần | Release verification / P0 | CON-01; AC-52 | Có danh sách phạm vi MVP, kế hoạch release và bằng chứng triển khai. | Đối chiếu các hạng mục phát hành với phạm vi SRS và mốc 7 tuần. | Các chức năng MVP đã phê duyệt có bằng chứng build, test và triển khai trong 7 tuần; hạng mục ngoài phạm vi không được tính là điều kiện nghiệm thu MVP. |
-
-## Ghi nhận thực thi
-
-| ID | Build | Môi trường | Kết quả | Bằng chứng / Defect | Người chạy | Ngày chạy |
-| --- | --- | --- | --- | --- | --- | --- |
-| TC-15-01 |  |  | Not Run |  |  |  |
-| TC-15-02 |  |  | Not Run |  |  |  |
-| TC-15-03 |  |  | Not Run |  |  |  |
-| TC-15-04 |  |  | Not Run |  |  |  |
-| TC-15-05 |  |  | Not Run |  |  |  |
-| TC-15-06 |  |  | Not Run |  |  |  |
+| STT | Nội dung | Tiền điều kiện | Kiểm tra | Kết quả |
+| --- | --- | --- | --- | --- |
+| 15 | POSTMAN: Đặt xe | Driver ACTIVE/AVAILABLE có xe đúng loại và vị trí gần | Tạo Booking bằng Customer, đọc SEARCHING và offer của Driver. | Booking được tạo; khách hàng thấy trạng thái đang tìm tài xế. |
+| 16 | POSTMAN: Tài xế nhận chuyến | Offer còn hạn, Driver đủ điều kiện | Driver ACCEPTED; Customer đọc Booking/Trip có driverId, driverInfo.fullName và vehicle.plateNumber. | Ride/Trip được gán tài xế; khách hàng nhận thông tin tài xế. |
+| 17 | POSTMAN: Cập nhật trạng thái chuyến | Trip CREATED thuộc Driver | Chuyển DRIVER_ARRIVED, PICKED_UP, IN_PROGRESS, gửi vị trí tăng sequence, hoàn thành với distanceKm; thử chuyển sai thứ tự. | Trạng thái chuyến cập nhật đúng trình tự. |
+| 18 | POSTMAN: Hủy chuyến | Trip trước PICKED_UP | Customer gửi lý do và version, đợi Trip CANCELED; đọc hộp thông báo của hai bên và đối chiếu bookingId. | Ride/Trip chuyển sang CANCELED; các bên nhận thông báo. |
+| 19 | POSTMAN: Thanh toán online | Trip COMPLETED, Fare và Payment PENDING | Chọn ELECTRONIC, settle sandbox, kiểm tra Payment COMPLETED và Trip.paymentStatus=COMPLETED, paymentId, paidAt. | Payment chuyển COMPLETED; chuyến được ghi nhận đã thanh toán. |
+| 20 | POSTMAN: Đánh giá chuyến đi | Trip COMPLETED, chưa có Rating | Gửi score 1–5 và comment, kiểm tra rating.tripId; gửi lần hai không được tạo thêm. | Review được lưu và liên kết với chuyến đi. |

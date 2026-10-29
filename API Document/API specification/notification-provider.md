@@ -1,32 +1,9 @@
-# Hợp đồng nhà cung cấp thông báo
+# Hợp đồng thông báo in-app
 
-Hợp đồng này thuộc `notification-service`. Provider được đặt sau adapter để có thể bổ sung hoặc thay thế kênh mà không sửa service tạo sự kiện nghiệp vụ.
+notification-service nhận Kafka, lưu Notification trong notification_db và trả qua `GET /api/v1/notifications/me`. Token Customer/Driver/Operations chỉ đọc thông báo có recipientId của chính actor. page/pageSize giới hạn danh sách; mới nhất trước.
 
-## NOT-01 Gửi thông báo
+Notification gồm notificationId, recipientId, eventId, eventType, bookingId/tripId/paymentId khi có, details.status, details.reason, channel=IN_APP, status=AVAILABLE, createdAt.
 
-- **Contract:** `notification-adapter.send`
-- **Truy xuất:** FR-43, FR-44, FR-45; AC-24, AC-25
-- **Input:** `notificationId`, `recipient`, `channel`, `templateKey`, `templateData`, `commandId`
-- **Output:** `providerMessageId`, `deliveryStatus`, `acceptedAt`
-- **Kênh MVP:** in-app và push
+Sự kiện đăng ký/duyệt Driver, tiếp nhận Booking, offer, gán tài xế, không tìm được xe, hủy Trip và kết quả Payment được lưu cho người nhận trong payload. Kết quả duyệt có ACTIVE/REJECTED và lý do; hủy chuyến có CANCELED và bookingId để đối chiếu hai bên.
 
-## NOT-02 Nhận trạng thái gửi
-
-- **Operation:** `POST /api/v1/integrations/notifications/{providerKey}/results`
-- **Truy xuất:** FR-45; AC-25
-- **Body:** `eventId`, `providerMessageId`, `deliveryStatus`, `occurredAt`, `failureCode`, `signature`
-- **Kết quả:** `204`; event trùng không tạo DeliveryAttempt trùng
-
-## Mốc thông báo
-
-| Người nhận | Mốc chính |
-| --- | --- |
-| Customer | Booking được tiếp nhận, Driver được gán, Driver đến, Trip hoàn thành, Payment có kết quả, không tìm được Driver. |
-| Driver | Assignment mới, kết quả phản hồi và thay đổi liên quan đến Trip được gán. |
-
-## Xử lý lỗi
-
-- Lỗi tạm thời được ghi nhận và xử lý lại theo cấu hình.
-- Mỗi lần gửi tới provider được ghi thành DeliveryAttempt để phục vụ kiểm tra.
-- Notification lỗi không rollback Booking, Trip hoặc Payment.
-- Không đặt cố định số lần retry hoặc thời hạn lưu trong hợp đồng API.
+Inbox eventId chống tạo lại cùng sự kiện; Kafka và database đảm bảo thông báo được ghi độc lập với phản hồi API nguồn. Client đọc lại khi projection chưa xuất hiện. Không triển khai Push Provider, DeliveryAttempt hay callback push trong phạm vi 30 mục.

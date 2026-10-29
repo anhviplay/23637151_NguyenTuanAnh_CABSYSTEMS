@@ -1,45 +1,16 @@
-# Hợp đồng External Payment Provider
+# Hợp đồng sandbox thanh toán cục bộ
 
-Hợp đồng này thuộc `payment-service`. Provider được truy cập qua adapter để có thể thay thế mà không sửa Booking hoặc Dispatch.
+payment-service gọi `https://payment-sandbox:3000` với X-Sandbox-Key. Sandbox lưu giao dịch bền vững trong SQLite trên volume riêng; không sử dụng tiền thật. Client quản lý sandbox qua Gateway bằng Operations có payment:sandbox.
 
-## PAY-01 Tạo giao dịch điện tử
+## Tạo và truy vấn giao dịch
 
-- **Contract:** `payment-adapter.createPayment`
-- **Truy xuất:** FR-37; UC-15; AC-21
-- **Input:** `paymentId`, `merchantReference`, `amount`, `currency`, `returnUrl`, `callbackUrl`, `commandId`
-- **Output:** `providerReference`, `providerStatus`, dữ liệu chuyển hướng được phép
-- **Quy tắc:** không gửi dữ liệu ngoài phạm vi provider yêu cầu; `commandId` và `merchantReference` chống tạo trùng
+POST /payments nhận paymentId, merchantReference, amount, currency=VND, commandId, callbackUrl. Trả 201 với providerReference và thông tin giao dịch. Cùng commandId/nội dung trả nguyên response; khác nội dung trả 409. payment-service dùng paymentId + Idempotency-Key làm commandId.
+GET /payments/{providerReference} trả providerStatus, callbackDelivered, callbackAttempts cùng mã đối soát. Đây là API của sandbox; CAB xác nhận kết quả bằng callback có chữ ký.
 
-## PAY-02 Tiếp nhận kết quả
+## Hoàn tất và callback
 
-- **Operation:** `POST /api/v1/integrations/payments/{providerKey}/results`
-- **Truy xuất:** FR-38, FR-39; UC-15; AC-21, AC-22
-- **Bảo mật:** xác minh chữ ký/chứng thực và nguồn callback theo hợp đồng provider
-- **Body:** `eventId`, `providerReference`, `merchantReference`, `result`, `amount`, `currency`, `occurredAt`, `signature`
-- **Kết quả:** `204` khi đã tiếp nhận; callback trùng trả cùng kết quả và không cập nhật lặp
+Qua Gateway: POST /api/v1/sandbox/payments/{providerReference}/settle với result=SUCCESS/FAILED. Sandbox gửi POST /api/v1/integrations/payments/local-sandbox/results qua Gateway với eventId, providerReference, merchantReference, result, amount, currency, occurredAt, signature.
+Chữ ký HMAC-SHA256 tính từ `eventId|providerReference|merchantReference|result|amount|currency|occurredAt`, dùng PAYMENT_CALLBACK_SECRET. Callback đối chiếu mã tham chiếu, số tiền, VND và eventId; chữ ký sai 401, đối soát sai 409, hợp lệ/trùng trả 204. Callback không yêu cầu Idempotency-Key vì chống lặp bằng eventId.
 
-## PAY-03 Truy vấn đối soát
-
-- **Contract:** `payment-adapter.queryPayment`
-- **Truy xuất:** FR-38; UC-15; AC-21
-- **Input:** `paymentId`, `providerReference`
-- **Output:** trạng thái provider và thời điểm cập nhật gần nhất
-
-## Trạng thái và quy tắc
-
-- CAB dùng `PENDING`, `COMPLETED`, `FAILED`.
-- Khi Customer thực hiện lại sau `FAILED`, cùng Payment chuyển về `PENDING`; không tạo Fare mới.
-- Kết quả `COMPLETED` đã đối soát không bị callback muộn ghi đè thành `FAILED`.
-- CAB chỉ lưu `providerReference`, trạng thái và dữ liệu đối soát được phép; không lưu dữ liệu thẻ/tài khoản nhạy cảm.
-- Lỗi provider không làm rollback Booking hoặc Trip.
-
-
-## Cấu hình môi trường thực hành — sandbox cục bộ
-
-- Provider: `payment-sandbox`, kết nối qua adapter của `payment-service`.
-- Sandbox xử lý giao dịch trong môi trường kiểm thử, không sử dụng tiền thật. Adapter Payment kết nối qua HTTPS nội bộ; API quản lý sandbox yêu cầu `X-Sandbox-Key` lấy từ cấu hình.
-- PAY-01 được ánh xạ tới `POST /payments`; cùng `commandId` và nội dung trả cùng mã tham chiếu; khác nội dung trả 409.
-- PAY-03 được ánh xạ tới `GET /payments/{providerReference}`.
-- Thao tác kiểm thử `POST /payments/{providerReference}/settle` nhận `result=SUCCESS` hoặc `FAILED`; sandbox gửi callback PAY-02 qua Gateway. `POST /payments/{providerReference}/replay-callback` gửi lại cùng event để kiểm tra chống lặp.
-- Chữ ký callback là HMAC-SHA256 theo chuỗi `eventId|providerReference|merchantReference|result|amount|currency|occurredAt`; secret nằm trong `.env`, tách khỏi dữ liệu giao dịch.
-- `SUCCESS` ánh xạ sang Payment `COMPLETED`; `FAILED` ánh xạ sang `FAILED`. Không thay đổi quy tắc tạo Fare, Payment hiện hành hoặc idempotency của CAB.
+SUCCESS chuyển Payment COMPLETED, FAILED chuyển FAILED. Payment đã COMPLETED không bị kết quả muộn hạ trạng thái. payment.status-changed cập nhật Trip.paymentStatus=COMPLETED, paymentId, paidAt; Trip.status vẫn COMPLETED. Thông báo kết quả được gửi vào hộp in-app.
+POST /api/v1/sandbox/payments/{providerReference}/replay-callback gửi lại cùng event. Không tạo giao dịch hay thanh toán lần hai. Sandbox tự thử lại callback chưa được tiếp nhận. Command CAB cùng Idempotency-Key trả nguyên response cũ kể cả sau khi Payment đã đổi trạng thái.

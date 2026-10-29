@@ -1,76 +1,61 @@
-# CAB System – Test Case Specification
+# Đặc tả kiểm thử CAB System
 
-**Document Version:** 2.0  
-**Date:** 09/10/2026  
-**Requirements Baseline:** `srs.md` v2.2  
-**API Baseline:** `API Document/API specification` v2.0  
-**Status:** Sẵn sàng thực thi
+Bản triển khai CAB System được xác định theo 30 mục của PHIEU_CHAM_PROJECT.pdf. Số thứ tự và tên mục chấm giữ nguyên. Các ví dụ payload trên phiếu được ánh xạ vào tài nguyên CAB: tài khoản dùng phoneNumber; thanh toán dùng paymentId và Idempotency-Key. Kết quả HTTP, quyền truy cập và trạng thái phải giữ đúng yêu cầu chấm.
 
-## 1. Mục đích
+| STT | Nội dung | Kết quả |
+| --- | --- | --- |
+| 1 | Mô tả kiến trúc tổ chức source code | Source gồm Gateway, 9 service nghiệp vụ, shared, proto, infra và sandbox thanh toán. |
+| 2 | Kiểm tra .gitignore và .env trên github | .env bị Git bỏ qua; .env.example chỉ chứa biến mẫu, không chứa mật khẩu hoặc khóa thực. |
+| 3 | Mô tả nhiệm vụ gateway trong hệ thống | Gateway xác thực JWT, định tuyến tới owner, giới hạn request và tổng hợp health. |
+| 4 | Mô tả IPC của các microservice | Booking gọi Driver/Location qua gRPC; Kafka truyền sự kiện nghiệp vụ qua outbox/inbox. |
+| 5 | Compose hệ thống và liệt kê các container | 16 container chạy báo healthy; 4 tác vụ khởi tạo kết thúc mã 0. |
+| 6 | POSTMAN: API health check | Endpoint trả trạng thái healthy/ready và danh sách service. |
+| 7 | Kiểm tra hệ thống Kafka / Rabbit MQ | Kafka KRaft hoạt động; 14 topic nghiệp vụ; producer và consumer xử lý được sự kiện. |
+| 8 | Kiểm tra mọi request đều phải đi qua Gateway | Chỉ Gateway công bố cổng máy chủ 127.0.0.1:8443; API nghiệp vụ và callback đi qua Gateway. |
+| 9 | POSTMAN: Đăng ký tài khoản khách hàng | Tài khoản được tạo; khách hàng đăng nhập được vào hệ thống. |
+| 10 | POSTMAN: Đăng nhập khách hàng | Hệ thống cấp token. |
+| 11 | POSTMAN: Lấy thông tin khách hàng với mã số | Sử dụng token để xem thông tin khách hàng. |
+| 12 | POSTMAN: Lấy thông tin tài xế với mã số | Sử dụng token để xem thông tin tài xế. |
+| 13 | POSTMAN: Liệt kê danh sách tài xế tại khu vực | Danh sách Driver xung quanh tọa độ có bán kính 1 km, danh sách có giới hạn (limit) và phân trang (paging). |
+| 14 | POSTMAN: Liệt kê danh sách các booking của Customer | Danh sách Booking liên quan đến khách hàng, danh sách có giới hạn (limit) và phân trang (paging). |
+| 15 | POSTMAN: Đặt xe | Booking được tạo; khách hàng thấy trạng thái đang tìm tài xế. |
+| 16 | POSTMAN: Tài xế nhận chuyến | Ride/Trip được gán tài xế; khách hàng nhận thông tin tài xế. |
+| 17 | POSTMAN: Cập nhật trạng thái chuyến | Trạng thái chuyến cập nhật đúng trình tự. |
+| 18 | POSTMAN: Hủy chuyến | Ride/Trip chuyển sang CANCELED; các bên nhận thông báo. |
+| 19 | POSTMAN: Thanh toán online | Payment chuyển COMPLETED; chuyến được ghi nhận đã thanh toán. |
+| 20 | POSTMAN: Đánh giá chuyến đi | Review được lưu và liên kết với chuyến đi. |
+| 21 | POSTMAN: Đăng ký tài xế | Hồ sơ tài xế được tạo ở trạng thái chờ duyệt. |
+| 22 | POSTMAN: Duyệt hồ sơ tài xế | Trạng thái hồ sơ được cập nhật; tài xế nhận kết quả. |
+| 23 | POSTMAN: Bật/tắt trạng thái nhận chuyến | Trạng thái nhận chuyến thay đổi và được hệ thống ghi nhận. |
+| 24 | POSTMAN: Data encryption at rest | Dữ liệu nhạy cảm không lưu plaintext; mật khẩu được băm; dữ liệu cần khôi phục được mã hóa; khóa tách khỏi DB. |
+| 25 | POSTMAN: SQL injection attempt | Query không bị bypass; không đăng nhập thành công; không lộ dữ liệu DB; HTTP 400 hoặc 401. |
+| 26 | POSTMAN: XSS input test | Script không được execute; output được escape. |
+| 27 | POSTMAN: JWT tampering | Token bị sửa bị từ chối; HTTP 401; không truy cập được API. |
+| 28 | POSTMAN: Unauthorized API access | HTTP 403 Forbidden; không trả dữ liệu. |
+| 29 | POSTMAN: Rate limit attack | HTTP 429 Too Many Requests; rate limit hoạt động; hệ thống vẫn phản hồi. |
+| 30 | POSTMAN: Replay attack (idempotency) | Không xử lý lại transaction; không double charge; trả response cũ. |
 
-Bộ tài liệu này xác định kiểm thử chức năng, tích hợp, bảo mật, dữ liệu, phi chức năng và luồng xuyên suốt cho CAB Core Ride-Hailing MVP. Mỗi test case truy xuất trực tiếp đến FR, NFR, EIR, UC hoặc AC trong SRS v2.2.
+## Phân nhóm
 
-## 2. Phạm vi
+- [TS01_Customer_Account_Management.md](TS01_Customer_Account_Management.md): 9, 10, 11
+- [TS02_Driver_Account_Vehicle_Availability.md](TS02_Driver_Account_Vehicle_Availability.md): 12, 21, 22, 23
+- [TS03_Create_Booking.md](TS03_Create_Booking.md): 14, 15
+- [TS04_Driver_Search_Assignment.md](TS04_Driver_Search_Assignment.md): 13, 15, 16
+- [TS05_Driver_Assignment_Response.md](TS05_Driver_Assignment_Response.md): 16
+- [TS06_Trip_Status_Management.md](TS06_Trip_Status_Management.md): 17, 18
+- [TS07_Driver_Location.md](TS07_Driver_Location.md): 13, 17
+- [TS08_Fare_Payment.md](TS08_Fare_Payment.md): 19, 30
+- [TS09_Notification.md](TS09_Notification.md): 16, 18, 22
+- [TS10_Trip_History_Rating.md](TS10_Trip_History_Rating.md): 20
+- [TS11_Operations.md](TS11_Operations.md): 22
+- [TS12_Authorization_Audit.md](TS12_Authorization_Audit.md): 11, 12, 27, 28
+- [TS14_Data_Integrity_Security.md](TS14_Data_Integrity_Security.md): 2, 24, 25, 26, 27, 28, 30
+- [TS15_End_to_End_Critical_Scenarios.md](TS15_End_to_End_Critical_Scenarios.md): 15, 16, 17, 18, 19, 20
+- [TS16_Non_Functional_Requirements.md](TS16_Non_Functional_Requirements.md): 6, 7, 8, 29
+- [TS17_External_Interfaces_Release.md](TS17_External_Interfaces_Release.md): 1, 2, 3, 4, 5, 6, 7, 8, 19, 30
 
-Bao gồm tài khoản Customer/Driver, hồ sơ và phương tiện Driver, Booking, điều phối, Trip, Location, Fare, Payment, Notification, lịch sử, Rating, Operations, báo cáo, phân quyền, audit, retention, NFR và external interfaces.
+## Nguyên tắc xác nhận
 
-## 3. Nguyên tắc
+Kiểm thử hệ thống ghi đủ 30 STT; API Postman kiểm tra phản hồi và trạng thái thật. Mục 16 phải có thông tin Driver, mục 18 có Trip CANCELED và thông báo hai bên, mục 19 có Payment COMPLETED cùng Trip ghi nhận đã thanh toán. Mục 24 kiểm tra DB/khóa; các mục kiến trúc kiểm tra source/cấu hình, không thay bằng một response API.
 
-- Giá trị cấu hình được đọc từ môi trường kiểm thử; không cố định thêm timeout, số lần retry hoặc thời hạn lưu trữ ngoài SRS.
-- Fare được kiểm tra theo đơn giá MVP: Bike 5.000 VNĐ/km, Car 4-seat 10.000 VNĐ/km, Car 7-seat 13.000 VNĐ/km.
-- Rating thuộc luồng Customer/Trip; không xem là một hệ thống con độc lập.
-- Payment và Notification phải được kiểm thử cô lập lỗi với Booking, Dispatch và Trip.
-- Mọi lỗi phải có bằng chứng tái hiện và liên kết defect; không sửa expected result theo hành vi sai của build.
-
-## 4. Danh mục test suite
-
-| Suite | Tài liệu | Phạm vi chính | Số test |
-| --- | --- | --- | ---: |
-| TS01 | [TS01_Customer_Account_Management.md](TS01_Customer_Account_Management.md) | Đăng ký, đăng nhập, khôi phục mật khẩu và hồ sơ Customer. | 6 |
-| TS02 | [TS02_Driver_Account_Vehicle_Availability.md](TS02_Driver_Account_Vehicle_Availability.md) | Hồ sơ Driver, OTP tự đăng ký, xác minh, phương tiện và trạng thái làm việc. | 9 |
-| TS03 | [TS03_Create_Booking.md](TS03_Create_Booking.md) | Tạo Booking, kiểm tra đầu vào và danh sách Booking của Customer. | 5 |
-| TS04 | [TS04_Driver_Search_Assignment.md](TS04_Driver_Search_Assignment.md) | Nearby, lọc, xếp hạng và gửi Assignment tuần tự. | 6 |
-| TS05 | [TS05_Driver_Assignment_Response.md](TS05_Driver_Assignment_Response.md) | Chấp nhận, từ chối, hết hạn và cạnh tranh phản hồi Assignment. | 5 |
-| TS06 | [TS06_Trip_Status_Management.md](TS06_Trip_Status_Management.md) | Theo dõi vòng đời, hủy và xử lý sự cố Trip. | 7 |
-| TS07 | [TS07_Driver_Location.md](TS07_Driver_Location.md) | Tiếp nhận vị trí, kiểm tra độ mới và đồng bộ sau mất mạng. | 4 |
-| TS08 | [TS08_Fare_Payment.md](TS08_Fare_Payment.md) | Tính cước, Payment tiền mặt/điện tử và replay. | 11 |
-| TS09 | [TS09_Notification.md](TS09_Notification.md) | Thông báo theo mốc nghiệp vụ và xử lý lỗi nhà cung cấp. | 4 |
-| TS10 | [TS10_Trip_History_Rating.md](TS10_Trip_History_Rating.md) | Lịch sử Trip và đánh giá Driver gồm sao và nhận xét. | 6 |
-| TS11 | [TS11_Operations.md](TS11_Operations.md) | Tra cứu, giám sát, hỗ trợ và quản lý đơn giá của Operations Staff. | 6 |
-| TS12 | [TS12_Authorization_Audit.md](TS12_Authorization_Audit.md) | Phân quyền phía server, JWT, audit và chính sách lưu trữ. | 7 |
-| TS13 | [TS13_Operation_Report.md](TS13_Operation_Report.md) | Báo cáo vận hành từ dữ liệu đã ghi nhận. | 5 |
-| TS14 | [TS14_Data_Integrity_Security.md](TS14_Data_Integrity_Security.md) | Bảo vệ dữ liệu, SQLi/XSS, toàn vẹn và chống sửa audit. | 9 |
-| TS15 | [TS15_End_to_End_Critical_Scenarios.md](TS15_End_to_End_Critical_Scenarios.md) | Các luồng xuyên suốt trọng yếu của CAB Core Ride-Hailing MVP. | 6 |
-| TS16 | [TS16_Non_Functional_Requirements.md](TS16_Non_Functional_Requirements.md) | Kiểm thử NFR-01–NFR-12 và rate limit. | 14 |
-| TS17 | [TS17_External_Interfaces_Release.md](TS17_External_Interfaces_Release.md) | Kiểm thử EIR-01–EIR-06, health check và hợp đồng giao tiếp. | 8 |
-| **Tổng** | **17 test suite** |  | **118** |
-
-## 5. Bao phủ Acceptance Criteria
-
-- AC-01–AC-33: TS01–TS14 và các luồng E2E tại TS15.
-- AC-34–AC-45: TS16, với kiểm tra bảo mật/toàn vẹn bổ trợ tại TS12 và TS14.
-- AC-46–AC-51: TS17.
-- AC-52: TS15.
-- Mọi AC-01–AC-52 đều có ít nhất một test case trực tiếp; các rủi ro trọng yếu có thêm test negative, concurrency, recovery hoặc idempotency.
-
-## 6. Tiêu chí bắt đầu
-
-- SRS v2.2 và API Specification v2.0 được đặt làm baseline.
-- Build, môi trường, dữ liệu, tài khoản và sandbox tích hợp sẵn sàng.
-- Các giá trị cấu hình dùng trong lần chạy được ghi nhận cùng test evidence.
-
-## 7. Tiêu chí kết thúc
-
-- 100% test P0 và toàn bộ AC-01–AC-52 đã được thực thi.
-- Không còn defect P0/P1 mở ảnh hưởng luồng MVP; defect còn lại có quyết định chấp nhận rõ ràng.
-- Kiểm thử regression, contract, recovery và E2E trọng yếu đạt.
-- Báo cáo tổng kết liên kết được Requirement → AC → Test Case → kết quả → Defect.
-
-## 8. Quy ước trạng thái
-
-| Trạng thái | Ý nghĩa |
-| --- | --- |
-| Not Run | Chưa thực thi. |
-| Pass | Kết quả thực tế khớp toàn bộ expected result. |
-| Fail | Có ít nhất một expected result không đạt. |
-| Blocked | Không thể thực thi vì phụ thuộc hoặc môi trường; phải ghi rõ nguyên nhân. |
+Không mặc định testcase đạt chỉ vì có đặc tả. Kết quả chạy lưu riêng trong .data/latest-verification.json và .data/postman-run.json để không đưa credential vào repository.
