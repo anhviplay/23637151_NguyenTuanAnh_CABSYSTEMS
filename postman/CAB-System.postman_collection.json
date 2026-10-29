@@ -809,7 +809,7 @@
             "url": "{{baseUrl}}/api/v1/trips/{{tripId}}/status-transitions",
             "body": {
               "mode": "raw",
-              "raw": "{\"tar\": \"DRIVER_ARRIVED\",\"occ\": \"{{$isoTimestamp}}\",\"exp\": {{tripVersion}}}",
+              "raw": "{\"tar\": \"DRIVER_ARRIVED\",\"occ\": \"{{now}}\",\"exp\": {{tripVersion}}}",
               "options": {
                 "raw": {
                   "language": "json"
@@ -853,7 +853,7 @@
             "url": "{{baseUrl}}/api/v1/trips/{{tripId}}/status-transitions",
             "body": {
               "mode": "raw",
-              "raw": "{\"tar\": \"PICKED_UP\",\"occ\": \"{{$isoTimestamp}}\",\"exp\": {{tripVersion}}}",
+              "raw": "{\"tar\": \"PICKED_UP\",\"occ\": \"{{now}}\",\"exp\": {{tripVersion}}}",
               "options": {
                 "raw": {
                   "language": "json"
@@ -897,7 +897,7 @@
             "url": "{{baseUrl}}/api/v1/drivers/me/locations",
             "body": {
               "mode": "raw",
-              "raw": "{\"lat\": 10.78,\"lon\": 106.7,\"obs\": \"{{$isoTimestamp}}\",\"seq\": {{locationSequence}}}",
+              "raw": "{\"lat\": 10.78,\"lon\": 106.7,\"obs\": \"{{now}}\",\"seq\": {{seq}}}",
               "options": {
                 "raw": {
                   "language": "json"
@@ -913,15 +913,6 @@
                 "exec": [
                   "pm.test(\"HTTP 201\", function () { pm.response.to.have.status(201); });",
                   "const d = pm.response.json().data;"
-                ]
-              }
-            },
-            {
-              "listen": "prerequest",
-              "script": {
-                "type": "text/javascript",
-                "exec": [
-                  "pm.variables.set(\"locationSequence\",Date.now());"
                 ]
               }
             }
@@ -948,7 +939,7 @@
             "url": "{{baseUrl}}/api/v1/trips/{{tripId}}/status-transitions",
             "body": {
               "mode": "raw",
-              "raw": "{\"tar\": \"IN_PROGRESS\",\"occ\": \"{{$isoTimestamp}}\",\"exp\": {{tripVersion}}}",
+              "raw": "{\"tar\": \"IN_PROGRESS\",\"occ\": \"{{now}}\",\"exp\": {{tripVersion}}}",
               "options": {
                 "raw": {
                   "language": "json"
@@ -992,7 +983,7 @@
             "url": "{{baseUrl}}/api/v1/drivers/me/locations",
             "body": {
               "mode": "raw",
-              "raw": "{\"lat\": 10.79,\"lon\": 106.7,\"obs\": \"{{$isoTimestamp}}\",\"seq\": {{locationSequence}}}",
+              "raw": "{\"lat\": 10.79,\"lon\": 106.7,\"obs\": \"{{now}}\",\"seq\": {{seq}}}",
               "options": {
                 "raw": {
                   "language": "json"
@@ -1008,15 +999,6 @@
                 "exec": [
                   "pm.test(\"HTTP 201\", function () { pm.response.to.have.status(201); });",
                   "const d = pm.response.json().data;"
-                ]
-              }
-            },
-            {
-              "listen": "prerequest",
-              "script": {
-                "type": "text/javascript",
-                "exec": [
-                  "pm.variables.set(\"locationSequence\",Date.now());"
                 ]
               }
             }
@@ -1043,7 +1025,7 @@
             "url": "{{baseUrl}}/api/v1/trips/{{tripId}}/status-transitions",
             "body": {
               "mode": "raw",
-              "raw": "{\"tar\": \"COMPLETED\",\"occ\": \"{{$isoTimestamp}}\",\"exp\": {{tripVersion}},\"dis\": 5}",
+              "raw": "{\"tar\": \"COMPLETED\",\"occ\": \"{{now}}\",\"exp\": {{tripVersion}},\"dis\": 5}",
               "options": {
                 "raw": {
                   "language": "json"
@@ -2602,6 +2584,18 @@
           ]
         }
       ]
+    }
+  ],
+  "event": [
+    {
+      "listen": "prerequest",
+      "script": {
+        "type": "text/javascript",
+        "exec": [
+          "pm.variables.set('now', new Date().toISOString());",
+          "pm.variables.set('seq', Date.now());"
+        ]
+      }
     }
   ]
 }

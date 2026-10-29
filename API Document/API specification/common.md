@@ -51,4 +51,6 @@ Body JSON chấp nhận tên đầy đủ hoặc tên ngắn theo 3 chữ đầu
 
 Tên đầy đủ vẫn hợp lệ. Không gửi hai tên của cùng một trường với giá trị khác nhau: trả 400 AMBIGUOUS_INPUT_FIELD. Giá trị trạng thái, vai trò, loại dịch vụ và chữ ký callback không viết tắt. Callback từ provider giữ nguyên hợp đồng có chữ ký.
 
-Ví dụ vị trí: `{"lat":10.78,"lon":106.7,"obs":"{{$isoTimestamp}}","seq":{{locationSequence}}}`.
+Ví dụ vị trí: `{"lat":10.78,"lon":106.7,"obs":"{{now}}","seq":{{seq}}}`.
+
+Trong collection CAB System, pre-request script tự đặt `{{now}}` thành thời gian ISO 8601 hiện tại và `{{seq}}` thành số thứ tự theo mili giây. Body dùng `"obs":"{{now}}"` hoặc `"occ":"{{now}}"`; sequence dùng `"seq":{{seq}}` không đặt dấu ngoặc kép quanh giá trị số.
