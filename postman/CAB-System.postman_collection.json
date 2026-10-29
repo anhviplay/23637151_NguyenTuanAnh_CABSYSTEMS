@@ -617,6 +617,34 @@
           },
           "event": [
             {
+              "listen": "prerequest",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "const deadline = Date.now() + 20000;",
+                  "const probe = {",
+                  "  method: 'GET',",
+                  "  url: pm.variables.replaceIn(pm.request.url.toString()),",
+                  "  header: pm.request.headers.all().map(h => ({key: h.key, value: pm.variables.replaceIn(h.value)}))",
+                  "};",
+                  "function waitForResult() {",
+                  "  pm.sendRequest(probe, (error, response) => {",
+                  "    let d;",
+                  "    try { d = response.json().data; } catch (_) {}",
+                  "    const ready = !error && response.code === 200 && (d && d.bookingId === pm.environment.get(\"bookingId\"));",
+                  "    if (ready) return;",
+                  "    if (Date.now() >= deadline) {",
+                  "      pm.test('Dữ liệu liên service sẵn sàng trong 20 giây', () => pm.expect(ready).to.eql(true));",
+                  "      return;",
+                  "    }",
+                  "    setTimeout(waitForResult, 300);",
+                  "  });",
+                  "}",
+                  "waitForResult();"
+                ]
+              }
+            },
+            {
               "listen": "test",
               "script": {
                 "type": "text/javascript",
@@ -685,6 +713,34 @@
             "url": "{{baseUrl}}/api/v1/bookings/{{bookingId}}"
           },
           "event": [
+            {
+              "listen": "prerequest",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "const deadline = Date.now() + 20000;",
+                  "const probe = {",
+                  "  method: 'GET',",
+                  "  url: pm.variables.replaceIn(pm.request.url.toString()),",
+                  "  header: pm.request.headers.all().map(h => ({key: h.key, value: pm.variables.replaceIn(h.value)}))",
+                  "};",
+                  "function waitForResult() {",
+                  "  pm.sendRequest(probe, (error, response) => {",
+                  "    let d;",
+                  "    try { d = response.json().data; } catch (_) {}",
+                  "    const ready = !error && response.code === 200 && (d && typeof d.tripId === \"string\");",
+                  "    if (ready) return;",
+                  "    if (Date.now() >= deadline) {",
+                  "      pm.test('Dữ liệu liên service sẵn sàng trong 20 giây', () => pm.expect(ready).to.eql(true));",
+                  "      return;",
+                  "    }",
+                  "    setTimeout(waitForResult, 300);",
+                  "  });",
+                  "}",
+                  "waitForResult();"
+                ]
+              }
+            },
             {
               "listen": "test",
               "script": {
@@ -1071,6 +1127,34 @@
           },
           "event": [
             {
+              "listen": "prerequest",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "const deadline = Date.now() + 20000;",
+                  "const probe = {",
+                  "  method: 'GET',",
+                  "  url: pm.variables.replaceIn(pm.request.url.toString()),",
+                  "  header: pm.request.headers.all().map(h => ({key: h.key, value: pm.variables.replaceIn(h.value)}))",
+                  "};",
+                  "function waitForResult() {",
+                  "  pm.sendRequest(probe, (error, response) => {",
+                  "    let d;",
+                  "    try { d = response.json().data; } catch (_) {}",
+                  "    const ready = !error && response.code === 200 && (d && d.bookingId === pm.environment.get(\"cancelBookingId\"));",
+                  "    if (ready) return;",
+                  "    if (Date.now() >= deadline) {",
+                  "      pm.test('Dữ liệu liên service sẵn sàng trong 20 giây', () => pm.expect(ready).to.eql(true));",
+                  "      return;",
+                  "    }",
+                  "    setTimeout(waitForResult, 300);",
+                  "  });",
+                  "}",
+                  "waitForResult();"
+                ]
+              }
+            },
+            {
               "listen": "test",
               "script": {
                 "type": "text/javascript",
@@ -1139,6 +1223,34 @@
             "url": "{{baseUrl}}/api/v1/bookings/{{cancelBookingId}}"
           },
           "event": [
+            {
+              "listen": "prerequest",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "const deadline = Date.now() + 20000;",
+                  "const probe = {",
+                  "  method: 'GET',",
+                  "  url: pm.variables.replaceIn(pm.request.url.toString()),",
+                  "  header: pm.request.headers.all().map(h => ({key: h.key, value: pm.variables.replaceIn(h.value)}))",
+                  "};",
+                  "function waitForResult() {",
+                  "  pm.sendRequest(probe, (error, response) => {",
+                  "    let d;",
+                  "    try { d = response.json().data; } catch (_) {}",
+                  "    const ready = !error && response.code === 200 && (d && typeof d.tripId === \"string\");",
+                  "    if (ready) return;",
+                  "    if (Date.now() >= deadline) {",
+                  "      pm.test('Dữ liệu liên service sẵn sàng trong 20 giây', () => pm.expect(ready).to.eql(true));",
+                  "      return;",
+                  "    }",
+                  "    setTimeout(waitForResult, 300);",
+                  "  });",
+                  "}",
+                  "waitForResult();"
+                ]
+              }
+            },
             {
               "listen": "test",
               "script": {
@@ -1211,6 +1323,34 @@
           },
           "event": [
             {
+              "listen": "prerequest",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "const deadline = Date.now() + 20000;",
+                  "const probe = {",
+                  "  method: 'GET',",
+                  "  url: pm.variables.replaceIn(pm.request.url.toString()),",
+                  "  header: pm.request.headers.all().map(h => ({key: h.key, value: pm.variables.replaceIn(h.value)}))",
+                  "};",
+                  "function waitForResult() {",
+                  "  pm.sendRequest(probe, (error, response) => {",
+                  "    let d;",
+                  "    try { d = response.json().data; } catch (_) {}",
+                  "    const ready = !error && response.code === 200 && (d && d.status === \"CANCELED\");",
+                  "    if (ready) return;",
+                  "    if (Date.now() >= deadline) {",
+                  "      pm.test('Dữ liệu liên service sẵn sàng trong 20 giây', () => pm.expect(ready).to.eql(true));",
+                  "      return;",
+                  "    }",
+                  "    setTimeout(waitForResult, 300);",
+                  "  });",
+                  "}",
+                  "waitForResult();"
+                ]
+              }
+            },
+            {
               "listen": "test",
               "script": {
                 "type": "text/javascript",
@@ -1237,6 +1377,34 @@
           },
           "event": [
             {
+              "listen": "prerequest",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "const deadline = Date.now() + 20000;",
+                  "const probe = {",
+                  "  method: 'GET',",
+                  "  url: pm.variables.replaceIn(pm.request.url.toString()),",
+                  "  header: pm.request.headers.all().map(h => ({key: h.key, value: pm.variables.replaceIn(h.value)}))",
+                  "};",
+                  "function waitForResult() {",
+                  "  pm.sendRequest(probe, (error, response) => {",
+                  "    let d;",
+                  "    try { d = response.json().data; } catch (_) {}",
+                  "    const ready = !error && response.code === 200 && (Array.isArray(d) && d.some(n => n.bookingId === pm.environment.get(\"cancelBookingId\") && n.details.status === \"CANCELED\"));",
+                  "    if (ready) return;",
+                  "    if (Date.now() >= deadline) {",
+                  "      pm.test('Dữ liệu liên service sẵn sàng trong 20 giây', () => pm.expect(ready).to.eql(true));",
+                  "      return;",
+                  "    }",
+                  "    setTimeout(waitForResult, 300);",
+                  "  });",
+                  "}",
+                  "waitForResult();"
+                ]
+              }
+            },
+            {
               "listen": "test",
               "script": {
                 "type": "text/javascript",
@@ -1261,6 +1429,34 @@
             "url": "{{baseUrl}}/api/v1/notifications/me"
           },
           "event": [
+            {
+              "listen": "prerequest",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "const deadline = Date.now() + 20000;",
+                  "const probe = {",
+                  "  method: 'GET',",
+                  "  url: pm.variables.replaceIn(pm.request.url.toString()),",
+                  "  header: pm.request.headers.all().map(h => ({key: h.key, value: pm.variables.replaceIn(h.value)}))",
+                  "};",
+                  "function waitForResult() {",
+                  "  pm.sendRequest(probe, (error, response) => {",
+                  "    let d;",
+                  "    try { d = response.json().data; } catch (_) {}",
+                  "    const ready = !error && response.code === 200 && (Array.isArray(d) && d.some(n => n.bookingId === pm.environment.get(\"cancelBookingId\") && n.details.status === \"CANCELED\"));",
+                  "    if (ready) return;",
+                  "    if (Date.now() >= deadline) {",
+                  "      pm.test('Dữ liệu liên service sẵn sàng trong 20 giây', () => pm.expect(ready).to.eql(true));",
+                  "      return;",
+                  "    }",
+                  "    setTimeout(waitForResult, 300);",
+                  "  });",
+                  "}",
+                  "waitForResult();"
+                ]
+              }
+            },
             {
               "listen": "test",
               "script": {
@@ -1291,6 +1487,34 @@
             "url": "{{baseUrl}}/api/v1/trips/{{tripId}}/fare"
           },
           "event": [
+            {
+              "listen": "prerequest",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "const deadline = Date.now() + 20000;",
+                  "const probe = {",
+                  "  method: 'GET',",
+                  "  url: pm.variables.replaceIn(pm.request.url.toString()),",
+                  "  header: pm.request.headers.all().map(h => ({key: h.key, value: pm.variables.replaceIn(h.value)}))",
+                  "};",
+                  "function waitForResult() {",
+                  "  pm.sendRequest(probe, (error, response) => {",
+                  "    let d;",
+                  "    try { d = response.json().data; } catch (_) {}",
+                  "    const ready = !error && response.code === 200 && (d && typeof d.paymentId === \"string\");",
+                  "    if (ready) return;",
+                  "    if (Date.now() >= deadline) {",
+                  "      pm.test('Dữ liệu liên service sẵn sàng trong 20 giây', () => pm.expect(ready).to.eql(true));",
+                  "      return;",
+                  "    }",
+                  "    setTimeout(waitForResult, 300);",
+                  "  });",
+                  "}",
+                  "waitForResult();"
+                ]
+              }
+            },
             {
               "listen": "test",
               "script": {
@@ -1405,6 +1629,34 @@
             "url": "{{baseUrl}}/api/v1/payments/{{paymentId}}"
           },
           "event": [
+            {
+              "listen": "prerequest",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "const deadline = Date.now() + 20000;",
+                  "const probe = {",
+                  "  method: 'GET',",
+                  "  url: pm.variables.replaceIn(pm.request.url.toString()),",
+                  "  header: pm.request.headers.all().map(h => ({key: h.key, value: pm.variables.replaceIn(h.value)}))",
+                  "};",
+                  "function waitForResult() {",
+                  "  pm.sendRequest(probe, (error, response) => {",
+                  "    let d;",
+                  "    try { d = response.json().data; } catch (_) {}",
+                  "    const ready = !error && response.code === 200 && (d && d.status === \"COMPLETED\");",
+                  "    if (ready) return;",
+                  "    if (Date.now() >= deadline) {",
+                  "      pm.test('Dữ liệu liên service sẵn sàng trong 20 giây', () => pm.expect(ready).to.eql(true));",
+                  "      return;",
+                  "    }",
+                  "    setTimeout(waitForResult, 300);",
+                  "  });",
+                  "}",
+                  "waitForResult();"
+                ]
+              }
+            },
             {
               "listen": "test",
               "script": {
@@ -1632,6 +1884,34 @@
           },
           "event": [
             {
+              "listen": "prerequest",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "const deadline = Date.now() + 20000;",
+                  "const probe = {",
+                  "  method: 'GET',",
+                  "  url: pm.variables.replaceIn(pm.request.url.toString()),",
+                  "  header: pm.request.headers.all().map(h => ({key: h.key, value: pm.variables.replaceIn(h.value)}))",
+                  "};",
+                  "function waitForResult() {",
+                  "  pm.sendRequest(probe, (error, response) => {",
+                  "    let d;",
+                  "    try { d = response.json().data; } catch (_) {}",
+                  "    const ready = !error && response.code === 200 && (d && typeof d.version === \"number\");",
+                  "    if (ready) return;",
+                  "    if (Date.now() >= deadline) {",
+                  "      pm.test('Dữ liệu liên service sẵn sàng trong 20 giây', () => pm.expect(ready).to.eql(true));",
+                  "      return;",
+                  "    }",
+                  "    setTimeout(waitForResult, 300);",
+                  "  });",
+                  "}",
+                  "waitForResult();"
+                ]
+              }
+            },
+            {
               "listen": "test",
               "script": {
                 "type": "text/javascript",
@@ -1739,6 +2019,34 @@
             "url": "{{baseUrl}}/api/v1/notifications/me"
           },
           "event": [
+            {
+              "listen": "prerequest",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "const deadline = Date.now() + 20000;",
+                  "const probe = {",
+                  "  method: 'GET',",
+                  "  url: pm.variables.replaceIn(pm.request.url.toString()),",
+                  "  header: pm.request.headers.all().map(h => ({key: h.key, value: pm.variables.replaceIn(h.value)}))",
+                  "};",
+                  "function waitForResult() {",
+                  "  pm.sendRequest(probe, (error, response) => {",
+                  "    let d;",
+                  "    try { d = response.json().data; } catch (_) {}",
+                  "    const ready = !error && response.code === 200 && (Array.isArray(d) && d.some(n => n.eventType === \"driver.verification-changed\" && n.details.status === \"ACTIVE\"));",
+                  "    if (ready) return;",
+                  "    if (Date.now() >= deadline) {",
+                  "      pm.test('Dữ liệu liên service sẵn sàng trong 20 giây', () => pm.expect(ready).to.eql(true));",
+                  "      return;",
+                  "    }",
+                  "    setTimeout(waitForResult, 300);",
+                  "  });",
+                  "}",
+                  "waitForResult();"
+                ]
+              }
+            },
             {
               "listen": "test",
               "script": {
