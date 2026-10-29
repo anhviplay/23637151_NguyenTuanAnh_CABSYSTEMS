@@ -95,7 +95,7 @@
             "url": "{{baseUrl}}/api/v1/auth/sessions",
             "body": {
               "mode": "raw",
-              "raw": "{\n  \"phoneNumber\": \"{{operationsPhone}}\",\n  \"password\": \"{{operationsPassword}}\",\n  \"actorType\": \"OPERATIONS\"\n}",
+              "raw": "{\"pho\": \"{{operationsPhone}}\",\"pas\": \"{{operationsPassword}}\",\"act\": \"OPERATIONS\"}",
               "options": {
                 "raw": {
                   "language": "json"
@@ -135,7 +135,7 @@
             "url": "{{baseUrl}}/api/v1/auth/sessions",
             "body": {
               "mode": "raw",
-              "raw": "{\n  \"phoneNumber\": \"{{customerPhone}}\",\n  \"password\": \"{{customerPassword}}\",\n  \"actorType\": \"CUSTOMER\"\n}",
+              "raw": "{\"pho\": \"{{customerPhone}}\",\"pas\": \"{{customerPassword}}\",\"act\": \"CUSTOMER\"}",
               "options": {
                 "raw": {
                   "language": "json"
@@ -175,7 +175,7 @@
             "url": "{{baseUrl}}/api/v1/auth/sessions",
             "body": {
               "mode": "raw",
-              "raw": "{\n  \"phoneNumber\": \"{{driverPhone}}\",\n  \"password\": \"{{driverPassword}}\",\n  \"actorType\": \"DRIVER\"\n}",
+              "raw": "{\"pho\": \"{{driverPhone}}\",\"pas\": \"{{driverPassword}}\",\"act\": \"DRIVER\"}",
               "options": {
                 "raw": {
                   "language": "json"
@@ -215,7 +215,7 @@
             "url": "{{baseUrl}}/api/v1/auth/sessions",
             "body": {
               "mode": "raw",
-              "raw": "{\n  \"phoneNumber\": \"{{cancelDriverPhone}}\",\n  \"password\": \"{{cancelDriverPassword}}\",\n  \"actorType\": \"DRIVER\"\n}",
+              "raw": "{\"pho\": \"{{cancelDriverPhone}}\",\"pas\": \"{{cancelDriverPassword}}\",\"act\": \"DRIVER\"}",
               "options": {
                 "raw": {
                   "language": "json"
@@ -260,7 +260,7 @@
             "url": "{{baseUrl}}/api/v1/auth/customer/registration-otp",
             "body": {
               "mode": "raw",
-              "raw": "{\n  \"phoneNumber\": \"{{newCustomerPhone}}\"\n}",
+              "raw": "{\"pho\": \"{{newCustomerPhone}}\"}",
               "options": {
                 "raw": {
                   "language": "json"
@@ -324,7 +324,7 @@
             "url": "{{baseUrl}}/api/v1/auth/customer/registrations",
             "body": {
               "mode": "raw",
-              "raw": "{\n  \"phoneNumber\": \"{{newCustomerPhone}}\",\n  \"password\": \"{{newCustomerPassword}}\",\n  \"otp\": \"{{customerOtp}}\",\n  \"fullName\": \"Customer\"\n}",
+              "raw": "{\"pho\": \"{{newCustomerPhone}}\",\"pas\": \"{{newCustomerPassword}}\",\"otp\": \"{{customerOtp}}\",\"ful\": \"Customer\"}",
               "options": {
                 "raw": {
                   "language": "json"
@@ -367,7 +367,7 @@
             "url": "{{baseUrl}}/api/v1/auth/sessions",
             "body": {
               "mode": "raw",
-              "raw": "{\n  \"phoneNumber\": \"{{customerPhone}}\",\n  \"password\": \"{{customerPassword}}\",\n  \"actorType\": \"CUSTOMER\"\n}",
+              "raw": "{\"pho\": \"{{customerPhone}}\",\"pas\": \"{{customerPassword}}\",\"act\": \"CUSTOMER\"}",
               "options": {
                 "raw": {
                   "language": "json"
@@ -565,7 +565,7 @@
             "url": "{{baseUrl}}/api/v1/bookings",
             "body": {
               "mode": "raw",
-              "raw": "{\n  \"pickup\": {\n    \"address\": \"Điểm đón\",\n    \"location\": {\n      \"latitude\": 10.77,\n      \"longitude\": 106.7\n    }\n  },\n  \"destination\": {\n    \"address\": \"Điểm đến\",\n    \"location\": {\n      \"latitude\": 10.79,\n      \"longitude\": 106.7\n    }\n  },\n  \"serviceType\": \"BIKE\"\n}",
+              "raw": "{\"pic\": {\"add\": \"Điểm đón\",\"loc\": {\"lat\": 10.77,\"lon\": 106.7}},\"des\": {\"add\": \"Điểm đến\",\"loc\": {\"lat\": 10.79,\"lon\": 106.7}},\"ser\": \"BIKE\"}",
               "options": {
                 "raw": {
                   "language": "json"
@@ -679,7 +679,7 @@
             "url": "{{baseUrl}}/api/v1/assignments/{{assignmentId}}/responses",
             "body": {
               "mode": "raw",
-              "raw": "{\n  \"decision\": \"ACCEPTED\"\n}",
+              "raw": "{\"dec\": \"ACCEPTED\"}",
               "options": {
                 "raw": {
                   "language": "json"
@@ -809,7 +809,7 @@
             "url": "{{baseUrl}}/api/v1/trips/{{tripId}}/status-transitions",
             "body": {
               "mode": "raw",
-              "raw": "{\n  \"targetStatus\": \"DRIVER_ARRIVED\",\n  \"occurredAt\": \"{{$isoTimestamp}}\",\n  \"expectedVersion\": {{tripVersion}}\n}",
+              "raw": "{\"tar\": \"DRIVER_ARRIVED\",\"occ\": \"{{$isoTimestamp}}\",\"exp\": {{tripVersion}}}",
               "options": {
                 "raw": {
                   "language": "json"
@@ -853,7 +853,7 @@
             "url": "{{baseUrl}}/api/v1/trips/{{tripId}}/status-transitions",
             "body": {
               "mode": "raw",
-              "raw": "{\n  \"targetStatus\": \"PICKED_UP\",\n  \"occurredAt\": \"{{$isoTimestamp}}\",\n  \"expectedVersion\": {{tripVersion}}\n}",
+              "raw": "{\"tar\": \"PICKED_UP\",\"occ\": \"{{$isoTimestamp}}\",\"exp\": {{tripVersion}}}",
               "options": {
                 "raw": {
                   "language": "json"
@@ -897,7 +897,7 @@
             "url": "{{baseUrl}}/api/v1/drivers/me/locations",
             "body": {
               "mode": "raw",
-              "raw": "{\n  \"latitude\": 10.78,\n  \"longitude\": 106.7,\n  \"observedAt\": \"{{$isoTimestamp}}\",\n  \"sequence\": {{locationSequence}}\n}",
+              "raw": "{\"lat\": 10.78,\"lon\": 106.7,\"obs\": \"{{$isoTimestamp}}\",\"seq\": {{locationSequence}}}",
               "options": {
                 "raw": {
                   "language": "json"
@@ -948,7 +948,7 @@
             "url": "{{baseUrl}}/api/v1/trips/{{tripId}}/status-transitions",
             "body": {
               "mode": "raw",
-              "raw": "{\n  \"targetStatus\": \"IN_PROGRESS\",\n  \"occurredAt\": \"{{$isoTimestamp}}\",\n  \"expectedVersion\": {{tripVersion}}\n}",
+              "raw": "{\"tar\": \"IN_PROGRESS\",\"occ\": \"{{$isoTimestamp}}\",\"exp\": {{tripVersion}}}",
               "options": {
                 "raw": {
                   "language": "json"
@@ -992,7 +992,7 @@
             "url": "{{baseUrl}}/api/v1/drivers/me/locations",
             "body": {
               "mode": "raw",
-              "raw": "{\n  \"latitude\": 10.79,\n  \"longitude\": 106.7,\n  \"observedAt\": \"{{$isoTimestamp}}\",\n  \"sequence\": {{locationSequence}}\n}",
+              "raw": "{\"lat\": 10.79,\"lon\": 106.7,\"obs\": \"{{$isoTimestamp}}\",\"seq\": {{locationSequence}}}",
               "options": {
                 "raw": {
                   "language": "json"
@@ -1043,7 +1043,7 @@
             "url": "{{baseUrl}}/api/v1/trips/{{tripId}}/status-transitions",
             "body": {
               "mode": "raw",
-              "raw": "{\n  \"targetStatus\": \"COMPLETED\",\n  \"occurredAt\": \"{{$isoTimestamp}}\",\n  \"expectedVersion\": {{tripVersion}},\n  \"distanceKm\": 5\n}",
+              "raw": "{\"tar\": \"COMPLETED\",\"occ\": \"{{$isoTimestamp}}\",\"exp\": {{tripVersion}},\"dis\": 5}",
               "options": {
                 "raw": {
                   "language": "json"
@@ -1092,7 +1092,7 @@
             "url": "{{baseUrl}}/api/v1/bookings",
             "body": {
               "mode": "raw",
-              "raw": "{\n  \"pickup\": {\n    \"address\": \"Điểm đón\",\n    \"location\": {\n      \"latitude\": 10.77,\n      \"longitude\": 106.7\n    }\n  },\n  \"destination\": {\n    \"address\": \"Điểm đến\",\n    \"location\": {\n      \"latitude\": 10.79,\n      \"longitude\": 106.7\n    }\n  },\n  \"serviceType\": \"BIKE\"\n}",
+              "raw": "{\"pic\": {\"add\": \"Điểm đón\",\"loc\": {\"lat\": 10.77,\"lon\": 106.7}},\"des\": {\"add\": \"Điểm đến\",\"loc\": {\"lat\": 10.79,\"lon\": 106.7}},\"ser\": \"BIKE\"}",
               "options": {
                 "raw": {
                   "language": "json"
@@ -1190,7 +1190,7 @@
             "url": "{{baseUrl}}/api/v1/assignments/{{cancelAssignmentId}}/responses",
             "body": {
               "mode": "raw",
-              "raw": "{\n  \"decision\": \"ACCEPTED\"\n}",
+              "raw": "{\"dec\": \"ACCEPTED\"}",
               "options": {
                 "raw": {
                   "language": "json"
@@ -1288,7 +1288,7 @@
             "url": "{{baseUrl}}/api/v1/bookings/{{cancelBookingId}}/cancellations",
             "body": {
               "mode": "raw",
-              "raw": "{\n  \"reasonCode\": \"CUSTOMER_REQUEST\",\n  \"reasonText\": \"Thay đổi kế hoạch\",\n  \"expectedVersion\": {{cancelVersion}}\n}",
+              "raw": "{\"rea\": \"CUSTOMER_REQUEST\",\"txt\": \"Thay đổi kế hoạch\",\"exp\": {{cancelVersion}}}",
               "options": {
                 "raw": {
                   "language": "json"
@@ -1552,7 +1552,7 @@
             "url": "{{baseUrl}}/api/v1/payments/{{paymentId}}/method",
             "body": {
               "mode": "raw",
-              "raw": "{\n  \"method\": \"ELECTRONIC\",\n  \"expectedVersion\": {{paymentInitialVersion}}\n}",
+              "raw": "{\"met\": \"ELECTRONIC\",\"exp\": {{paymentInitialVersion}}}",
               "options": {
                 "raw": {
                   "language": "json"
@@ -1596,7 +1596,7 @@
             "url": "{{baseUrl}}/api/v1/sandbox/payments/{{providerReference}}/settle",
             "body": {
               "mode": "raw",
-              "raw": "{\n  \"result\": \"SUCCESS\"\n}",
+              "raw": "{\"res\": \"SUCCESS\"}",
               "options": {
                 "raw": {
                   "language": "json"
@@ -1733,7 +1733,7 @@
             "url": "{{baseUrl}}/api/v1/trips/{{tripId}}/ratings",
             "body": {
               "mode": "raw",
-              "raw": "{\n  \"score\": 5,\n  \"comment\": \"Chuyến đi tốt\"\n}",
+              "raw": "{\"sco\": 5,\"com\": \"Chuyến đi tốt\"}",
               "options": {
                 "raw": {
                   "language": "json"
@@ -1776,7 +1776,7 @@
             "url": "{{baseUrl}}/api/v1/auth/driver/registration-otp",
             "body": {
               "mode": "raw",
-              "raw": "{\n  \"phoneNumber\": \"{{newDriverPhone}}\"\n}",
+              "raw": "{\"pho\": \"{{newDriverPhone}}\"}",
               "options": {
                 "raw": {
                   "language": "json"
@@ -1840,7 +1840,7 @@
             "url": "{{baseUrl}}/api/v1/auth/driver/registration-otp/verify",
             "body": {
               "mode": "raw",
-              "raw": "{\n  \"phoneNumber\": \"{{newDriverPhone}}\",\n  \"otp\": \"{{driverOtp}}\"\n}",
+              "raw": "{\"pho\": \"{{newDriverPhone}}\",\"otp\": \"{{driverOtp}}\"}",
               "options": {
                 "raw": {
                   "language": "json"
@@ -1879,7 +1879,7 @@
             "url": "{{baseUrl}}/api/v1/auth/driver/registrations",
             "body": {
               "mode": "raw",
-              "raw": "{\n  \"phoneNumber\": \"{{newDriverPhone}}\",\n  \"password\": \"{{newDriverPassword}}\",\n  \"otpVerificationToken\": \"{{driverProof}}\",\n  \"fullName\": \"Driver\",\n  \"licenseNumber\": \"LICENSE-NEW\",\n  \"vehicle\": {\n    \"plateNumber\": \"59A-NEW\",\n    \"serviceType\": \"BIKE\"\n  }\n}",
+              "raw": "{\"pho\": \"{{newDriverPhone}}\",\"pas\": \"{{newDriverPassword}}\",\"otp\": \"{{driverProof}}\",\"ful\": \"Driver\",\"lic\": \"LICENSE-NEW\",\"veh\": {\"pla\": \"59A-NEW\",\"ser\": \"BIKE\"}}",
               "options": {
                 "raw": {
                   "language": "json"
@@ -2007,7 +2007,7 @@
             "url": "{{baseUrl}}/api/v1/operations/drivers/{{newDriverId}}/verification",
             "body": {
               "mode": "raw",
-              "raw": "{\n  \"decision\": \"ACTIVE\",\n  \"reason\": \"Hồ sơ hợp lệ\",\n  \"expectedVersion\": {{newDriverVersion}}\n}",
+              "raw": "{\"dec\": \"ACTIVE\",\"rea\": \"Hồ sơ hợp lệ\",\"exp\": {{newDriverVersion}}}",
               "options": {
                 "raw": {
                   "language": "json"
@@ -2046,7 +2046,7 @@
             "url": "{{baseUrl}}/api/v1/auth/sessions",
             "body": {
               "mode": "raw",
-              "raw": "{\n  \"phoneNumber\": \"{{newDriverPhone}}\",\n  \"password\": \"{{newDriverPassword}}\",\n  \"actorType\": \"DRIVER\"\n}",
+              "raw": "{\"pho\": \"{{newDriverPhone}}\",\"pas\": \"{{newDriverPassword}}\",\"act\": \"DRIVER\"}",
               "options": {
                 "raw": {
                   "language": "json"
@@ -2174,7 +2174,7 @@
             "url": "{{baseUrl}}/api/v1/drivers/me/availability",
             "body": {
               "mode": "raw",
-              "raw": "{\n  \"availability\": \"OFFLINE\",\n  \"expectedVersion\": {{driverVersion}}\n}",
+              "raw": "{\"ava\": \"OFFLINE\",\"exp\": {{driverVersion}}}",
               "options": {
                 "raw": {
                   "language": "json"
@@ -2217,7 +2217,7 @@
             "url": "{{baseUrl}}/api/v1/drivers/me/availability",
             "body": {
               "mode": "raw",
-              "raw": "{\n  \"availability\": \"AVAILABLE\",\n  \"expectedVersion\": {{driverVersion}}\n}",
+              "raw": "{\"ava\": \"AVAILABLE\",\"exp\": {{driverVersion}}}",
               "options": {
                 "raw": {
                   "language": "json"
@@ -2261,7 +2261,7 @@
             "url": "{{baseUrl}}/api/v1/auth/sessions",
             "body": {
               "mode": "raw",
-              "raw": "{\n  \"phoneNumber\": \"' OR 1=1 --\",\n  \"password\": \"anything\",\n  \"actorType\": \"CUSTOMER\"\n}",
+              "raw": "{\"pho\": \"' OR 1=1 --\",\"pas\": \"anything\",\"act\": \"CUSTOMER\"}",
               "options": {
                 "raw": {
                   "language": "json"
@@ -2334,7 +2334,7 @@
             "url": "{{baseUrl}}/api/v1/customers/me",
             "body": {
               "mode": "raw",
-              "raw": "{\n  \"fullName\": \"<script>alert('hack')</script>\",\n  \"version\": {{customerVersion}}\n}",
+              "raw": "{\"ful\": \"<script>alert('hack')</script>\",\"ver\": {{customerVersion}}}",
               "options": {
                 "raw": {
                   "language": "json"
@@ -2451,7 +2451,7 @@
             "url": "{{baseUrl}}/api/v1/bookings",
             "body": {
               "mode": "raw",
-              "raw": "{\n  \"pickup\": {\n    \"address\": \"Điểm đón\",\n    \"location\": {\n      \"latitude\": 10.77,\n      \"longitude\": 106.7\n    }\n  },\n  \"destination\": {\n    \"address\": \"Điểm đến\",\n    \"location\": {\n      \"latitude\": 10.79,\n      \"longitude\": 106.7\n    }\n  },\n  \"serviceType\": \"BIKE\"\n}",
+              "raw": "{\"pic\": {\"add\": \"Điểm đón\",\"loc\": {\"lat\": 10.77,\"lon\": 106.7}},\"des\": {\"add\": \"Điểm đến\",\"loc\": {\"lat\": 10.79,\"lon\": 106.7}},\"ser\": \"BIKE\"}",
               "options": {
                 "raw": {
                   "language": "json"
@@ -2511,7 +2511,7 @@
             "url": "{{baseUrl}}/api/v1/payments/{{paymentId}}/method",
             "body": {
               "mode": "raw",
-              "raw": "{\n  \"method\": \"ELECTRONIC\",\n  \"expectedVersion\": {{paymentInitialVersion}}\n}",
+              "raw": "{\"met\": \"ELECTRONIC\",\"exp\": {{paymentInitialVersion}}}",
               "options": {
                 "raw": {
                   "language": "json"

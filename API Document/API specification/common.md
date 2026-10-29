@@ -34,3 +34,21 @@ Chỉ Gateway công bố host port 127.0.0.1:8443. Rate limit cấu hình trong 
 ## Hộp thư OTP sandbox
 
 GET /api/v1/sandbox/otp nhận query phoneNumber và actorType=CUSTOMER/DRIVER, cần X-Sandbox-Key; trả 200 với data.otp hoặc 403 khi sai key. Mã OTP có thời hạn theo OTP_TTL_SECONDS, chỉ dùng một lần cho đăng ký tương ứng. Hộp thư được truy cập qua Gateway.
+
+## Tên trường nhập ngắn
+
+Body JSON chấp nhận tên đầy đủ hoặc tên ngắn theo 3 chữ đầu. Gateway đổi tên ngắn thành tên hợp đồng trước khi chuyển đến owner; response giữ nguyên tên đầy đủ. URL và query params không thay đổi.
+
+- Tài khoản: pho → phoneNumber, pas → password, act → actorType, ful → fullName, lic → licenseNumber.
+- Xe: veh → vehicle, pla → plateNumber, ser → serviceType.
+- Booking: pic → pickup, des → destination, add → address, loc → location.
+- Vị trí: lat → latitude, lon → longitude, obs → observedAt, seq → sequence.
+- Trip: tar → targetStatus, occ → occurredAt, dis → distanceKm.
+- Cập nhật: exp → expectedVersion, ver → version, dec → decision, ava → availability.
+- Hủy/xét duyệt: rea → reasonCode khi hủy, rea → reason khi xét duyệt; txt → reasonText để tránh trùng rea.
+- Thanh toán/đánh giá: met → method, res → result, sco → score, com → comment.
+- otp là mã OTP ở bước xác minh/đăng ký Customer; riêng Body đăng ký Driver, otp là otpVerificationToken đã được cấp sau xác minh.
+
+Tên đầy đủ vẫn hợp lệ. Không gửi hai tên của cùng một trường với giá trị khác nhau: trả 400 AMBIGUOUS_INPUT_FIELD. Giá trị trạng thái, vai trò, loại dịch vụ và chữ ký callback không viết tắt. Callback từ provider giữ nguyên hợp đồng có chữ ký.
+
+Ví dụ vị trí: `{"lat":10.78,"lon":106.7,"obs":"{{$isoTimestamp}}","seq":{{locationSequence}}}`.

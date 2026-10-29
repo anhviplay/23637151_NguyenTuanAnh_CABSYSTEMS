@@ -2,6 +2,7 @@ import express from 'express';
 import helmet from 'helmet';
 import https from 'node:https';
 import fs from 'node:fs';
+import {expandInput} from './input.mjs';
 import {createClient} from 'redis';
 import {decodeToken,id,now,fail} from '../shared/helpers.mjs';
 const services=['identity','customer','driver','location','booking','trip','payment','notification','operations'].map(x=>x+'-service');
@@ -29,6 +30,7 @@ app.use(async(req,res)=>{
  if(path.startsWith('/api/v1/sandbox/payments/')){
   if(req.actor?.actorType!=='OPERATIONS'||!req.actor.permissions?.includes('payment:sandbox'))fail(403,'FORBIDDEN');
   const sandboxPath=req.originalUrl.replace('/api/v1/sandbox','');
+  req.body=expandInput(req.body,path);
   return proxy(req,res,'https://payment-sandbox:3000'+sandboxPath,{'X-Sandbox-Key':process.env.SANDBOX_API_KEY});
  }
  if(path.startsWith('/api/v1/auth/')||path==='/api/v1/sandbox/otp')target='identity';
@@ -42,6 +44,7 @@ app.use(async(req,res)=>{
  else if(path.startsWith('/api/v1/notifications/'))target='notification';
  else if(path.startsWith('/api/v1/operations/'))target='operations';
  else fail(404,'NOT_FOUND');
+ req.body=expandInput(req.body,path);
  return proxy(req,res,`http://${target}-service:3000`+req.originalUrl);
 });
 async function proxy(req,res,url,extraHeaders={}){
