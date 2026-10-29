@@ -1,8 +1,5 @@
 # Đặc tả yêu cầu CAB System
 
-Phiên bản 3.0 — 29/10/2026
-
-Bản triển khai CAB System được xác định theo 30 mục của PHIEU_CHAM_PROJECT.pdf. Số thứ tự và tên mục chấm giữ nguyên. Các ví dụ payload trên phiếu được ánh xạ vào tài nguyên CAB: tài khoản dùng phoneNumber; thanh toán dùng paymentId và Idempotency-Key. Kết quả HTTP, quyền truy cập và trạng thái phải giữ đúng yêu cầu chấm.
 
 ## Phạm vi nghiệp vụ
 
